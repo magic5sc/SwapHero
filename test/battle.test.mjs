@@ -5,3 +5,14 @@ test('damage uses current lane occupant even after a change',()=>{const g=create
 test('damage scores when current opposing lane is empty',()=>{const g=createGame();start(g);const id=g.sides.player.slots[0];g.sides.ai.slots[0]=null;resolveLane(g,'player',1,id);assert.equal(g.sides.player.score,1);});
 test('AI and player proceed with the same turn actions',()=>{const g=createGame();start(g);move(g,'player',4,1);assert.equal(g.actionPoints,1);endTurn(g,'player');assert.equal(g.turn,'ai');playAI(g);assert.equal(g.turn,'player');});
 test('five points ends combat immediately',()=>{const g=createGame();start(g);g.sides.player.score=4;g.sides.ai.slots[2]=null;endTurn(g,'player');assert.equal(g.winner,'player');assert.equal(g.phase,'finished');});
+test('forced reinforcement blocks ending turn and allows play after points run out',()=>{
+  const g=createGame();start(g);g.sides.player.slots.splice(0,3,null,null,null);
+  assert.throws(()=>endTurn(g,'player'),/强制补位/);
+  move(g,'player',4,1);assert.throws(()=>endTurn(g,'player'),/强制补位/);
+  move(g,'player',5,2);assert.equal(g.actionPoints,0);assert.equal(g.sides.player.slots[2],null);
+  endTurn(g,'player');assert.equal(g.turn,'ai');
+});
+test('AI fills vacancies using available points',()=>{
+  const g=createGame();start(g);endTurn(g,'player');g.sides.ai.slots.splice(0,3,null,null,null);
+  playAI(g);assert.equal(g.sides.ai.slots.slice(0,3).filter(Boolean).length,2);assert.equal(g.turn,'player');
+});
