@@ -41,22 +41,22 @@ export function resolveLane(g, side, lane, attackerId) {
     if (!enemy.slots.some(Boolean)) g.winner = side;
   }
 }
-export function endTurn(g, side) {
+export function endTurn(g, side, onAttack = null) {
   requireTurn(g, side);
   if (mustReinforce(g.sides[side].slots, g.actionPoints)) throw Error('请先完成强制补位');
   g.actionPoints = 0; g.phase = 'attack';
   // No abilities are enabled: declaration and pre-damage phases have no effects yet.
   const attacks = [3,2,1].map(lane => ({lane, id:g.sides[side].slots[lane - 1]})).filter(x => x.id && !g.units[x.id].disabled);
-  for (const {lane,id} of attacks) { resolveLane(g, side, lane, id); if (g.winner) break; }
+  for (const {lane,id} of attacks) { const before = onAttack ? structuredClone(g) : null; resolveLane(g, side, lane, id); if (onAttack) onAttack({side, lane, before, after: structuredClone(g)}); if (g.winner) break; }
   for (const id of g.sides[side].slots.filter(Boolean)) g.units[id].disabled = false;
   if (g.winner) { g.phase = 'finished'; return; }
   g.turn = other(side); g.phase = 'action'; g.actionPoints = 2;
 }
-export function playAI(g) {
+export function playAI(g, onAttack = null) {
   requireTurn(g, 'ai');
   while (mustReinforce(g.sides.ai.slots, g.actionPoints)) {
     const slots = g.sides.ai.slots, from = slots.findIndex((u,i) => i >= 3 && u) + 1, to = slots.findIndex((u,i) => i < 3 && !u) + 1;
     move(g, 'ai', from, to);
   }
-  endTurn(g, 'ai');
+  endTurn(g, 'ai', onAttack);
 }
