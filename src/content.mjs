@@ -1,6 +1,6 @@
 // Content definitions are data; no executable expressions or card-name branches.
 const PASSIVES = new Set(['agile','armor','combat_damage_immunity']);
-const EVENTS = new Set(['unit_enter','unit_leave']);
+const EVENTS = new Set(['unit_enter','unit_leave','attack_declared','before_damage','damage_taken','healed','attack_end','turn_end']);
 const OPS = new Set(['heal','deal_damage','modify_attack','swap_positions']);
 const TARGETS = new Set(['self','opposing_unit','other_allies','lower_ally']);
 const fail = message => { throw Error(message); };
@@ -25,11 +25,11 @@ export function validateCatalog(data) {
     check(Array.isArray(s.rules),`${s.skill_id}缺规则数组`);
     if(s.passive==='armor')for(const p of Object.values(s.levels||{}))check(integer(p.amount,0),`${s.skill_id}护甲必须为非负整数`);
     for(const rule of Array.isArray(s.rules)?s.rules:[]) {
-      if(!object(rule)){errors.push('规则必须是对象');continue;}
-      check(EVENTS.has(rule.event),`${s.skill_id}未知事件`);check(['self','other_ally'].includes(rule.subject),`${s.skill_id}未知主体`);
+      if(!object(rule)){errors.push('规则必须是对象');continue;}check(Object.keys(rule).every(k=>['event','subject','effects'].includes(k)),`${s.skill_id}含未支持的规则字段`);
+      check(EVENTS.has(rule.event),`${s.skill_id}未知事件`);check(['self','other_ally'].includes(rule.subject),`${s.skill_id}未知主体`);if(['attack_end','turn_end'].includes(rule.event))check(rule.subject==='self',`${s.skill_id}阶段事件只支持self主体`);
       check(Array.isArray(rule.effects)&&rule.effects.length>0,`${s.skill_id}缺效果`);
       for(const e of Array.isArray(rule.effects)?rule.effects:[]) {
-        if(!object(e)){errors.push('效果必须是对象');continue;}
+        if(!object(e)){errors.push('效果必须是对象');continue;}check(Object.keys(e).every(k=>['op','target','amount','duration','zone','damage_type'].includes(k)),`${s.skill_id}含未支持的效果字段`);
         check(OPS.has(e.op),`${s.skill_id}未知效果`);check(e.target===null||TARGETS.has(e.target),`${s.skill_id}未知目标`);
         check(e.duration===null||['battle','turn','on_field'].includes(e.duration),`${s.skill_id}未知持续时间`);check(e.zone===null||['battlefield','any'].includes(e.zone),`${s.skill_id}未知区域`);
         if(s.status==='specified'){check(e.target!==null&&e.zone!==null,`${s.skill_id}目标未闭合`);if(e.op==='modify_attack')check(e.duration!==null,`${s.skill_id}持续时间未闭合`);}
@@ -50,14 +50,14 @@ export function publicationIssues(data,cardId) {
   const errors=validateCatalog(data);if(errors.length)return errors;
   const c=data.cards.find(c=>c.card_id===cardId);if(!c)return ['卡牌不存在'];
   const issues=[...c.blockers];if(c.status!=='specified')issues.push('卡牌尚为草稿');
-  for(const ref of c.skills){const s=data.skills.find(s=>s.skill_id===ref.skill_id);issues.push(...s.blockers);if(s.status!=='specified')issues.push(`${s.name}尚为草稿`);if(s.rules.length)issues.push(`${s.name}：事件结算引擎尚未接入`);}
+  for(const ref of c.skills){const s=data.skills.find(s=>s.skill_id===ref.skill_id);issues.push(...s.blockers);if(s.status!=='specified')issues.push(`${s.name}尚为草稿`);}
   return [...new Set(issues)];
 }
 export function createUnit(data,cardId,instanceId) {
   const issues=publicationIssues(data,cardId);if(issues.length)fail(issues.join('；'));
   if(typeof instanceId!=='string'||!instanceId)fail('缺单位实例ID');
   const c=data.cards.find(c=>c.card_id===cardId);
-  return {id:instanceId,cardId,name:c.name,attack:c.attack,hp:c.health,maxHp:c.health,disabled:false,contentVersion:data.version,slots:structuredClone(c.slots),skills:c.skills.map(r=>({slotId:r.slot_id,level:r.level,definition:structuredClone(data.skills.find(s=>s.skill_id===r.skill_id))}))};
+  return {id:instanceId,cardId,name:c.name,attack:c.attack,baseAttack:c.attack,modifiers:[],hp:c.health,maxHp:c.health,disabled:false,contentVersion:data.version,slots:structuredClone(c.slots),skills:c.skills.map(r=>({slotId:r.slot_id,level:r.level,definition:structuredClone(data.skills.find(s=>s.skill_id===r.skill_id))}))};
 }
 // Derived passives leave no cached bonuses behind when a skill is removed.
 export function passiveValue(unit,keyword){return (unit.skills||[]).reduce((n,s)=>n+(s.definition.passive===keyword?(keyword==='armor'?s.definition.levels[s.level].amount:1):0),0);}
