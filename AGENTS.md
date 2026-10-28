@@ -1,8 +1,12 @@
 # SwapHero AI development entry
 
-Project wiki guide: https://app.notion.com/p/407e7ee349ad81fa94bdde2abcc25750
+Project details and AI entry: https://app.notion.com/p/407e7ee349ad815f9d78ed0642f5ac0e
+Planning: https://app.notion.com/p/407e7ee349ad81c1b694e182eb04a519
+Art: https://app.notion.com/p/407e7ee349ad81019a3fc5d0d5072e57
+Programming: https://app.notion.com/p/407e7ee349ad81549193ea30c3beec3e
+Detailed programming guide: https://app.notion.com/p/407e7ee349ad81fa94bdde2abcc25750
 
-Before project work, read that guide and task-relevant current Wiki pages when Notion access is available. If it is unavailable, state what could not be verified; do not invent product rules.
+Before project work, read the project details entry, the relevant planning, art and/or programming pages, and task-relevant current Wiki sources when Notion access is available. If it is unavailable, state what could not be verified; do not invent product rules.
 
 Code source: https://github.com/magic5sc/SwapHero. Read the current repository and instructions before changes. V1 is a browser-based local player-versus-AI game, with desktop mouse and mobile touch support; multiplayer is later. Existing basic cards are placeholders. Preserve confirmed rules and distinguish unconfirmed rules from temporary implementation decisions.
 
