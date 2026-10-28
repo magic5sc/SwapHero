@@ -1,3 +1,4 @@
+import { canAttack, damageAmount } from './content.mjs';
 import { deploySwap, swapBench, reinforce, exchange, mustReinforce } from './formation.mjs';
 
 // Placeholder units have no abilities. Each side has six separate instances.
@@ -29,14 +30,14 @@ export function move(g, side, from, to) {
 // A damage-stage lookup uses the current opposite lane, not the declaration-stage target.
 export function resolveLane(g, side, lane, attackerId) {
   const attacker = g.units[attackerId], own = g.sides[side], enemy = g.sides[other(side)];
-  if (!attacker || attacker.hp <= 0 || attacker.disabled || own.slots[lane - 1] !== attackerId) return;
+  if (!attacker || !canAttack(attacker) || own.slots[lane - 1] !== attackerId) return;
   const targetId = enemy.slots[lane - 1];
   if (!targetId) {
     own.score++; g.log.push(`${attacker.name} 攻击空路，获得1分`);
     if (own.score >= 5) g.winner = side;
   } else {
-    const target = g.units[targetId]; target.hp = Math.max(0, target.hp - attacker.attack);
-    g.log.push(`${attacker.name} 对 ${target.name} 造成 ${attacker.attack} 点伤害`);
+    const target = g.units[targetId], damage = damageAmount(target, attacker.attack); target.hp = Math.max(0, target.hp - damage);
+    g.log.push(`${attacker.name} 对 ${target.name} 造成 ${damage} 点伤害`);
     if (!target.hp) { enemy.slots[lane - 1] = null; g.log.push(`${target.name} 被击溃`); }
     if (!enemy.slots.some(Boolean)) g.winner = side;
   }
@@ -46,7 +47,7 @@ export function endTurn(g, side, onAttack = null) {
   if (mustReinforce(g.sides[side].slots, g.actionPoints)) throw Error('请先完成强制补位');
   g.actionPoints = 0; g.phase = 'attack';
   // No abilities are enabled: declaration and pre-damage phases have no effects yet.
-  const attacks = [3,2,1].map(lane => ({lane, id:g.sides[side].slots[lane - 1]})).filter(x => x.id && !g.units[x.id].disabled);
+  const attacks = [3,2,1].map(lane => ({lane, id:g.sides[side].slots[lane - 1]})).filter(x => x.id && canAttack(g.units[x.id]));
   for (const {lane,id} of attacks) { const before = onAttack ? structuredClone(g) : null; resolveLane(g, side, lane, id); if (onAttack) onAttack({side, lane, before, after: structuredClone(g)}); if (g.winner) break; }
   for (const id of g.sides[side].slots.filter(Boolean)) g.units[id].disabled = false;
   if (g.winner) { g.phase = 'finished'; return; }
