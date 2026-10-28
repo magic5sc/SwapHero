@@ -1,0 +1,396 @@
+{
+  "schema_version": 1,
+  "version": "skill-lab-0.2.0",
+  "team": [
+    "wan_shi",
+    "test_armor",
+    "test_agile",
+    "ming_shou",
+    "test_flame",
+    "test_growth"
+  ],
+  "cards": [
+    {
+      "card_id": "wan_shi",
+      "name": "顽石",
+      "source_number": 6,
+      "source_text": "当其它己方角色入场时，恢复自身 1 点生命。",
+      "name_status": "confirmed",
+      "element": "地",
+      "category": "character",
+      "attack": 1,
+      "health": 6,
+      "art_id": null,
+      "slots": [
+        {
+          "slot_id": "origin",
+          "type": "innate",
+          "capacity": 1
+        },
+        {
+          "slot_id": "skill_1",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "skill_2",
+          "type": "skill",
+          "capacity": 1
+        }
+      ],
+      "skills": [
+        {
+          "slot_id": "origin",
+          "skill_id": "ally_arrival_heal",
+          "level": 1
+        }
+      ],
+      "status": "specified",
+      "blockers": []
+    },
+    {
+      "card_id": "ming_shou",
+      "name": "冥守",
+      "source_number": 19,
+      "source_text": "进场时，与下方队友交换位置。",
+      "name_status": "confirmed",
+      "element": "影",
+      "category": "character",
+      "attack": 2,
+      "health": 8,
+      "art_id": null,
+      "slots": [
+        {
+          "slot_id": "origin",
+          "type": "innate",
+          "capacity": 1
+        },
+        {
+          "slot_id": "skill_1",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "skill_2",
+          "type": "skill",
+          "capacity": 1
+        }
+      ],
+      "skills": [
+        {
+          "slot_id": "origin",
+          "skill_id": "arrival_shift",
+          "level": 1
+        }
+      ],
+      "status": "specified",
+      "blockers": []
+    },
+    {
+      "card_id": "test_armor",
+      "name": "测试护甲1卡",
+      "source_number": null,
+      "source_text": "机制测试单位，非实体卡；仅用于验证测试护甲1",
+      "name_status": "confirmed",
+      "element": null,
+      "category": "test",
+      "attack": 1,
+      "health": 10,
+      "art_id": null,
+      "slots": [
+        {
+          "slot_id": "origin",
+          "type": "innate",
+          "capacity": 1
+        },
+        {
+          "slot_id": "skill_1",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "skill_2",
+          "type": "skill",
+          "capacity": 1
+        }
+      ],
+      "skills": [
+        {
+          "slot_id": "origin",
+          "skill_id": "test_armor",
+          "level": 1
+        }
+      ],
+      "status": "specified",
+      "blockers": []
+    },
+    {
+      "card_id": "test_agile",
+      "name": "测试敏捷卡",
+      "source_number": null,
+      "source_text": "机制测试单位，非实体卡；仅用于验证测试敏捷",
+      "name_status": "confirmed",
+      "element": null,
+      "category": "test",
+      "attack": 2,
+      "health": 10,
+      "art_id": null,
+      "slots": [
+        {
+          "slot_id": "origin",
+          "type": "innate",
+          "capacity": 1
+        },
+        {
+          "slot_id": "skill_1",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "skill_2",
+          "type": "skill",
+          "capacity": 1
+        }
+      ],
+      "skills": [
+        {
+          "slot_id": "origin",
+          "skill_id": "test_agile",
+          "level": 1
+        }
+      ],
+      "status": "specified",
+      "blockers": []
+    },
+    {
+      "card_id": "test_flame",
+      "name": "测试进场伤害卡",
+      "source_number": null,
+      "source_text": "机制测试单位，非实体卡；仅用于验证测试进场伤害",
+      "name_status": "confirmed",
+      "element": null,
+      "category": "test",
+      "attack": 1,
+      "health": 10,
+      "art_id": null,
+      "slots": [
+        {
+          "slot_id": "origin",
+          "type": "innate",
+          "capacity": 1
+        },
+        {
+          "slot_id": "skill_1",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "skill_2",
+          "type": "skill",
+          "capacity": 1
+        }
+      ],
+      "skills": [
+        {
+          "slot_id": "origin",
+          "skill_id": "test_flame",
+          "level": 1
+        }
+      ],
+      "status": "specified",
+      "blockers": []
+    },
+    {
+      "card_id": "test_growth",
+      "name": "测试进场成长卡",
+      "source_number": null,
+      "source_text": "机制测试单位，非实体卡；仅用于验证测试进场成长",
+      "name_status": "confirmed",
+      "element": null,
+      "category": "test",
+      "attack": 1,
+      "health": 10,
+      "art_id": null,
+      "slots": [
+        {
+          "slot_id": "origin",
+          "type": "innate",
+          "capacity": 1
+        },
+        {
+          "slot_id": "skill_1",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "skill_2",
+          "type": "skill",
+          "capacity": 1
+        }
+      ],
+      "skills": [
+        {
+          "slot_id": "origin",
+          "skill_id": "test_growth",
+          "level": 1
+        }
+      ],
+      "status": "specified",
+      "blockers": []
+    }
+  ],
+  "skills": [
+    {
+      "skill_id": "ally_arrival_heal",
+      "name": "同伴入场治疗",
+      "status": "specified",
+      "active_zone": "battlefield",
+      "passive": null,
+      "rules": [
+        {
+          "event": "unit_enter",
+          "subject": "other_ally",
+          "effects": [
+            {
+              "op": "heal",
+              "target": "self",
+              "amount": "amount",
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": null
+            }
+          ]
+        }
+      ],
+      "levels": {
+        "1": {
+          "amount": 1
+        }
+      },
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "blockers": []
+    },
+    {
+      "skill_id": "arrival_shift",
+      "name": "进场换位",
+      "status": "specified",
+      "active_zone": "battlefield",
+      "passive": null,
+      "rules": [
+        {
+          "event": "unit_enter",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "swap_positions",
+              "target": "lower_ally",
+              "amount": null,
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": null
+            }
+          ]
+        }
+      ],
+      "levels": {
+        "1": {}
+      },
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "blockers": []
+    },
+    {
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "skill_id": "test_armor",
+      "name": "测试护甲1",
+      "passive": "armor",
+      "levels": {
+        "1": {
+          "amount": 1
+        }
+      },
+      "rules": []
+    },
+    {
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "skill_id": "test_agile",
+      "name": "测试敏捷",
+      "passive": "agile",
+      "levels": {
+        "1": {}
+      },
+      "rules": []
+    },
+    {
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "skill_id": "test_flame",
+      "name": "测试进场伤害",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 2
+        }
+      },
+      "rules": [
+        {
+          "event": "unit_enter",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "deal_damage",
+              "target": "opposing_unit",
+              "amount": "amount",
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": "skill"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "skill_id": "test_growth",
+      "name": "测试进场成长",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 1
+        }
+      },
+      "rules": [
+        {
+          "event": "unit_enter",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "modify_attack",
+              "target": "self",
+              "amount": "amount",
+              "duration": "battle",
+              "zone": "battlefield",
+              "damage_type": null
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
