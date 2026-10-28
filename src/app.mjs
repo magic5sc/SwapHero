@@ -9,7 +9,7 @@ function card(side, p) {
   const b = document.createElement(isPlayer ? 'button' : 'div');
   b.className = `card ${side} ${u ? '' : 'empty'} ${isPlayer && selected === p ? 'selected' : ''}`;
   if(isPlayer) { b.type='button'; b.dataset.position=p; b.disabled=g.phase==='finished'||playing; b.onclick=()=>{if(suppressClick){suppressClick=false;return;} choose(p);}; b.onpointerdown=e=>beginDrag(e,p,b); b.setAttribute('aria-pressed', String(selected===p)); if(animationPositions.includes(p)) b.classList.add('swap-arrival'); }
-  if(u && u.hp===0) b.classList.add('pending-defeat'); if(effect?.lane===p && effect.side===side) b.classList.add('perform-attack'); if(effect?.lane===p && effect.side!==side && effect.hit){b.classList.add('perform-hit');add(b,'span','damage-float',`−${effect.damage}`);} const pos=add(b,'div','card-top'); add(pos,'span','pos',`${p}号位`); if(u?.disabled)add(pos,'span','disabled-label','无法攻击');
+  if(u && u.hp===0) b.classList.add('pending-defeat'); if(effect?.lane===p && effect.side===side && effect.stage==='attack') b.classList.add('perform-attack'); if(effect?.lane===p && effect.side!==side && effect.hit){b.classList.add('perform-hit');add(b,'span','damage-float',`−${effect.damage}`);} const pos=add(b,'div','card-top'); add(pos,'span','pos',`${p}号位`); if(u?.disabled)add(pos,'span','disabled-label','无法攻击');
   if(!u){add(b,'div','empty-mark','＋');add(b,'div','empty-label','空位置');b.setAttribute('aria-label',`${side==='player'?'我方':'对手'} ${p}号位，空位`);return b;}
   const emblem=add(b,'div','emblem',String(p)); emblem.setAttribute('aria-hidden','true');
   add(b,'div','card-name',u.name); add(b,'div','card-sub','基础单位 · 无技能');
@@ -41,11 +41,11 @@ el('start').onclick=()=>run(()=>{selected=null;start(g);});el('end').onclick=asy
     const group=frames.filter(x=>x.side===side); let ghosts=[];
     for(const f of group){
       visual=structuredClone(f.before);for(const x of ghosts){visual.sides[x.side].slots[x.pos]=x.id;visual.units[x.id]=structuredClone(x.unit);}
-      effect={side,lane:f.lane,hit:false};show();await wait(360);
+      effect={side,lane:f.lane,hit:false,stage:'attack'};show();await wait(360);
       const targetSide=side==='player'?'ai':'player', target=f.before.sides[targetSide].slots[f.lane-1];
       visual=structuredClone(f.after);for(const x of ghosts){visual.sides[x.side].slots[x.pos]=x.id;visual.units[x.id]=structuredClone(x.unit);}
       if(target && !f.after.sides[targetSide].slots[f.lane-1]){const unit=structuredClone(f.after.units[target]);visual.sides[targetSide].slots[f.lane-1]=target;ghosts.push({side:targetSide,pos:f.lane-1,id:target,unit});}
-      effect={side,lane:f.lane,hit:!!target,damage:target?f.before.units[target].hp-f.after.units[target].hp:0};show();await wait(500);
+      effect={side,lane:f.lane,hit:!!target,stage:'impact',damage:target?f.before.units[target].hp-f.after.units[target].hp:0};show();await wait(500);
     }
     if(group.length && ghosts.length){ effect=null; show(); document.querySelectorAll('.pending-defeat').forEach(n=>n.classList.add('perform-defeat')); await wait(400); }
   }
