@@ -34,10 +34,11 @@ function choose(p){if(selected===p){selected=null;feedback='';show();return;}if(
 function performMove(a,p){run(()=>{if(g.phase==='deployment')deploy(g,a,p);else if(a>=4&&p>=4)rearrange(g,'player',a,p);else move(g,'player',a,p);selected=null;animationPositions=[a,p];});if(animationPositions.length)setTimeout(()=>{animationPositions=[];},500);}
 el('start').onclick=()=>run(()=>{selected=null;start(g);});el('end').onclick=async()=>{
   if(playing)return; selected=null;const frames=[];let sim=structuredClone(g);
-  try { endTurn(sim,'player',e=>frames.push(e)); if(sim.phase==='action'&&sim.turn==='ai') playAI(sim,e=>frames.push(e)); }
+  try { endTurn(sim,'player',e=>frames.push(e));  }
   catch(e){feedback=e.message;show();return;}
   playing=true; const wait=ms=>new Promise(r=>setTimeout(r,ms));
   for(const side of ['player','ai']) {
+    if(side==='ai' && sim.phase==='action' && sim.turn==='ai'){ visual=structuredClone(sim);effect=null;show();el('phase').textContent='对手换人阶段';await wait(650);playAI(sim,e=>frames.push(e));const first=frames.find(x=>x.side==='ai');visual=first?structuredClone(first.before):structuredClone(sim);show();el('phase').textContent='对手换人阶段';await wait(650); }
     const group=frames.filter(x=>x.side===side); let ghosts=[];
     for(const f of group){
       visual=structuredClone(f.before);for(const x of ghosts){visual.sides[x.side].slots[x.pos]=x.id;visual.units[x.id]=structuredClone(x.unit);}
@@ -45,11 +46,11 @@ el('start').onclick=()=>run(()=>{selected=null;start(g);});el('end').onclick=asy
       const targetSide=side==='player'?'ai':'player', target=f.before.sides[targetSide].slots[f.lane-1];
       visual=structuredClone(f.after);for(const x of ghosts){visual.sides[x.side].slots[x.pos]=x.id;visual.units[x.id]=structuredClone(x.unit);}
       if(target && !f.after.sides[targetSide].slots[f.lane-1]){const unit=structuredClone(f.after.units[target]);visual.sides[targetSide].slots[f.lane-1]=target;ghosts.push({side:targetSide,pos:f.lane-1,id:target,unit});}
-      effect={side,lane:f.lane,hit:!!target,stage:'impact',damage:target?f.before.units[target].hp-f.after.units[target].hp:0};show();await wait(500);
+      effect={side,lane:f.lane,hit:!!target,stage:'impact',damage:target?f.before.units[target].hp-f.after.units[target].hp:0};show();if(!target){document.body.classList.remove('score-shake');void document.body.offsetWidth;document.body.classList.add('score-shake');const fx=add(document.body,'div','score-burst','胜利点 +1');setTimeout(()=>fx.remove(),800);}await wait(500);
     }
     if(group.length && ghosts.length){ effect=null; show(); document.querySelectorAll('.pending-defeat').forEach(n=>n.classList.add('perform-defeat')); await wait(400); }
   }
-  g=sim;visual=null;effect=null;playing=false;feedback='';show();
+  g=sim;visual=null;effect=null;playing=false;feedback='';show();if(g.winner){const overlay=add(document.body,'div','result-overlay');add(overlay,'strong','',g.winner==='player'?'胜 利':'败 北');const close=add(overlay,'button','primary','返回战场');close.onclick=()=>overlay.remove();}
 };el('reset').onclick=()=>{if(g.phase!=='deployment'&&!g.winner&&!confirm('确定重新开始？当前对局进度将丢失。'))return;g=createGame();selected=null;feedback='';show();};el('cancel').onclick=()=>{selected=null;feedback='';show();};show();
 
 function beginDrag(e,p,button){
