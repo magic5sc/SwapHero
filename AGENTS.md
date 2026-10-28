@@ -11,3 +11,15 @@ Owner and developer TODO: https://app.notion.com/p/406e7ee349ad81dba957ccd117266
 Architecture: https://app.notion.com/p/406e7ee349ad810b8037c980ff2423f9
 
 Run relevant checks, currently `node --test test/*.test.mjs`. Report what was actually tested and any limits. After changes, maintain the Wiki's separate owner/developer TODOs, implementation record and continuation prompt. For web changes, update the existing private test site through the supported workflow, preserving access. Follow the current user's instructions and runtime permissions.
+
+## Project-specific rules and status
+
+- V1 is a browser-based local player-versus-AI battle; online multiplayer is later. Use the permitted low-attack, high-health, ability-free placeholder cards until card ambiguities are resolved.
+- Each side has three field positions and five reserve positions. The prototype presents enemy reserve, enemy field, player field and player reserve vertically. Current left-to-right numbering is not yet a confirmed spatial mapping.
+- Player acts first. When a side has a vacant field slot, a reserve unit and action points, it must reinforce before ending its turn. Each reinforcement costs one point; leave remaining vacancies when points run out. Bench swaps cost no points and do not emit entry/exit triggers.
+- Units entering the field cannot attack that turn, except those with agility. Agility is confirmed but not yet implemented. Attacks resolve in position order 3→2→1; damage and empty-lane scoring use the opposing lane at damage resolution.
+- Five victory points wins; the agreed all-units-defeated loss and no-progress draw must be handled according to the current confirmed Wiki rules. Automatic draw and complex effects are not complete.
+- Attack and hit presentation are sequential; a defeated card's disappearance is visually delayed until the attack presentation ends. Preserve the distinction between animation and rule resolution.
+- Current prototype has basic AI and no complete ability/effect system. Prioritize verifying a complete placeholder match, action/animation lock, swapping and desktop/mobile input. Do not report unexecuted browser or device tests as passed.
+
+Read current Wiki state before development; this file is a concise fallback, not proof that unresolved rules are settled.
