@@ -15,7 +15,7 @@ export function artForUnit(id){if(typeof id==='object'){if(id.art?.character){co
 export function makeSprite(className, art){
   const sprite=document.createElement('span');
   sprite.className='atlas-sprite '+className;
-  if(art.renderer==='sequence_builtin'){mountSequence(sprite);return sprite;}
+  if(art.renderer==='sequence_builtin'){mountSequence(sprite,art.key);return sprite;}
   sprite.style.backgroundPosition=art.x+'% '+art.y+'%';
   sprite.dataset.art=art.key; if(art.animations){sprite.dataset.idle=art.animations.idle;sprite.dataset.attack=art.animations.attack;}
   sprite.setAttribute('aria-hidden','true');

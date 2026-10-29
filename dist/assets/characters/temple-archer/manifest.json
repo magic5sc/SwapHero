@@ -1,0 +1,65 @@
+{
+  "version": 2,
+  "source": "approved temple archer v3",
+  "frame_size": [
+    192,
+    192
+  ],
+  "belt_anchor": [
+    96,
+    92
+  ],
+  "foot_lock": "both feet, all idle and attack frames",
+  "lower_body_lock_box": [
+    38,
+    97,
+    115,
+    192
+  ],
+  "game_runtime_verified": false,
+  "status": "user approved animations-v2; integrated selectable character",
+  "animations": {
+    "idle": {
+      "frames": [
+        "idle/00.png",
+        "idle/01.png",
+        "idle/02.png",
+        "idle/03.png",
+        "idle/04.png",
+        "idle/05.png"
+      ],
+      "durations_ms": [
+        400,
+        300,
+        300,
+        400,
+        300,
+        300
+      ],
+      "foot_pixel_equality": true
+    },
+    "attack": {
+      "frames": [
+        "attack/00.png",
+        "attack/01.png",
+        "attack/02.png",
+        "attack/03.png",
+        "attack/04.png",
+        "attack/05.png",
+        "attack/06.png",
+        "attack/07.png"
+      ],
+      "durations_ms": [
+        150,
+        140,
+        180,
+        260,
+        80,
+        130,
+        180,
+        200
+      ],
+      "foot_pixel_equality": true
+    }
+  }
+}
