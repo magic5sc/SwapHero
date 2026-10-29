@@ -1,10 +1,11 @@
 {
-  "version": "0.4.0",
+  "version": "0.4.1",
   "art": "approved-sky-islands",
-  "date": "2026-10-29",
+  "date": "2026-10-30",
   "features": [
     "configurable-victory",
     "three-reserve-lanes",
-    "rear-unit-targets"
+    "rear-unit-targets",
+    "temple-swordsman-sequences"
   ]
 }

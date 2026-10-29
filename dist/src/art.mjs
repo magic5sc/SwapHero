@@ -1,3 +1,4 @@
+import {mountSequence} from './sequence-art.mjs';
 import {makeParticleEffect} from './particle-fx.mjs';
 import './spine-art.mjs';
 // Cosmetic assets only. Unit statistics and rules stay in battle.mjs.
@@ -10,10 +11,11 @@ export const heroArt = [
   {key:'penguin',label:'皇冠企鹅',x:50,y:100},
   {key:'dragon',label:'赤翼幼龙',x:100,y:100}
 ];
-export function artForUnit(id){if(typeof id==='object'){if(id.art?.character){const c=id.art.character;return {...heroArt.find(a=>a.key===c.rig),animations:c.animations};}id=id.id;}return heroArt[(Number(String(id).match(/\d+/)?.[0]||1)-1)%heroArt.length];}
+export function artForUnit(id){if(typeof id==='object'){if(id.art?.character){const c=id.art.character;return c.renderer==='sequence_builtin'?{key:c.rig,renderer:c.renderer,animations:c.animations}:{...heroArt.find(a=>a.key===c.rig),animations:c.animations};}id=id.id;}return heroArt[(Number(String(id).match(/\d+/)?.[0]||1)-1)%heroArt.length];}
 export function makeSprite(className, art){
   const sprite=document.createElement('span');
   sprite.className='atlas-sprite '+className;
+  if(art.renderer==='sequence_builtin'){mountSequence(sprite);return sprite;}
   sprite.style.backgroundPosition=art.x+'% '+art.y+'%';
   sprite.dataset.art=art.key; if(art.animations){sprite.dataset.idle=art.animations.idle;sprite.dataset.attack=art.animations.attack;}
   sprite.setAttribute('aria-hidden','true');

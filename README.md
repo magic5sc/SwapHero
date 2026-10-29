@@ -1,5 +1,9 @@
 # SwapHero
 
+## Temple swordsman — 0.4.1
+
+The editor's character selector includes 教会卫队剑士 (`temple_swordsman`), using approved idle v2 and attack v3 sprite sequences. Existing drafts receive the built-in choice without replacing their definitions. Choose the character, save/export the card, and use the editor playtest to try it; existing cards keep their previous artwork. Runtime sheets and timing metadata are in `dist/assets/characters/temple-swordsman/`. Frames use a 192×192 transparent canvas, nearest-neighbor drawing, a 2-second idle loop and a 1.24-second single attack with impact at 640ms. Local art experiments are excluded from the runtime source.
+
 Canonical project source: https://github.com/magic5sc/SwapHero
 Private test site: https://swaphero-play.lamentkddesign.chatgpt.site
 Rules: https://app.notion.com/p/406e7ee349ad81c2a7ecfdc573c7c606

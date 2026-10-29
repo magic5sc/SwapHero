@@ -90,11 +90,12 @@ el('start').onclick=()=>run(()=>{selected=null;start(g);});el('end').onclick=asy
     const group=frames.filter(x=>x.side===side); let ghosts=[];
     for(const f of group){
       visual=structuredClone(f.before);for(const x of ghosts){visual.sides[x.side].slots[x.pos]=x.id;visual.units[x.id]=structuredClone(x.unit);}
-      effect={side,lane:f.lane,hit:false,stage:'attack'};show();await wait(360);
+      const sequenceAttack=f.before.units[f.before.sides[side].slots[f.lane-1]]?.art?.character?.renderer==='sequence_builtin';
+      effect={side,lane:f.lane,hit:false,stage:'attack'};show();await wait(sequenceAttack?640:360);
       const targetSide=side==='player'?'ai':'player', target=f.before.sides[targetSide].slots[f.lane-1];
       visual=structuredClone(f.after);for(const x of ghosts){visual.sides[x.side].slots[x.pos]=x.id;visual.units[x.id]=structuredClone(x.unit);}
       if(target && !f.after.sides[targetSide].slots[f.lane-1]){const unit=structuredClone(f.after.units[target]);visual.sides[targetSide].slots[f.lane-1]=target;ghosts.push({side:targetSide,pos:f.lane-1,id:target,unit});}
-      effect={side,lane:f.lane,hit:!!target,stage:'impact',attackEffect:f.before.units[f.before.sides[side].slots[f.lane-1]]?.art?.attackEffect,damage:target?f.before.units[target].hp-f.after.units[target].hp:0};show();if(!target){document.body.classList.remove('score-shake');void document.body.offsetWidth;document.body.classList.add('score-shake');const fx=add(document.body,'div','score-burst','胜利点 +1');setTimeout(()=>fx.remove(),800);}await wait(500);
+      effect={side,lane:f.lane,hit:!!target,stage:'impact',attackEffect:f.before.units[f.before.sides[side].slots[f.lane-1]]?.art?.attackEffect,damage:target?f.before.units[target].hp-f.after.units[target].hp:0};show();if(!target){document.body.classList.remove('score-shake');void document.body.offsetWidth;document.body.classList.add('score-shake');const fx=add(document.body,'div','score-burst','胜利点 +1');setTimeout(()=>fx.remove(),800);}await wait(sequenceAttack?600:500);
     }
     if(group.length && ghosts.length){ effect=null; show(); document.querySelectorAll('.pending-defeat').forEach(n=>n.classList.add('perform-defeat')); await wait(400); }
   }

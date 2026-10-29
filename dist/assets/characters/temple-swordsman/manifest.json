@@ -1,0 +1,73 @@
+{
+  "source": "approved temple swordsman v2",
+  "approval": "User: 很好，做它的待机和攻击动画，直接使用序列帧吧",
+  "frame_size": [
+    192,
+    192
+  ],
+  "anchor": [
+    96,
+    174
+  ],
+  "palette_max": 24,
+  "alpha": [
+    0,
+    255
+  ],
+  "animations": {
+    "idle": {
+      "frames": [
+        "idle/00.png",
+        "idle/01.png",
+        "idle/02.png",
+        "idle/03.png",
+        "idle/04.png",
+        "idle/05.png"
+      ],
+      "durations_ms": [
+        400,
+        300,
+        300,
+        400,
+        300,
+        300
+      ],
+      "loop": true
+    },
+    "attack": {
+      "frames": [
+        "attack/00.png",
+        "attack/01.png",
+        "attack/02.png",
+        "attack/03.png",
+        "attack/04.png",
+        "attack/05.png",
+        "attack/06.png",
+        "attack/07.png"
+      ],
+      "durations_ms": [
+        180,
+        100,
+        140,
+        220,
+        60,
+        130,
+        160,
+        250
+      ],
+      "loop": false
+    }
+  },
+  "status": "idle v2 approved; attack v3 awaiting review",
+  "game_runtime_verified": false,
+  "attack_frame_mapping": [
+    "old1",
+    "new transition",
+    "old2",
+    "old3",
+    "old5",
+    "old6",
+    "old7",
+    "old8"
+  ]
+}
