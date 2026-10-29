@@ -1,5 +1,5 @@
 {
-  "version": "0.5.1",
+  "version": "0.5.2",
   "art": "approved-sky-islands",
   "date": "2026-10-30",
   "features": [
@@ -7,6 +7,7 @@
     "three-reserve-lanes",
     "rear-unit-targets",
     "temple-swordsman-sequences",
-    "temple-archer-sequences"
+    "temple-archer-sequences",
+    "temple-knight-sequences"
   ]
 }

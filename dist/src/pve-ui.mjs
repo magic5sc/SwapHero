@@ -4,7 +4,8 @@ import {makeSprite,artForUnit} from './art.mjs';
 const root=document.getElementById('adventure'),KEY='swaphero.adventure.v1';
 let run=null,pack=null,notice='',storageError='',savedText=null;
 const names={combat:'普通战斗',elite:'精英战斗',shop:'商店',event:'未知事件',camp:'营地',boss:'章节 Boss'};
-const icons={combat:'⚔',elite:'◆',shop:'▣',event:'?',camp:'♨',boss:'♛'};
+const MAP_ART='assets/chapter-map/';
+function mapIcon(parent,type){const image=el('img','map-icon',undefined,parent);image.src=MAP_ART+type+'.svg';image.alt='';image.draggable=false;return image;}
 const el=(tag,cls,text,parent=root)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;parent.append(e);return e;};
 function button(parent,text,fn,cls='',disabled=false){const b=el('button',cls,text,parent);b.type='button';b.disabled=disabled;b.onclick=()=>act(fn);return b;}
 function save(){if(!run)return;try{const raw=encodeRun(run);if(raw!==savedText){localStorage.setItem(KEY,raw);savedText=raw;}storageError='';}catch(e){storageError='保存失败：'+e.message+'。请导出存档备份。';}}
@@ -18,18 +19,26 @@ function teamPanel(parent){
  const panel=el('section','pve-team',undefined,parent);el('h2','','远征队伍 '+run.team.length+' / 6',panel);
  el('p','muted','阵亡仍占队伍名额；节点间保留伤亡。',panel);
  const list=el('div','team-list',undefined,panel);
- for(const u of run.team){const box=el('article','pve-unit'+(u.hp===0?' fallen':''),undefined,list);box.append(makeSprite('pve-portrait',artForUnit(u)));el('h3','',u.name,box);el('small','',u.cardId===run.pack.hero?'主角 · 不可离队':u.hp===0?'已阵亡':'队友',box);el('p','',`⚔ ${u.baseAttack}　♥ ${u.hp} / ${u.maxHp}`,box);for(const s of u.skills)el('p','skill-tag',`${s.definition.name} Lv.${s.level} · ${s.definition.levels[s.level].amount}`,box);}
+ for(const u of run.team){const box=el('article','pve-unit'+(u.hp===0?' fallen':''),undefined,list);box.append(makeSprite('pve-portrait',artForUnit(u)));el('h3','',u.name,box);el('small','',u.cardId===run.pack.hero?'主角 · 不可离队':u.hp===0?'已阵亡':'队友',box);el('p','',`⚔ ${u.baseAttack}　♥ ${u.hp} / ${u.maxHp}`,box);const hp=el('div','pve-health',undefined,box);hp.setAttribute('role','meter');hp.setAttribute('aria-label',u.name+'生命');hp.setAttribute('aria-valuemin','0');hp.setAttribute('aria-valuemax',String(u.maxHp));hp.setAttribute('aria-valuenow',String(u.hp));el('span','',undefined,hp).style.width=Math.max(0,Math.min(100,u.hp/u.maxHp*100))+'%';for(const s of u.skills)el('p','skill-tag',`${s.definition.name} Lv.${s.level} · ${s.definition.levels[s.level].amount}`,box);}
  if(run.departed.length){const d=el('details','',undefined,panel);el('summary','',`离队档案 · ${run.departed.length} 人`,d);for(const u of run.departed)el('p','',`${u.name} · ${u.hp}/${u.maxHp} · 保留技能和强化，本期不可换回`,d);}
 }
 function mapPanel(parent){
- const section=el('section','map-panel',undefined,parent);el('h2','',run.pack.chapters[run.chapter].name,section);el('p','muted','从下向上选择连线节点。进入后路线锁定；Boss 前可休整。',section);
- const scroller=el('div','map-scroll',undefined,section),map=el('div','route-map',undefined,scroller);const height=(run.map.layers+1)*82+36;map.style.height=height+'px';
- const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox',`0 0 700 ${height}`);svg.setAttribute('preserveAspectRatio','none');svg.classList.add('route-lines');map.append(svg);
- for(const n of run.map.nodes)for(const id of n.next){const to=run.map.nodes.find(x=>x.id===id),line=document.createElementNS(svg.namespaceURI,'line');line.setAttribute('x1',String(n.col*100+50));line.setAttribute('y1',String(height-n.row*82-48));line.setAttribute('x2',String(to.col*100+50));line.setAttribute('y2',String(height-to.row*82-48));if(run.visited.includes(n.id)&&run.visited.includes(id))line.classList.add('travelled');svg.append(line);}
+ const section=el('section','map-panel',undefined,parent);
+ const heading=el('div','atlas-heading',undefined,section);el('small','atlas-kicker','EXPEDITION ATLAS',heading);el('h2','',run.pack.chapters[run.chapter].name,heading);
+ el('p','muted','沿航图向上探索，选择亮起的下一站。',heading);
+ const controls=el('div','atlas-controls',undefined,section);el('span','route-status-key','◇ 当前位置　◉ 可前往　✓ 已探索',controls);
+ const scroller=el('div','map-scroll',undefined,section);scroller.tabIndex=0;scroller.setAttribute('aria-label','章节航图，可滚动查看全部路线');
+ const map=el('div','route-map',undefined,scroller),step=102,height=(run.map.layers+1)*step+92;map.style.height=height+'px';
+ const x=n=>110+n.col*80,y=n=>height-n.row*step-70;
+ const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox',`0 0 700 ${height}`);svg.setAttribute('preserveAspectRatio','none');svg.classList.add('route-lines');svg.setAttribute('aria-hidden','true');map.append(svg);
  const available=availableNodes(run);
- for(const n of run.map.nodes){const active=run.status==='map'&&available.includes(n.id),b=button(map,icons[n.type],()=>{enterNode(run,n.id);if(run.status==='battle')showBattle();},'map-node '+n.type+(active?' available':'')+(run.visited.includes(n.id)?' visited':'')+(run.current===n.id?' current':''),!active);b.style.left=`${(n.col+.5)/7*100}%`;b.style.top=height-n.row*82-48+'px';b.title=`第${n.row+1}层 · ${names[n.type]}`;b.setAttribute('aria-label',b.title+(active?'，可前往':''));el('span','node-label',names[n.type],b);}
- const legend=el('div','map-legend',undefined,section);for(const t of Object.keys(names))el('span','',icons[t]+' '+names[t],legend);
- requestAnimationFrame(()=>{const n=run.map.nodes.find(n=>n.id===run.current);scroller.scrollTop=height-(n?.row||0)*82-scroller.clientHeight+30;});
+ for(const n of run.map.nodes)for(const id of n.next){const to=run.map.nodes.find(x=>x.id===id),line=document.createElementNS(svg.namespaceURI,'line');line.setAttribute('x1',String(x(n)));line.setAttribute('y1',String(y(n)));line.setAttribute('x2',String(x(to)));line.setAttribute('y2',String(y(to)));if(run.visited.includes(n.id)&&run.visited.includes(id))line.classList.add('travelled');else if(n.id===run.current&&available.includes(id))line.classList.add('reachable');svg.append(line);}
+ for(const n of run.map.nodes){const active=run.status==='map'&&available.includes(n.id),current=run.current===n.id,visited=run.visited.includes(n.id),b=button(map,'',()=>{enterNode(run,n.id);if(run.status==='battle')showBattle();},'map-node '+n.type+(active?' available':'')+(visited?' visited':'')+(current?' current':''),!active);b.style.left=`${x(n)/700*100}%`;b.style.top=y(n)+'px';mapIcon(b,n.type);b.title=`第${n.row+1}层 · ${names[n.type]}`;b.setAttribute('aria-label',b.title+(current?'，当前位置':active?'，可前往':visited?'，已探索':'，未到达'));if(current)b.setAttribute('aria-current','step');el('span','node-label',names[n.type],b);}
+ const compass=el('img','atlas-compass',undefined,map);compass.src=MAP_ART+'compass.svg';compass.alt='';
+ const focusCurrent=()=>{const n=run.map.nodes.find(n=>n.id===run.current);scroller.scrollTop=y(n||{row:0})-scroller.clientHeight*.75;};
+ button(controls,'定位当前路线',focusCurrent,'atlas-locate');
+ const legend=el('div','map-legend',undefined,section);for(const t of Object.keys(names)){const item=el('span','legend-item',undefined,legend);mapIcon(item,t);el('span','',names[t],item);}
+ requestAnimationFrame(focusCurrent);
 }
 function rewardDescription(item){if(item.type==='character'){const c=run.pack.cards.find(c=>c.card_id===item.id);return `加入队伍 · 攻击 ${c.attack} / 生命 ${c.health}`;}if(item.type==='skill'){const s=run.pack.skills.find(s=>s.skill_id===item.id),u=run.team.find(u=>u.cardId===s.owner),old=u?.skills.find(b=>b.slotId===s.slot);const effect=s.rules[0].effects[0];return `${u?.name} · ${{attack_declared:'攻击时',unit_enter:'入场时',unit_leave:'离场时'}[s.slot]} · ${{deal_damage:effect.target==='all_enemies'?'所有敌方场上单位技能伤害':'对位技能伤害',heal:'治疗自己',modify_attack:'本回合加攻'}[effect.op]} ${s.levels[1].amount}${old?'；替换并弃置「'+old.definition.name+'」':''}`;}const b=run.pack.config.buffs.find(b=>b.id===item.id);return `本周目永久强化：攻击 +${b.attack} / 最大生命 +${b.hp}（不回复生命）`;}
 function rewardCard(parent,item,onClaim,price,disabled=false){const card=el('article','reward-card quality-'+item.quality,undefined,parent);el('small','quality',QUALITY[item.quality]+' · '+{character:'角色',skill:'技能',buff:'数值强化'}[item.type],card);el('h3','',item.name,card);el('p','',rewardDescription(item),card);let target=null,replacement=null;
@@ -60,7 +69,7 @@ function roomPanel(parent){const box=el('section','room-panel',undefined,parent)
  button(box,'离开，继续选路',()=>leaveRoom(run),'primary');
 }
 function render(){
- root.replaceChildren();const header=el('header','pve-header');const title=el('div','',undefined,header);el('small','eyebrow','SWAPHERO · 浮岛远征',title);el('h1','','每一次换位，都是新的旅途',title);el('p','muted','PvE 主流程 · 单章测试版 0.5.0',title);
+ root.replaceChildren();const header=el('header','pve-header');const title=el('div','',undefined,header);el('small','eyebrow','SWAPHERO · 浮岛远征',title);el('h1','','每一次换位，都是新的旅途',title);el('p','muted','冒险航图 · 单章测试版 0.5.2',title);
  const nav=el('nav','',undefined,header);if(run){button(nav,'导出存档',exportSave);button(nav,'新周目',begin);}button(nav,'导入存档',importSave);const link=el('a','ghost','单场对战',nav);link.href='duel.html';
  if(notice||storageError)el('p','pve-alert',notice||storageError);
  if(!pack){el('p','pve-alert','正在读取冒险内容……');return;}

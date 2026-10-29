@@ -1,5 +1,5 @@
 export const timings={idle:[400,300,300,400,300,300],attack:[180,100,140,220,60,130,160,250]};
-export const sequences={temple_swordsman:{folder:'temple-swordsman',timings},temple_archer:{folder:'temple-archer',timings:{idle:[400,300,300,400,300,300],attack:[150,140,180,260,80,130,180,200]}}};
+export const sequences={temple_knight:{folder:'temple-knight',timings:{idle:[400,300,300,400,300,300],attack:[180,260,100,180,240,300]}},temple_swordsman:{folder:'temple-swordsman',timings},temple_archer:{folder:'temple-archer',timings:{idle:[400,300,300,400,300,300],attack:[150,140,180,260,80,130,180,200]}}};
 export function frameAt(motion,elapsed,rig='temple_swordsman'){const times=sequences[rig].timings[motion],total=times.reduce((a,b)=>a+b,0);let t=motion==='idle'?elapsed%total:Math.min(elapsed,total-1);for(let i=0;i<times.length;i++){if(t<times[i])return i;t-=times[i];}return times.length-1;}
 const states=new Map(),images={};let running=false;
 export function mountSequence(node,rig='temple_swordsman'){
