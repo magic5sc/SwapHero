@@ -1,5 +1,11 @@
 # SwapHero
 
+## PvE expedition — 0.5.0
+
+`dist/index.html` is now the PvE single-chapter flow; `dist/duel.html` retains single matches. Start alone, choose a seeded path, recruit and grow a team, manage persistent wounds, and defeat the chapter Boss. Export/import adventure saves for manual cross-device continuation. Only chapter 1 is playable; chapters 2/3, artifacts and meta progression are not implemented. The isolated content pack is explicitly test balance. See [implementation and test assumptions](docs/PVE-0.5.0.md).
+
+Latest PvE rule: simultaneous defeat means player loss after the full trigger chain. Legacy duel rules are unchanged.
+
 ## Temple swordsman — 0.4.1
 
 The editor's character selector includes 教会卫队剑士 (`temple_swordsman`), using approved idle v2 and attack v3 sprite sequences. Existing drafts receive the built-in choice without replacing their definitions. Choose the character, save/export the card, and use the editor playtest to try it; existing cards keep their previous artwork. Runtime sheets and timing metadata are in `dist/assets/characters/temple-swordsman/`. Frames use a 192×192 transparent canvas, nearest-neighbor drawing, a 2-second idle loop and a 1.24-second single attack with impact at 640ms. Local art experiments are excluded from the runtime source.

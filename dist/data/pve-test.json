@@ -1,0 +1,1689 @@
+{
+  "schema_version": 1,
+  "version": "pve-test-0.5.0",
+  "cards": [
+    {
+      "card_id": "test_hero",
+      "name": "旅途剑士 · 测试",
+      "category": "test",
+      "attack": 3,
+      "health": 32,
+      "art_id": null,
+      "status": "specified",
+      "blockers": [],
+      "quality": "common",
+      "gold_only": false,
+      "slots": [
+        {
+          "slot_id": "attack_declared",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "unit_enter",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "unit_leave",
+          "type": "skill",
+          "capacity": 1
+        }
+      ],
+      "skills": [
+        {
+          "slot_id": "attack_declared",
+          "skill_id": "test_hero_strike",
+          "level": 1
+        }
+      ]
+    },
+    {
+      "card_id": "test_ally_1",
+      "name": "巡林客 · 测试",
+      "category": "test",
+      "attack": 2,
+      "health": 18,
+      "art_id": null,
+      "status": "specified",
+      "blockers": [],
+      "quality": "common",
+      "gold_only": false,
+      "slots": [
+        {
+          "slot_id": "attack_declared",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "unit_enter",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "unit_leave",
+          "type": "skill",
+          "capacity": 1
+        }
+      ],
+      "skills": []
+    },
+    {
+      "card_id": "test_ally_2",
+      "name": "晨光医者 · 测试",
+      "category": "test",
+      "attack": 2,
+      "health": 18,
+      "art_id": null,
+      "status": "specified",
+      "blockers": [],
+      "quality": "rare",
+      "gold_only": false,
+      "slots": [
+        {
+          "slot_id": "attack_declared",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "unit_enter",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "unit_leave",
+          "type": "skill",
+          "capacity": 1
+        }
+      ],
+      "skills": []
+    },
+    {
+      "card_id": "test_ally_3",
+      "name": "守桥人 · 测试",
+      "category": "test",
+      "attack": 2,
+      "health": 18,
+      "art_id": null,
+      "status": "specified",
+      "blockers": [],
+      "quality": "common",
+      "gold_only": false,
+      "slots": [
+        {
+          "slot_id": "attack_declared",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "unit_enter",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "unit_leave",
+          "type": "skill",
+          "capacity": 1
+        }
+      ],
+      "skills": []
+    },
+    {
+      "card_id": "test_ally_4",
+      "name": "风羽斥候 · 测试",
+      "category": "test",
+      "attack": 2,
+      "health": 18,
+      "art_id": null,
+      "status": "specified",
+      "blockers": [],
+      "quality": "rare",
+      "gold_only": false,
+      "slots": [
+        {
+          "slot_id": "attack_declared",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "unit_enter",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "unit_leave",
+          "type": "skill",
+          "capacity": 1
+        }
+      ],
+      "skills": []
+    },
+    {
+      "card_id": "test_ally_5",
+      "name": "赤焰学徒 · 测试",
+      "category": "test",
+      "attack": 2,
+      "health": 18,
+      "art_id": null,
+      "status": "specified",
+      "blockers": [],
+      "quality": "epic",
+      "gold_only": false,
+      "slots": [
+        {
+          "slot_id": "attack_declared",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "unit_enter",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "unit_leave",
+          "type": "skill",
+          "capacity": 1
+        }
+      ],
+      "skills": []
+    },
+    {
+      "card_id": "test_ally_6",
+      "name": "山岭卫士 · 测试",
+      "category": "test",
+      "attack": 2,
+      "health": 18,
+      "art_id": null,
+      "status": "specified",
+      "blockers": [],
+      "quality": "common",
+      "gold_only": false,
+      "slots": [
+        {
+          "slot_id": "attack_declared",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "unit_enter",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "unit_leave",
+          "type": "skill",
+          "capacity": 1
+        }
+      ],
+      "skills": []
+    },
+    {
+      "card_id": "test_ally_7",
+      "name": "星泉术士 · 测试",
+      "category": "test",
+      "attack": 2,
+      "health": 18,
+      "art_id": null,
+      "status": "specified",
+      "blockers": [],
+      "quality": "legendary",
+      "gold_only": true,
+      "slots": [
+        {
+          "slot_id": "attack_declared",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "unit_enter",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "unit_leave",
+          "type": "skill",
+          "capacity": 1
+        }
+      ],
+      "skills": []
+    },
+    {
+      "card_id": "test_scout",
+      "name": "浮岛哨兵 · 测试",
+      "category": "test",
+      "attack": 1,
+      "health": 6,
+      "art_id": null,
+      "status": "specified",
+      "blockers": [],
+      "slots": [],
+      "skills": []
+    },
+    {
+      "card_id": "test_guard",
+      "name": "遗迹守卫 · 测试",
+      "category": "test",
+      "attack": 2,
+      "health": 12,
+      "art_id": null,
+      "status": "specified",
+      "blockers": [],
+      "slots": [],
+      "skills": []
+    },
+    {
+      "card_id": "test_elite",
+      "name": "裂隙精英 · 测试",
+      "category": "test",
+      "attack": 2,
+      "health": 20,
+      "art_id": null,
+      "status": "specified",
+      "blockers": [],
+      "slots": [],
+      "skills": []
+    },
+    {
+      "card_id": "test_boss",
+      "name": "第一章·守门巨像 · 测试",
+      "category": "test",
+      "attack": 3,
+      "health": 38,
+      "art_id": null,
+      "status": "specified",
+      "blockers": [],
+      "slots": [],
+      "skills": []
+    }
+  ],
+  "skills": [
+    {
+      "skill_id": "test_hero_strike",
+      "owner": "test_hero",
+      "slot": "attack_declared",
+      "name": "横扫",
+      "quality": "common",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 1
+        },
+        "2": {
+          "amount": 2
+        },
+        "3": {
+          "amount": 3
+        }
+      },
+      "rules": [
+        {
+          "event": "attack_declared",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "deal_damage",
+              "target": "all_enemies",
+              "amount": "amount",
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": "skill"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_hero_focus",
+      "owner": "test_hero",
+      "slot": "attack_declared",
+      "name": "回旋斩",
+      "quality": "rare",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 2
+        },
+        "2": {
+          "amount": 3
+        },
+        "3": {
+          "amount": 4
+        }
+      },
+      "rules": [
+        {
+          "event": "attack_declared",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "deal_damage",
+              "target": "all_enemies",
+              "amount": "amount",
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": "skill"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_hero_arrival",
+      "owner": "test_hero",
+      "slot": "unit_enter",
+      "name": "入场冲击",
+      "quality": "epic",
+      "gold_only": true,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 2
+        },
+        "2": {
+          "amount": 3
+        },
+        "3": {
+          "amount": 5
+        }
+      },
+      "rules": [
+        {
+          "event": "unit_enter",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "deal_damage",
+              "target": "opposing_unit",
+              "amount": "amount",
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": "skill"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_hero_rest",
+      "owner": "test_hero",
+      "slot": "unit_leave",
+      "name": "退场休整",
+      "quality": "rare",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 3
+        },
+        "2": {
+          "amount": 5
+        },
+        "3": {
+          "amount": 7
+        }
+      },
+      "rules": [
+        {
+          "event": "unit_leave",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "heal",
+              "target": "self",
+              "amount": "amount",
+              "duration": null,
+              "zone": "any"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_1_strike",
+      "owner": "test_ally_1",
+      "slot": "attack_declared",
+      "name": "追击斩",
+      "quality": "common",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 1
+        },
+        "2": {
+          "amount": 2
+        },
+        "3": {
+          "amount": 3
+        }
+      },
+      "rules": [
+        {
+          "event": "attack_declared",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "deal_damage",
+              "target": "opposing_unit",
+              "amount": "amount",
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": "skill"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_1_focus",
+      "owner": "test_ally_1",
+      "slot": "attack_declared",
+      "name": "蓄势",
+      "quality": "rare",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 2
+        },
+        "2": {
+          "amount": 3
+        },
+        "3": {
+          "amount": 4
+        }
+      },
+      "rules": [
+        {
+          "event": "attack_declared",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "modify_attack",
+              "target": "self",
+              "amount": "amount",
+              "duration": "turn",
+              "zone": "battlefield"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_1_arrival",
+      "owner": "test_ally_1",
+      "slot": "unit_enter",
+      "name": "入场冲击",
+      "quality": "epic",
+      "gold_only": true,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 2
+        },
+        "2": {
+          "amount": 3
+        },
+        "3": {
+          "amount": 5
+        }
+      },
+      "rules": [
+        {
+          "event": "unit_enter",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "deal_damage",
+              "target": "opposing_unit",
+              "amount": "amount",
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": "skill"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_1_rest",
+      "owner": "test_ally_1",
+      "slot": "unit_leave",
+      "name": "退场休整",
+      "quality": "rare",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 3
+        },
+        "2": {
+          "amount": 5
+        },
+        "3": {
+          "amount": 7
+        }
+      },
+      "rules": [
+        {
+          "event": "unit_leave",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "heal",
+              "target": "self",
+              "amount": "amount",
+              "duration": null,
+              "zone": "any"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_2_strike",
+      "owner": "test_ally_2",
+      "slot": "attack_declared",
+      "name": "追击斩",
+      "quality": "common",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 1
+        },
+        "2": {
+          "amount": 2
+        },
+        "3": {
+          "amount": 3
+        }
+      },
+      "rules": [
+        {
+          "event": "attack_declared",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "deal_damage",
+              "target": "opposing_unit",
+              "amount": "amount",
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": "skill"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_2_focus",
+      "owner": "test_ally_2",
+      "slot": "attack_declared",
+      "name": "蓄势",
+      "quality": "rare",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 2
+        },
+        "2": {
+          "amount": 3
+        },
+        "3": {
+          "amount": 4
+        }
+      },
+      "rules": [
+        {
+          "event": "attack_declared",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "modify_attack",
+              "target": "self",
+              "amount": "amount",
+              "duration": "turn",
+              "zone": "battlefield"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_2_arrival",
+      "owner": "test_ally_2",
+      "slot": "unit_enter",
+      "name": "入场冲击",
+      "quality": "epic",
+      "gold_only": true,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 2
+        },
+        "2": {
+          "amount": 3
+        },
+        "3": {
+          "amount": 5
+        }
+      },
+      "rules": [
+        {
+          "event": "unit_enter",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "deal_damage",
+              "target": "opposing_unit",
+              "amount": "amount",
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": "skill"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_2_rest",
+      "owner": "test_ally_2",
+      "slot": "unit_leave",
+      "name": "退场休整",
+      "quality": "rare",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 3
+        },
+        "2": {
+          "amount": 5
+        },
+        "3": {
+          "amount": 7
+        }
+      },
+      "rules": [
+        {
+          "event": "unit_leave",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "heal",
+              "target": "self",
+              "amount": "amount",
+              "duration": null,
+              "zone": "any"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_3_strike",
+      "owner": "test_ally_3",
+      "slot": "attack_declared",
+      "name": "追击斩",
+      "quality": "common",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 1
+        },
+        "2": {
+          "amount": 2
+        },
+        "3": {
+          "amount": 3
+        }
+      },
+      "rules": [
+        {
+          "event": "attack_declared",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "deal_damage",
+              "target": "opposing_unit",
+              "amount": "amount",
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": "skill"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_3_focus",
+      "owner": "test_ally_3",
+      "slot": "attack_declared",
+      "name": "蓄势",
+      "quality": "rare",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 2
+        },
+        "2": {
+          "amount": 3
+        },
+        "3": {
+          "amount": 4
+        }
+      },
+      "rules": [
+        {
+          "event": "attack_declared",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "modify_attack",
+              "target": "self",
+              "amount": "amount",
+              "duration": "turn",
+              "zone": "battlefield"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_3_arrival",
+      "owner": "test_ally_3",
+      "slot": "unit_enter",
+      "name": "入场冲击",
+      "quality": "epic",
+      "gold_only": true,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 2
+        },
+        "2": {
+          "amount": 3
+        },
+        "3": {
+          "amount": 5
+        }
+      },
+      "rules": [
+        {
+          "event": "unit_enter",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "deal_damage",
+              "target": "opposing_unit",
+              "amount": "amount",
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": "skill"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_3_rest",
+      "owner": "test_ally_3",
+      "slot": "unit_leave",
+      "name": "退场休整",
+      "quality": "rare",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 3
+        },
+        "2": {
+          "amount": 5
+        },
+        "3": {
+          "amount": 7
+        }
+      },
+      "rules": [
+        {
+          "event": "unit_leave",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "heal",
+              "target": "self",
+              "amount": "amount",
+              "duration": null,
+              "zone": "any"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_4_strike",
+      "owner": "test_ally_4",
+      "slot": "attack_declared",
+      "name": "追击斩",
+      "quality": "common",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 1
+        },
+        "2": {
+          "amount": 2
+        },
+        "3": {
+          "amount": 3
+        }
+      },
+      "rules": [
+        {
+          "event": "attack_declared",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "deal_damage",
+              "target": "opposing_unit",
+              "amount": "amount",
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": "skill"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_4_focus",
+      "owner": "test_ally_4",
+      "slot": "attack_declared",
+      "name": "蓄势",
+      "quality": "rare",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 2
+        },
+        "2": {
+          "amount": 3
+        },
+        "3": {
+          "amount": 4
+        }
+      },
+      "rules": [
+        {
+          "event": "attack_declared",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "modify_attack",
+              "target": "self",
+              "amount": "amount",
+              "duration": "turn",
+              "zone": "battlefield"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_4_arrival",
+      "owner": "test_ally_4",
+      "slot": "unit_enter",
+      "name": "入场冲击",
+      "quality": "epic",
+      "gold_only": true,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 2
+        },
+        "2": {
+          "amount": 3
+        },
+        "3": {
+          "amount": 5
+        }
+      },
+      "rules": [
+        {
+          "event": "unit_enter",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "deal_damage",
+              "target": "opposing_unit",
+              "amount": "amount",
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": "skill"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_4_rest",
+      "owner": "test_ally_4",
+      "slot": "unit_leave",
+      "name": "退场休整",
+      "quality": "rare",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 3
+        },
+        "2": {
+          "amount": 5
+        },
+        "3": {
+          "amount": 7
+        }
+      },
+      "rules": [
+        {
+          "event": "unit_leave",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "heal",
+              "target": "self",
+              "amount": "amount",
+              "duration": null,
+              "zone": "any"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_5_strike",
+      "owner": "test_ally_5",
+      "slot": "attack_declared",
+      "name": "追击斩",
+      "quality": "common",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 1
+        },
+        "2": {
+          "amount": 2
+        },
+        "3": {
+          "amount": 3
+        }
+      },
+      "rules": [
+        {
+          "event": "attack_declared",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "deal_damage",
+              "target": "opposing_unit",
+              "amount": "amount",
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": "skill"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_5_focus",
+      "owner": "test_ally_5",
+      "slot": "attack_declared",
+      "name": "蓄势",
+      "quality": "rare",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 2
+        },
+        "2": {
+          "amount": 3
+        },
+        "3": {
+          "amount": 4
+        }
+      },
+      "rules": [
+        {
+          "event": "attack_declared",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "modify_attack",
+              "target": "self",
+              "amount": "amount",
+              "duration": "turn",
+              "zone": "battlefield"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_5_arrival",
+      "owner": "test_ally_5",
+      "slot": "unit_enter",
+      "name": "入场冲击",
+      "quality": "epic",
+      "gold_only": true,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 2
+        },
+        "2": {
+          "amount": 3
+        },
+        "3": {
+          "amount": 5
+        }
+      },
+      "rules": [
+        {
+          "event": "unit_enter",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "deal_damage",
+              "target": "opposing_unit",
+              "amount": "amount",
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": "skill"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_5_rest",
+      "owner": "test_ally_5",
+      "slot": "unit_leave",
+      "name": "退场休整",
+      "quality": "rare",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 3
+        },
+        "2": {
+          "amount": 5
+        },
+        "3": {
+          "amount": 7
+        }
+      },
+      "rules": [
+        {
+          "event": "unit_leave",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "heal",
+              "target": "self",
+              "amount": "amount",
+              "duration": null,
+              "zone": "any"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_6_strike",
+      "owner": "test_ally_6",
+      "slot": "attack_declared",
+      "name": "追击斩",
+      "quality": "common",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 1
+        },
+        "2": {
+          "amount": 2
+        },
+        "3": {
+          "amount": 3
+        }
+      },
+      "rules": [
+        {
+          "event": "attack_declared",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "deal_damage",
+              "target": "opposing_unit",
+              "amount": "amount",
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": "skill"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_6_focus",
+      "owner": "test_ally_6",
+      "slot": "attack_declared",
+      "name": "蓄势",
+      "quality": "rare",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 2
+        },
+        "2": {
+          "amount": 3
+        },
+        "3": {
+          "amount": 4
+        }
+      },
+      "rules": [
+        {
+          "event": "attack_declared",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "modify_attack",
+              "target": "self",
+              "amount": "amount",
+              "duration": "turn",
+              "zone": "battlefield"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_6_arrival",
+      "owner": "test_ally_6",
+      "slot": "unit_enter",
+      "name": "入场冲击",
+      "quality": "epic",
+      "gold_only": true,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 2
+        },
+        "2": {
+          "amount": 3
+        },
+        "3": {
+          "amount": 5
+        }
+      },
+      "rules": [
+        {
+          "event": "unit_enter",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "deal_damage",
+              "target": "opposing_unit",
+              "amount": "amount",
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": "skill"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_6_rest",
+      "owner": "test_ally_6",
+      "slot": "unit_leave",
+      "name": "退场休整",
+      "quality": "rare",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 3
+        },
+        "2": {
+          "amount": 5
+        },
+        "3": {
+          "amount": 7
+        }
+      },
+      "rules": [
+        {
+          "event": "unit_leave",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "heal",
+              "target": "self",
+              "amount": "amount",
+              "duration": null,
+              "zone": "any"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_7_strike",
+      "owner": "test_ally_7",
+      "slot": "attack_declared",
+      "name": "追击斩",
+      "quality": "common",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 1
+        },
+        "2": {
+          "amount": 2
+        },
+        "3": {
+          "amount": 3
+        }
+      },
+      "rules": [
+        {
+          "event": "attack_declared",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "deal_damage",
+              "target": "opposing_unit",
+              "amount": "amount",
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": "skill"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_7_focus",
+      "owner": "test_ally_7",
+      "slot": "attack_declared",
+      "name": "蓄势",
+      "quality": "rare",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 2
+        },
+        "2": {
+          "amount": 3
+        },
+        "3": {
+          "amount": 4
+        }
+      },
+      "rules": [
+        {
+          "event": "attack_declared",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "modify_attack",
+              "target": "self",
+              "amount": "amount",
+              "duration": "turn",
+              "zone": "battlefield"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_7_arrival",
+      "owner": "test_ally_7",
+      "slot": "unit_enter",
+      "name": "入场冲击",
+      "quality": "epic",
+      "gold_only": true,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 2
+        },
+        "2": {
+          "amount": 3
+        },
+        "3": {
+          "amount": 5
+        }
+      },
+      "rules": [
+        {
+          "event": "unit_enter",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "deal_damage",
+              "target": "opposing_unit",
+              "amount": "amount",
+              "duration": null,
+              "zone": "battlefield",
+              "damage_type": "skill"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "skill_id": "test_ally_7_rest",
+      "owner": "test_ally_7",
+      "slot": "unit_leave",
+      "name": "退场休整",
+      "quality": "rare",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "amount": 3
+        },
+        "2": {
+          "amount": 5
+        },
+        "3": {
+          "amount": 7
+        }
+      },
+      "rules": [
+        {
+          "event": "unit_leave",
+          "subject": "self",
+          "effects": [
+            {
+              "op": "heal",
+              "target": "self",
+              "amount": "amount",
+              "duration": null,
+              "zone": "any"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "hero": "test_hero",
+  "recruits": [
+    "test_ally_1",
+    "test_ally_2",
+    "test_ally_3",
+    "test_ally_4",
+    "test_ally_5",
+    "test_ally_6",
+    "test_ally_7"
+  ],
+  "chapters": [
+    {
+      "id": "island",
+      "name": "第一章 · 浮岛遗迹",
+      "layers": 15,
+      "available": true
+    },
+    {
+      "id": "chapter_2",
+      "name": "第二章",
+      "layers": 14,
+      "available": false
+    },
+    {
+      "id": "chapter_3",
+      "name": "chapter 3",
+      "layers": 13,
+      "available": false
+    }
+  ],
+  "config": {
+    "label": "测试配置 v1（非最终平衡）",
+    "initialGold": 35,
+    "combatGold": 15,
+    "eliteGold": 30,
+    "healPrice": 15,
+    "revivePrice": 25,
+    "upgradePrice": 25,
+    "recruitPrice": 25,
+    "skillPrice": 20,
+    "healAmount": 12,
+    "campActions": 1,
+    "unknownCombat": 0.1,
+    "unknownShop": 0.03,
+    "weights": {
+      "silver": [
+        70,
+        23,
+        6,
+        1
+      ],
+      "gold": [
+        30,
+        40,
+        23,
+        7
+      ]
+    },
+    "buffs": [
+      {
+        "id": "attack",
+        "name": "磨砺",
+        "quality": "common",
+        "attack": 1,
+        "hp": 0
+      },
+      {
+        "id": "health",
+        "name": "坚韧",
+        "quality": "rare",
+        "attack": 0,
+        "hp": 4
+      },
+      {
+        "id": "power",
+        "name": "锐意",
+        "quality": "epic",
+        "attack": 2,
+        "hp": 0
+      },
+      {
+        "id": "legend",
+        "name": "勇者之力",
+        "quality": "legendary",
+        "attack": 3,
+        "hp": 4,
+        "gold_only": true
+      }
+    ]
+  }
+}

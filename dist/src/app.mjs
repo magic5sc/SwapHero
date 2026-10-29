@@ -4,6 +4,7 @@ import { canAttack } from './content.mjs';
 import { artForUnit, makeSprite, makeAttackEffect, hydrateArt } from './art.mjs';
 import { createGame, deploy, start, rearrange, move, endTurn, playAI } from './battle.mjs';
 import { mustReinforce } from './formation.mjs';
+let adventureHooks=null;
 const selectedGoal=()=>document.getElementById('victory-condition')?.value||'score_5';
 let activeCatalog=null,activeTeam=null,rosterLabel=null;
 let labCatalog=null, useSkillLab=false, inspectedId=null, skillPulses=new Map();
@@ -12,7 +13,7 @@ let drag = null, suppressClick = false, playing = false, visual = null, effect =
 const el = id => document.getElementById(id);
 const add = (parent, tag, className, text) => { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = text; parent.append(node); return node; };
 
-function renderDetail(detail,chosen){ detail.replaceChildren(); if(chosen){ detail.append(makeSprite('detail-sprite',artForUnit(chosen)));add(detail,'h3','',chosen.name);add(detail,'p','', '攻击 '+chosen.attack+' · 生命 '+chosen.hp+' / '+chosen.maxHp);add(detail,'small','',chosen.disabled&&!canAttack(chosen)?'本回合无法攻击':(chosen.skills?.length?'技能已装配 · 外观为占位':'无技能')); for(const binding of chosen.skills||[]){add(detail,'p','skill-description',binding.definition.name+'：'+(binding.definition.passive==='armor'?'每次战斗伤害减少'+binding.definition.levels[binding.level].amount:binding.definition.passive==='agile'?'换入当回合可攻击':binding.definition.passive==='combat_damage_immunity'?'不受战斗伤害':binding.definition.rules.map(r=>(r.subject==='other_ally'?'其他己方单位':'自身')+({unit_enter:'进场时',unit_leave:'离场时',attack_declared:'宣布攻击时',before_damage:'将受伤时',damage_taken:'受到伤害时',healed:'获得治疗时',attack_end:'攻击阶段结束时',turn_end:'回合结束时'}[r.event]||r.event)+'，'+r.effects.map(e=>({self:'对自身',opposing_unit:'对对位敌人',other_allies:'对其他友方',lower_ally:'对下方友军',rear_ally:'对己方'+(e.field_position||'自身所在')+'战线后方备战单位',rear_enemy:'对敌方'+(e.field_position||'自身所在')+'战线后方备战单位'}[e.target]||'')+({heal:'恢复生命',deal_damage:'造成技能伤害',modify_attack:'攻击变化',swap_positions:'与下方友军换位'}[e.op]||e.op)+(e.amount?' '+binding.definition.levels[binding.level][e.amount]:'')+(e.duration==='battle'?'（本场永久）':'')+(e.target==='other_allies'?(e.zone==='any'?'（包含后备）':'（仅场上，不含后备）'):'')).join('，')).join('；')));}}else {add(detail,'p','','选择我方单位查看信息');}}
+function renderDetail(detail,chosen){ detail.replaceChildren(); if(chosen){ detail.append(makeSprite('detail-sprite',artForUnit(chosen)));add(detail,'h3','',chosen.name);add(detail,'p','', '攻击 '+chosen.attack+' · 生命 '+chosen.hp+' / '+chosen.maxHp);add(detail,'small','',chosen.disabled&&!canAttack(chosen)?'本回合无法攻击':(chosen.skills?.length?'技能已装配 · 外观为占位':'无技能')); for(const binding of chosen.skills||[]){add(detail,'p','skill-description',binding.definition.name+'：'+(binding.definition.passive==='armor'?'每次战斗伤害减少'+binding.definition.levels[binding.level].amount:binding.definition.passive==='agile'?'换入当回合可攻击':binding.definition.passive==='combat_damage_immunity'?'不受战斗伤害':binding.definition.rules.map(r=>(r.subject==='other_ally'?'其他己方单位':'自身')+({unit_enter:'进场时',unit_leave:'离场时',attack_declared:'宣布攻击时',before_damage:'将受伤时',damage_taken:'受到伤害时',unit_defeated:'阵亡时',healed:'获得治疗时',attack_end:'攻击阶段结束时',turn_end:'回合结束时'}[r.event]||r.event)+'，'+r.effects.map(e=>({self:'对自身',all_enemies:'对所有敌方场上单位',opposing_unit:'对对位敌人',other_allies:'对其他友方',lower_ally:'对下方友军',rear_ally:'对己方'+(e.field_position||'自身所在')+'战线后方备战单位',rear_enemy:'对敌方'+(e.field_position||'自身所在')+'战线后方备战单位'}[e.target]||'')+({heal:'恢复生命',deal_damage:'造成技能伤害',modify_attack:'攻击变化',swap_positions:'与下方友军换位'}[e.op]||e.op)+(e.amount?' '+binding.definition.levels[binding.level][e.amount]:'')+(e.duration==='battle'?'（本场永久）':'')+(e.target==='other_allies'?(e.zone==='any'?'（包含后备）':'（仅场上，不含后备）'):'')).join('，')).join('；')));}}else {add(detail,'p','','选择我方单位查看信息');}}
 let press=null;
 function hideCardInfo(){document.getElementById('card-popover')?.remove();}
 function showCardInfo(id,anchor){
@@ -63,7 +64,8 @@ function show() {
     el(prefix+'-metric').textContent=elimination?' 存活':' / 5';
     el(prefix+'-dots').hidden=elimination;
   }
-  el('deployment-goal').value=view.victoryCondition;el('deployment-goal-wrap').hidden=g.phase!=='deployment'||playing;
+  if(adventureHooks&&!playing&&!visual)adventureHooks.onChange(structuredClone(g));
+  el('deployment-goal').value=view.victoryCondition;el('deployment-goal-wrap').hidden=g.phase!=='deployment'||playing||!!adventureHooks;
   el('battle-goal').textContent='本局目标：'+victoryLabel(view.victoryCondition);
   el('victory-condition').disabled=playing;
   el('phase').textContent=g.error?'结算已暂停':playing ? '攻击表演中' : g.winner ? (g.winner==='player'?'我方胜利':'对手胜利') : g.phase==='deployment'?'布阵阶段':g.turn==='player'?'你的回合':'对手回合';
@@ -73,14 +75,14 @@ function show() {
   el('feedback').textContent=g.error||feedback;
   const lanes=el('lanes');lanes.replaceChildren();for(const [side,label] of [['ai','对手战场'],['player','我方战场']]){const field=add(lanes,'div','field');add(field,'div','field-title',label);const row=add(field,'div','field-row');for(const p of [1,2,3])row.append(card(side,p));}
   for(const side of ['ai','player']){const container=el(side==='ai'?'enemy-bench':'player-bench');container.replaceChildren();for(let p=4;p<=6;p++)container.append(card(side,p));el(side==='ai'?'enemy-count':'reserve-count').textContent=`${g.sides[side].slots.slice(3).filter(Boolean).length} / 3`;}
-  el('start').hidden=g.phase!=='deployment'||playing;el('end').hidden=playing||g.phase!=='action'||g.turn!=='player';el('end').disabled=required;el('cancel').hidden=selected===null||playing;el('reset').disabled=playing;
+  el('start').hidden=g.phase!=='deployment'||playing;el('end').hidden=playing||g.phase!=='action'||g.turn!=='player';el('end').disabled=required;el('cancel').hidden=selected===null||playing;el('reset').disabled=playing;el('reset').hidden=!!adventureHooks;
   document.querySelector('.notice').textContent=rosterLabel?rosterLabel+' · 外观仅为占位，卡牌效果按配置执行。':useSkillLab?'技能试验队 · 顽石、冥守与4张机制测试卡；外观仅为占位。':'测试版本 · 使用无技能占位卡；角色外观不代表正式卡牌能力。';
-  if(g.winner&&!document.querySelector('.result-overlay')){const overlay=add(document.body,'div','result-overlay');overlay.dataset.winner=g.winner;add(overlay,'strong','',g.winner==='player'?'胜 利':'败 北');const close=add(overlay,'button','primary','返回战场');close.onclick=()=>{overlay.hidden=true;};}
+  if(g.winner&&!document.querySelector('.result-overlay')){const overlay=add(document.body,'div','result-overlay');overlay.dataset.winner=g.winner;add(overlay,'strong','',g.winner==='player'?'胜 利':'败 北');const close=add(overlay,'button','primary','返回战场');close.textContent=adventureHooks?(g.winner==='player'?'领取战斗结果':'冒险结算'):'返回战场';close.onclick=()=>{overlay.hidden=true;if(adventureHooks)adventureHooks.onExit(structuredClone(g));};}
   el('log').replaceChildren(...g.log.slice(-30).reverse().map(t=>{const li=document.createElement('li');li.textContent=t;return li;}));
 }
 function run(fn){try{fn();feedback='';}catch(e){feedback=e.message;}show();}
 function performMove(a,p){const before=structuredClone(g);run(()=>{if(g.phase==='deployment')deploy(g,a,p);else if(a>=4&&p>=4)rearrange(g,'player',a,p);else move(g,'player',a,p);inspectedId=before.sides.player.slots[a-1];selected=null;animationPositions=[a,p];});skillPulses=new Map(Object.values(g.units).filter(u=>before.units[u.id]&&u.hp!==before.units[u.id].hp).map(u=>[u.id,u.hp-before.units[u.id].hp]));show();setTimeout(()=>{skillPulses.clear();if(!playing)show();},700);if(animationPositions.length)setTimeout(()=>{animationPositions=[];},500);}
-el('start').onclick=()=>run(()=>{selected=null;start(g);});el('end').onclick=async()=>{
+el('start').onclick=()=>run(()=>{selected=null;if(g.mode==='pve'){const enemies=g.sides.ai.slots.filter(Boolean),positions=[0,1,2].sort((a,b)=>Number(!!g.sides.player.slots[b])-Number(!!g.sides.player.slots[a]));g.sides.ai.slots=Array(6).fill(null);enemies.forEach((id,i)=>g.sides.ai.slots[i<3?positions[i]:i]=id);}start(g);});el('end').onclick=async()=>{
   if(playing)return; selected=null;const frames=[];let sim=structuredClone(g);
   try { endTurn(sim,'player',e=>frames.push(e));  }
   catch(e){feedback=e.message;show();return;}
@@ -95,7 +97,7 @@ el('start').onclick=()=>run(()=>{selected=null;start(g);});el('end').onclick=asy
       const targetSide=side==='player'?'ai':'player', target=f.before.sides[targetSide].slots[f.lane-1];
       visual=structuredClone(f.after);for(const x of ghosts){visual.sides[x.side].slots[x.pos]=x.id;visual.units[x.id]=structuredClone(x.unit);}
       if(target && !f.after.sides[targetSide].slots[f.lane-1]){const unit=structuredClone(f.after.units[target]);visual.sides[targetSide].slots[f.lane-1]=target;ghosts.push({side:targetSide,pos:f.lane-1,id:target,unit});}
-      effect={side,lane:f.lane,hit:!!target,stage:'impact',attackEffect:f.before.units[f.before.sides[side].slots[f.lane-1]]?.art?.attackEffect,damage:target?f.before.units[target].hp-f.after.units[target].hp:0};show();if(!target){document.body.classList.remove('score-shake');void document.body.offsetWidth;document.body.classList.add('score-shake');const fx=add(document.body,'div','score-burst','胜利点 +1');setTimeout(()=>fx.remove(),800);}await wait(sequenceAttack?600:500);
+      effect={side,lane:f.lane,hit:!!target,stage:'impact',attackEffect:f.before.units[f.before.sides[side].slots[f.lane-1]]?.art?.attackEffect,damage:target?f.before.units[target].hp-f.after.units[target].hp:0};show();if(!target&&g.mode!=='pve'){document.body.classList.remove('score-shake');void document.body.offsetWidth;document.body.classList.add('score-shake');const fx=add(document.body,'div','score-burst','胜利点 +1');setTimeout(()=>fx.remove(),800);}await wait(sequenceAttack?600:500);
     }
     if(group.length && ghosts.length){ effect=null; show(); document.querySelectorAll('.pending-defeat').forEach(n=>n.classList.add('perform-defeat')); await wait(400); }
   }
@@ -132,7 +134,7 @@ el('victory-condition').onchange=()=>{if(g.phase==='deployment'&&!playing){g.vic
 el('deployment-goal').onchange=()=>{if(g.phase==='deployment'&&!playing){el('victory-condition').value=el('deployment-goal').value;g.victoryCondition=selectedGoal();show();}};
 // Navigation preserves the current local match.
 el('enter-battle').onclick=()=>el('enter-cards').click();
-el('back-home').onclick=()=>{if(playing)return;el('battle-screen').hidden=true;el('home').hidden=false;};
+el('back-home').onclick=()=>{if(playing)return;if(adventureHooks){adventureHooks.onExit(structuredClone(g));return;}el('battle-screen').hidden=true;el('home').hidden=false;};
 el('help-toggle').onclick=()=>{el('help').hidden=!el('help').hidden;el('help-toggle').setAttribute('aria-expanded',String(!el('help').hidden));};
 
 hydrateArt();
@@ -147,3 +149,5 @@ el('enter-cards').onclick=async()=>{const button=el('enter-cards');if(playing)re
 
 // Development playtest calls this explicit API; normal game never reads editor storage.
 export function startConfiguredGame(snapshot){if(playing)throw Error('请等待表演结束');activeCatalog=structuredClone(snapshot.catalog);activeTeam=[...snapshot.team];useSkillLab=false;rosterLabel='开发端配置测试';g=createGame(activeCatalog,activeTeam,{victoryCondition:snapshot.victoryCondition||selectedGoal()});el('victory-condition').value=g.victoryCondition;g.log=[rosterLabel+' · '+activeCatalog.version];selected=null;inspectedId=null;feedback='正在测试独立配置快照；不会修改正式卡牌。';document.querySelector('.result-overlay')?.remove();el('home').hidden=true;el('battle-screen').hidden=false;show();}
+
+export function openAdventureBattle(battle,hooks){if(playing)throw Error('请等待战斗表演结束');adventureHooks=hooks;g=structuredClone(battle);rosterLabel='PvE 单章 · 测试内容';selected=null;visual=null;effect=null;inspectedId=null;feedback='';document.querySelector('.result-overlay')?.remove();el('home').hidden=true;el('battle-screen').hidden=false;el('back-home').textContent='保存并返回地图';show();}

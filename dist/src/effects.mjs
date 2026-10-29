@@ -6,7 +6,8 @@ const alive=(g,id)=>!!g.units[id]&&g.units[id].hp>0;
 export function updateAttack(unit){unit.baseAttack??=unit.attack;unit.attack=Math.max(0,unit.baseAttack+(unit.modifiers||[]).reduce((sum,m)=>sum+m.amount,0));}
 export function expireModifiers(g,duration,unitId=null){for(const u of Object.values(g.units)){if(unitId&&u.id!==unitId)continue;if(u.modifiers){u.modifiers=u.modifiers.filter(m=>m.duration!==duration);updateAttack(u);}}}
 export function updateState(g){
- for(const side of ['player','ai'])for(let i=0;i<SLOT_COUNT;i++){const id=g.sides[side].slots[i];if(id&&!alive(g,id)){g.sides[side].slots[i]=null;g.log.push(`${g.units[id].name} 被击溃`);}}
+ for(const side of ['player','ai'])for(let i=0;i<SLOT_COUNT;i++){const id=g.sides[side].slots[i];if(id&&!alive(g,id)){if(g.mode==='pve')collectEvent(g,{type:'unit_defeated',unit:id,side,position:i+1});g.sides[side].slots[i]=null;g.log.push(`${g.units[id].name} 被击溃`);}}
+ if(g.mode==='pve')return;
  const empty=['player','ai'].filter(side=>!g.sides[side].slots.some(id=>id&&alive(g,id)));
  if(empty.length===1)g.winner=otherSide(empty[0]);
  if(empty.length===2){g.error='双方同时全灭的裁决尚未确认，暂停对局';g.phase='error';}
@@ -14,6 +15,7 @@ export function updateState(g){
 }
 function targets(g,ownerId,event,effect){
  const owner=locate(g,ownerId),anchor=owner?.position<=3?owner:(event.unit===ownerId?{side:event.side,position:event.position}:null);
+ if(effect.target==='all_enemies')return (g.sides[otherSide(owner?.side||event.side)]?.slots||[]).filter((id,i)=>id&&(effect.zone==='any'||i<3));
  if(effect.target==='self')return [ownerId];
  if(effect.target==='other_allies')return (g.sides[owner?.side||event.side]?.slots||[]).filter((id,i)=>id&&id!==ownerId&&(effect.zone==='any'||i<3));
  if(!anchor||anchor.position>3)return [];
@@ -35,7 +37,7 @@ export function collectEvent(g,event){
   const id=g.sides[side].slots[position-1];if(!id)continue;
   const field=position<=3,ownExit=event.type==='unit_leave'&&event.unit===id;
   if(!field&&!ownExit)continue;
-  if(!alive(g,id)&&!(event.type==='damage_taken'&&event.unit===id))continue;
+  if(!alive(g,id)&&!(['damage_taken','unit_defeated'].includes(event.type)&&event.unit===id))continue;
   const skills=g.units[id].skills||[];
   for(let si=skills.length-1;si>=0;si--){const binding=skills[si],definition=binding.definition;
    for(let ri=definition.rules.length-1;ri>=0;ri--){const rule=definition.rules[ri];
@@ -74,6 +76,12 @@ function execute(g,job,e){
   updateState(g);
  }
 }
+export function settleOutcome(g){
+ if(g.mode!=='pve'||g.error||g.stack?.length)return;
+ const living=side=>g.sides[side].slots.some(id=>id&&g.units[id].hp>0);
+ if(!living('player'))g.winner='ai';else if(!living('ai'))g.winner='player';
+ if(g.winner)g.phase='finished';
+}
 export function drainStack(g){
  g.stack??=[];let resolved=0;
  while(g.stack.length&&!g.winner&&!g.error){
@@ -81,5 +89,6 @@ export function drainStack(g){
   const job=g.stack.pop();g.trace??=[];g.trace.push({type:'resolve',source:job.source,skillId:job.skillId});g.log.push(`✦ ${g.units[job.source]?.name||job.source} · ${job.name}`);
   for(const e of job.effects){execute(g,job,e);if(g.winner||g.error)break;}
  }
+ settleOutcome(g);
  if(g.winner)g.stack=[];
 }

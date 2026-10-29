@@ -1,9 +1,9 @@
 import {artIssues,resolveArt} from './art-assets.mjs';
 // Content definitions are data; no executable expressions or card-name branches.
 const PASSIVES = new Set(['agile','armor','combat_damage_immunity']);
-const EVENTS = new Set(['unit_enter','unit_leave','attack_declared','before_damage','damage_taken','healed','attack_end','turn_end']);
+const EVENTS = new Set(['unit_enter','unit_leave','attack_declared','before_damage','damage_taken','unit_defeated','healed','attack_end','turn_end']);
 const OPS = new Set(['heal','deal_damage','modify_attack','swap_positions']);
-const TARGETS = new Set(['self','opposing_unit','other_allies','lower_ally','rear_ally','rear_enemy']);
+const TARGETS = new Set(['self','opposing_unit','all_enemies','other_allies','lower_ally','rear_ally','rear_enemy']);
 const fail = message => { throw Error(message); };
 const object = x => x && typeof x === 'object' && !Array.isArray(x);
 const integer = (x,min) => Number.isInteger(x) && x >= min;

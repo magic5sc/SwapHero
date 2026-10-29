@@ -36,3 +36,12 @@ After each version passes relevant checks, commit and sync the complete source, 
 
 Serve dist/, edit dist/src/, run node --test test/*.test.mjs. The dist/ tree retains the deployed art/editor/effects; do not restore the old root-level browser files. Current rules support six slots and the rear_ally/rear_enemy skill targets; see README.md. No arbitrary multi-goal combinations are implemented.
 
+
+## PvE 0.5.0
+
+Current primary flow is PvE with one playable test chapter and a three-chapter
+framework. Read docs/PVE-0.5.0.md and current Wiki. Latest owner decision on
+2026-10-30: **simultaneous defeat is a player loss**, after the full effect chain.
+This overrides older Wiki victory statements. Do not implement artifacts or meta
+progression beyond its unavailable entry. Keep the separate test content pack,
+editor data, official cards, existing art and single-match duel route intact.
