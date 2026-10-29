@@ -1,0 +1,31 @@
+{
+  "skill_id": "arrival_weaken",
+  "name": "进场减攻",
+  "status": "specified",
+  "active_zone": "battlefield",
+  "passive": null,
+  "rules": [
+    {
+      "event": "unit_enter",
+      "subject": "self",
+      "effects": [
+        {
+          "op": "modify_attack",
+          "target": "opposing_unit",
+          "amount": "amount",
+          "duration": "battle",
+          "zone": "battlefield",
+          "damage_type": null
+        }
+      ]
+    }
+  ],
+  "levels": {
+    "1": {
+      "amount": -1
+    }
+  },
+  "stacking": "single_instance",
+  "unload_policy": "remove_passive_and_listeners",
+  "blockers": []
+}

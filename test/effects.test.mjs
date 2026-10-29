@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {createGame,start,move,deploy,rearrange,endTurn} from '../src/battle.mjs';
-import {collectEvent,drainStack,applyDamage,expireModifiers} from '../src/effects.mjs';
-const catalog=JSON.parse(readFileSync(new URL('../data/skill-lab.json',import.meta.url)));
+import {createGame,start,move,deploy,rearrange,endTurn} from '../dist/src/battle.mjs';
+import {collectEvent,drainStack,applyDamage,expireModifiers} from '../dist/src/effects.mjs';
+const catalog=JSON.parse(readFileSync(new URL('../dist/data/skill-lab.json',import.meta.url)));
 const fresh=()=>createGame(catalog,catalog.team);
 const effect=(op,target='self',value=1,duration=null,zone='battlefield')=>({op,target,amount:op==='swap_positions'?null:'amount',duration,zone,damage_type:op==='deal_damage'?'skill':null});
 function bind(g,id,name,event,e,amount=1,subject='self'){g.units[id].skills=[{slotId:'origin',level:1,definition:{skill_id:name,name,passive:null,levels:{1:{amount}},rules:[{event,subject,effects:[e]}]}}];}

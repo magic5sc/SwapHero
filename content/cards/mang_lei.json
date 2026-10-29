@@ -1,0 +1,39 @@
+{
+  "card_id": "mang_lei",
+  "name": "芒雷",
+  "source_number": 11,
+  "source_text": "进场时，对对方造成 3 点伤害。离场时，对自身造成 2 点伤害。",
+  "name_status": "confirmed",
+  "element": "光",
+  "category": "character",
+  "attack": 0,
+  "health": 8,
+  "art_id": "sun_mage",
+  "slots": [
+    {
+      "slot_id": "origin",
+      "type": "innate",
+      "capacity": 1
+    },
+    {
+      "slot_id": "skill_1",
+      "type": "skill",
+      "capacity": 1
+    },
+    {
+      "slot_id": "skill_2",
+      "type": "skill",
+      "capacity": 1
+    }
+  ],
+  "skills": [
+    {
+      "slot_id": "origin",
+      "skill_id": "arrival_and_exit_damage",
+      "level": 1
+    }
+  ],
+  "status": "specified",
+  "blockers": [],
+  "attack_effect_id": "pixel_slash"
+}

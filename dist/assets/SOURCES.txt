@@ -1,0 +1,17 @@
+SwapHero Sky Islands art reconstruction 0.3
+
+Approved visual references, provided by the project owner:
+https://app.notion.com/p/407e7ee349ad817ca64beaeb6318206d
+Both preview PNGs were visually inspected. The discarded OriginalAssets composites are excluded.
+
+Newly generated assets based on those previews:
+assets/sky-islands/sky-camp.png — 1448x1086 RGB PNG, empty gathering-place scenery.
+assets/sky-islands/sky-arena.png — 1448x1086 RGB PNG, empty four-terrace battleground.
+assets/sky-islands/heroes-atlas.png — 1536x1024 RGBA PNG, six static character poses in a 3x2 atlas.
+Character regions are rendered by CSS; sprite identity comes from src/art.mjs.
+Generated art is a visual prototype. No frame animation sheet or original-game GIF is used.
+The approved previews include World Flipper-inspired character cues. Generation does not establish an exclusive IP licence.
+Unit names, stats, combat and formation rules remain placeholders from the existing engine.
+
+Generation source recovery records:
+https://app.notion.com/p/407e7ee349ad811d8656e67e0a15b1d3

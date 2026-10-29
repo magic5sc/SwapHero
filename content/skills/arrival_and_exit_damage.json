@@ -1,0 +1,46 @@
+{
+  "skill_id": "arrival_and_exit_damage",
+  "name": "进场与离场伤害",
+  "status": "specified",
+  "active_zone": "battlefield",
+  "passive": null,
+  "rules": [
+    {
+      "event": "unit_enter",
+      "subject": "self",
+      "effects": [
+        {
+          "op": "deal_damage",
+          "target": "opposing_unit",
+          "amount": "amount",
+          "duration": null,
+          "zone": "battlefield",
+          "damage_type": "skill"
+        }
+      ]
+    },
+    {
+      "event": "unit_leave",
+      "subject": "self",
+      "effects": [
+        {
+          "op": "deal_damage",
+          "target": "self",
+          "amount": "exit_damage",
+          "duration": null,
+          "zone": "any",
+          "damage_type": "skill"
+        }
+      ]
+    }
+  ],
+  "levels": {
+    "1": {
+      "amount": 3,
+      "exit_damage": 2
+    }
+  },
+  "stacking": "single_instance",
+  "unload_policy": "remove_passive_and_listeners",
+  "blockers": []
+}

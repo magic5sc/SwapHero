@@ -1,12 +1,14 @@
+import { normalizeVictoryCondition } from './match-rules.mjs';
 import { canAttack, createUnit } from './content.mjs';
 import { collectEvent, collectEvents, collectPhase, drainStack, applyDamage, expireModifiers, otherSide } from './effects.mjs';
 import { deploySwap, swapBench, reinforce, exchange, mustReinforce } from './formation.mjs';
 
-export function createGame(catalog=null,team=null) {
+export function createGame(catalog=null,team=null,options={}) {
+  const victoryCondition=normalizeVictoryCondition(options.victoryCondition);
   if(catalog&&(!Array.isArray(team)||team.length!==6||new Set(team).size!==6))throw Error('技能试验队需要六个不同的配置ID');
   const units = {}, sides = {};
   for (const side of ['player', 'ai']) {
-    const slots = Array(8).fill(null);
+    const slots = Array(6).fill(null);
     for (let i = 0; i < 6; i++) {
       const id = `${side}-${i + 1}`;
       units[id] = catalog?createUnit(catalog,team[i],id):{ id, name: `基础卡 ${i + 1}`, attack: i % 2 + 1, hp: 10 + i * 2, maxHp: 10 + i * 2, disabled: false };
@@ -14,7 +16,7 @@ export function createGame(catalog=null,team=null) {
     }
     sides[side] = { slots, score: 0 };
   }
-  return { units, sides, phase: 'deployment', turn: 'player', actionPoints: 0, winner: null,stack:[],trace:[],contentVersion:catalog?.version||'placeholder',log: [catalog?'技能试验队：顽石、冥守及4张机制测试卡；非正式平衡队伍。':'临时基础卡，无技能；用于验证基础流程。'] };
+  return { units, sides, victoryCondition, phase: 'deployment', turn: 'player', actionPoints: 0, winner: null,stack:[],trace:[],contentVersion:catalog?.version||'placeholder',log: [catalog?'技能试验队：顽石、冥守及4张机制测试卡；非正式平衡队伍。':'临时基础卡，无技能；用于验证基础流程。'] };
 }
 function requireTurn(g, side) { if (g.phase !== 'action' || g.turn !== side || g.winner || g.error || g.stack?.length) throw Error('当前不能操作'); }
 export function deploy(g, a, b) { if (g.phase !== 'deployment') throw Error('不在布阵阶段'); g.sides.player.slots = deploySwap(g.sides.player.slots, a, b); }
@@ -35,7 +37,7 @@ export function resolveLane(g, side, lane, attackerId) {
   const targetId = enemy.slots[lane - 1];
   if (!targetId) {
     own.score++; g.log.push(`${attacker.name} 攻击空路，获得1分`);
-    if (own.score >= 5) {g.winner = side;g.phase='finished';}
+    if (g.victoryCondition === 'score_5' && own.score >= 5) {g.winner = side;g.phase='finished';}
   } else {
     const damage=applyDamage(g,attackerId,targetId,Math.max(0,attacker.attack),'combat');
     g.log.push(`${attacker.name} 对 ${g.units[targetId].name} 造成 ${damage} 点伤害`);

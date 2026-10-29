@@ -1,0 +1,39 @@
+{
+  "card_id": "shou_lie",
+  "name": "狩猎",
+  "source_number": 10,
+  "source_text": "进场时，为所有其它友方角色 +1 攻击力。",
+  "name_status": "confirmed",
+  "element": null,
+  "category": "character",
+  "attack": 0,
+  "health": 5,
+  "art_id": "dragon",
+  "slots": [
+    {
+      "slot_id": "origin",
+      "type": "innate",
+      "capacity": 1
+    },
+    {
+      "slot_id": "skill_1",
+      "type": "skill",
+      "capacity": 1
+    },
+    {
+      "slot_id": "skill_2",
+      "type": "skill",
+      "capacity": 1
+    }
+  ],
+  "skills": [
+    {
+      "slot_id": "origin",
+      "skill_id": "arrival_rally",
+      "level": 1
+    }
+  ],
+  "status": "specified",
+  "blockers": [],
+  "attack_effect_id": "pixel_slash"
+}

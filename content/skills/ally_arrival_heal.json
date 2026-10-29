@@ -1,0 +1,31 @@
+{
+  "skill_id": "ally_arrival_heal",
+  "name": "同伴入场治疗",
+  "status": "specified",
+  "active_zone": "battlefield",
+  "passive": null,
+  "rules": [
+    {
+      "event": "unit_enter",
+      "subject": "other_ally",
+      "effects": [
+        {
+          "op": "heal",
+          "target": "self",
+          "amount": "amount",
+          "duration": null,
+          "zone": "battlefield",
+          "damage_type": null
+        }
+      ]
+    }
+  ],
+  "levels": {
+    "1": {
+      "amount": 1
+    }
+  },
+  "stacking": "single_instance",
+  "unload_policy": "remove_passive_and_listeners",
+  "blockers": []
+}

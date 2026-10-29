@@ -1,0 +1,2 @@
+import {readRelease} from './content-package.mjs';
+export async function loadPublishedCatalog(){const base=new URL('../data/',import.meta.url);const response=await fetch(new URL('current.json',base),{cache:'no-cache'});if(!response.ok)throw Error('无法读取内容版本索引');const pointer=await response.json();if(!/^releases\/[a-zA-Z0-9._-]+\.json$/.test(pointer.file))throw Error('非法内容发布路径');const result=await fetch(new URL(pointer.file,base));if(!result.ok)throw Error('无法读取卡牌发布包');return readRelease(await result.json());}

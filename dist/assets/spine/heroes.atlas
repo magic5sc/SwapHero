@@ -1,0 +1,30 @@
+../sky-islands/heroes-atlas.png
+size: 1536,1024
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+pma: false
+knight
+  bounds: 0,0,530,520
+  offsets: 0,0,530,520
+  rotate: false
+moon-mage
+  bounds: 530,0,494,520
+  offsets: 0,0,494,520
+  rotate: false
+sun-mage
+  bounds: 1024,0,512,520
+  offsets: 0,0,512,520
+  rotate: false
+captain
+  bounds: 0,530,560,494
+  offsets: 0,0,560,494
+  rotate: false
+penguin
+  bounds: 580,550,360,460
+  offsets: 0,0,360,460
+  rotate: false
+dragon
+  bounds: 990,530,546,494
+  offsets: 0,0,546,494
+  rotate: false

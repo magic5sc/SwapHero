@@ -1,5 +1,5 @@
-import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {createGame,start,move} from '../src/battle.mjs';
-const c=JSON.parse(readFileSync(new URL('../data/cards.json',import.meta.url)));
+import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {createGame,start,move} from '../dist/src/battle.mjs';
+const c=JSON.parse(readFileSync(new URL('../dist/data/cards.json',import.meta.url)));
 const team=['wan_shi','sheng_wei','jie_de','shou_lie','mang_lei','jian_yan'];
 test('rally affects other field allies only and persists when they leave',()=>{const g=createGame(c,team);start(g);move(g,'player',4,2);assert.equal(g.units['player-1'].attack,2);assert.equal(g.units['player-3'].attack,1);assert.equal(g.units['player-4'].attack,0);assert.equal(g.units['player-5'].attack,0);move(g,'player',5,1);assert.equal(g.units['player-1'].attack,2);});
 test('weaken survives target leaving battlefield',()=>{const g=createGame(c,['wan_shi','jian_yan','jie_de','sheng_wei','mang_lei','shou_lie']);start(g);move(g,'player',4,1);assert.equal(g.units['ai-1'].attack,0);g.turn='ai';g.actionPoints=2;move(g,'ai',5,1);assert.equal(g.units['ai-1'].attack,0);});

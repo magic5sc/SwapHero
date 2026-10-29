@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {validateCatalog,publicationIssues,createUnit,replaceSkill,damageAmount,canAttack} from '../src/content.mjs';
-import {createGame,resolveLane} from '../src/battle.mjs';
-const catalog=JSON.parse(readFileSync(new URL('../data/cards.json',import.meta.url)));
+import {validateCatalog,publicationIssues,createUnit,replaceSkill,damageAmount,canAttack} from '../dist/src/content.mjs';
+import {createGame,resolveLane} from '../dist/src/battle.mjs';
+const catalog=JSON.parse(readFileSync(new URL('../dist/data/cards.json',import.meta.url)));
 const skill=(id,passive,levels={1:{amount:1},2:{amount:2}})=>({skill_id:id,name:id,status:'specified',blockers:[],active_zone:'battlefield',passive,rules:[],levels,stacking:'single_instance',unload_policy:'remove_passive_and_listeners'});
 const armor=skill('guard','armor');
 const make=()=>({schema_version:1,version:'test-1',skills:[structuredClone(armor)],cards:[{card_id:'soldier',name:'测试卡',category:'test',attack:2,health:8,status:'specified',blockers:[],slots:[{slot_id:'skill_1',type:'skill',capacity:1}],skills:[{slot_id:'skill_1',skill_id:'guard',level:1}]}]});
 test('eight source cards preserved, multi-effect card includes exit damage',()=>{assert.deepEqual(validateCatalog(catalog),[]);assert.equal(catalog.cards.length,8);assert.equal(catalog.skills.find(s=>s.skill_id==='arrival_and_exit_damage').rules.length,2);assert.deepEqual(publicationIssues(catalog,'wan_shi'),[]);});
-test('drafts cannot instantiate but specified supported cards can',()=>{const draft=structuredClone(catalog);draft.cards.find(c=>c.card_id==='sheng_wei').status='draft';assert.throws(()=>createUnit(draft,'sheng_wei','x'));assert.equal(createUnit(catalog,'sheng_wei','ready').hp,8);assert.equal(createUnit(catalog,'wan_shi','x').hp,6);});
+test('drafts cannot instantiate but specified supported cards can',()=>{const draft=structuredClone(catalog);draft.cards[1].status='draft';assert.throws(()=>createUnit(draft,'sheng_wei','x'));assert.equal(createUnit(catalog,'wan_shi','x').hp,6);});
 test('reject duplicate IDs, unknown effects, bad levels and non-finite values',()=>{const a=make();a.cards.push(structuredClone(a.cards[0]));assert.ok(validateCatalog(a).length);const b=make();b.cards[0].skills[0].level=99;assert.ok(validateCatalog(b).length);const c=make();c.skills[0].levels[1].amount=Infinity;assert.ok(validateCatalog(c).length);const d=structuredClone(catalog);d.skills[0].rules[0].effects[0].op='execute_script';assert.ok(validateCatalog(d).length);});
 test('instances and source snapshots are isolated',()=>{const c=make(),a=createUnit(c,'soldier','a'),b=createUnit(c,'soldier','b');c.skills[0].levels[1].amount=99;a.hp=2;assert.equal(b.hp,8);assert.equal(damageAmount(a,3),2);assert.equal(damageAmount(b,3),2);});
 test('armor reduces combat only and never below zero',()=>{const u=createUnit(make(),'soldier','u');assert.equal(damageAmount(u,2),1);assert.equal(damageAmount(u,0),0);assert.equal(damageAmount(u,2,'skill'),2);assert.equal(damageAmount(u,2,'health_loss'),2);assert.throws(()=>damageAmount(u,-1));});

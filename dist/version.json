@@ -1,0 +1,10 @@
+{
+  "version": "0.4.0",
+  "art": "approved-sky-islands",
+  "date": "2026-10-29",
+  "features": [
+    "configurable-victory",
+    "three-reserve-lanes",
+    "rear-unit-targets"
+  ]
+}

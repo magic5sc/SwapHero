@@ -1,0 +1,14 @@
+{
+  "skill_id": "mist_immunity",
+  "name": "战斗伤害免疫",
+  "status": "specified",
+  "active_zone": "battlefield",
+  "passive": "combat_damage_immunity",
+  "rules": [],
+  "levels": {
+    "1": {}
+  },
+  "stacking": "single_instance",
+  "unload_policy": "remove_passive_and_listeners",
+  "blockers": []
+}

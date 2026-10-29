@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {editorIssues,makePlaySnapshot,forkSkill} from '../dist/src/editor-model.mjs';
+import {createGame} from '../dist/src/battle.mjs';
+const load=()=>JSON.parse(readFileSync(new URL('../dist/data/cards.json',import.meta.url)));
+test('editor changes reach battle and later draft changes do not mutate snapshot',()=>{const data=load();data.cards[0].name='自定义顽石';data.cards[0].attack=4;data.cards[0].health=12;data.skills[0].levels['2']={amount:3};data.cards[0].skills[0].level=2;const snap=makePlaySnapshot(data,data.cards.slice(0,6).map(c=>c.card_id));data.cards[0].attack=99;const g=createGame(snap.catalog,snap.team);const unit=g.units[g.sides.player.slots[0]];assert.equal(unit.name,'自定义顽石');assert.equal(unit.attack,4);assert.equal(unit.hp,12);assert.equal(unit.skills[0].level,2);assert.equal(unit.skills[0].definition.levels[2].amount,3);});
+test('skill forks isolate one card from shared definitions',()=>{const data=load();const a=data.cards[0],b=data.cards[1];b.skills[0].skill_id=a.skills[0].skill_id;const fork=forkSkill(data,b,b.skills[0]);fork.levels[1].amount=20;assert.equal(data.skills.find(s=>s.skill_id===a.skills[0].skill_id).levels[1].amount,1);assert.deepEqual(editorIssues(data),[]);});
+test('invalid targets and unsupported behavior cannot silently enter a match',()=>{const data=load();data.skills[0].condition={turn_parity:'odd'};assert.throws(()=>makePlaySnapshot(data,data.cards.slice(0,6).map(c=>c.card_id)),/condition/);delete data.skills[0].condition;data.skills[6].rules[0].effects[0].target='opposing_unit';assert.match(editorIssues(data).join(),/换位/);});
+test('drafts, missing references and duplicate team IDs are rejected',()=>{const data=load(),team=data.cards.slice(0,6).map(c=>c.card_id);data.cards[0].status='draft';assert.throws(()=>makePlaySnapshot(data,team),/草稿/);data.cards[0].status='specified';assert.throws(()=>makePlaySnapshot(data,[team[0],...team.slice(0,5)]),/6张不同/);data.cards[0].skills[0].level=9;assert.ok(editorIssues(data).length);});
+test('malformed imported data returns validation errors instead of throwing',()=>{for(const input of [null,{},[],{schema_version:1,version:'x',cards:[null],skills:[{}]}])assert.ok(editorIssues(input).length);});

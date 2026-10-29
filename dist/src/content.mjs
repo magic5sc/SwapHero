@@ -1,8 +1,9 @@
+import {artIssues,resolveArt} from './art-assets.mjs';
 // Content definitions are data; no executable expressions or card-name branches.
 const PASSIVES = new Set(['agile','armor','combat_damage_immunity']);
 const EVENTS = new Set(['unit_enter','unit_leave','attack_declared','before_damage','damage_taken','healed','attack_end','turn_end']);
 const OPS = new Set(['heal','deal_damage','modify_attack','swap_positions']);
-const TARGETS = new Set(['self','opposing_unit','other_allies','lower_ally']);
+const TARGETS = new Set(['self','opposing_unit','other_allies','lower_ally','rear_ally','rear_enemy']);
 const fail = message => { throw Error(message); };
 const object = x => x && typeof x === 'object' && !Array.isArray(x);
 const integer = (x,min) => Number.isInteger(x) && x >= min;
@@ -11,6 +12,7 @@ export function validateCatalog(data) {
   const errors=[];
   const check=(ok,message)=>{if(!ok)errors.push(message);};
   if(!object(data)||data.schema_version!==1||!Array.isArray(data.cards)||!Array.isArray(data.skills)) return ['配置必须包含schema_version=1、cards和skills数组'];
+  errors.push(...artIssues(data));
   check(typeof data.version==='string'&&data.version.length>0,'缺少内容版本');
   for(const [list,key] of [[data.cards,'card_id'],[data.skills,'skill_id']]) {
     const seen=new Set();
@@ -29,9 +31,14 @@ export function validateCatalog(data) {
       check(EVENTS.has(rule.event),`${s.skill_id}未知事件`);check(['self','other_ally'].includes(rule.subject),`${s.skill_id}未知主体`);if(['attack_end','turn_end'].includes(rule.event))check(rule.subject==='self',`${s.skill_id}阶段事件只支持self主体`);
       check(Array.isArray(rule.effects)&&rule.effects.length>0,`${s.skill_id}缺效果`);
       for(const e of Array.isArray(rule.effects)?rule.effects:[]) {
-        if(!object(e)){errors.push('效果必须是对象');continue;}check(Object.keys(e).every(k=>['op','target','amount','duration','zone','damage_type'].includes(k)),`${s.skill_id}含未支持的效果字段`);
+        if(!object(e)){errors.push('效果必须是对象');continue;}check(Object.keys(e).every(k=>['op','target','amount','duration','zone','damage_type','field_position'].includes(k)),`${s.skill_id}含未支持的效果字段`);
         check(OPS.has(e.op),`${s.skill_id}未知效果`);check(e.target===null||TARGETS.has(e.target),`${s.skill_id}未知目标`);
-        check(e.duration===null||['battle','turn','on_field'].includes(e.duration),`${s.skill_id}未知持续时间`);check(e.zone===null||['battlefield','any'].includes(e.zone),`${s.skill_id}未知区域`);
+        check(e.duration===null||['battle','turn','on_field'].includes(e.duration),`${s.skill_id}未知持续时间`);check(e.zone===null||['battlefield','any','bench'].includes(e.zone),`${s.skill_id}未知区域`);
+        if(['rear_ally','rear_enemy'].includes(e.target)) {
+          check(e.zone==='bench',`${s.skill_id}后方目标必须选择仅备战区`);
+          check(e.field_position===undefined||e.field_position===null||[1,2,3].includes(e.field_position),`${s.skill_id}战线必须为1、2、3或自身所在战线`);
+          check(e.op!=='swap_positions',`${s.skill_id}场上换位不能用于备战目标`);
+        } else check(e.field_position===undefined||e.field_position===null,`${s.skill_id}仅后方目标支持指定战线`);
         if(s.status==='specified'){check(e.target!==null&&e.zone!==null,`${s.skill_id}目标未闭合`);if(e.op==='modify_attack')check(e.duration!==null,`${s.skill_id}持续时间未闭合`);}
         if(e.op!=='swap_positions')for(const p of Object.values(s.levels||{})){check(typeof e.amount==='string'&&Number.isFinite(p[e.amount]),`${s.skill_id}缺效果参数`);if(e.op!=='modify_attack')check(integer(p[e.amount],0),`${s.skill_id}效果量必须为非负整数`);}
         if(e.op==='deal_damage')check(e.damage_type==='skill',`${s.skill_id}伤害类型不支持`);
@@ -57,7 +64,7 @@ export function createUnit(data,cardId,instanceId) {
   const issues=publicationIssues(data,cardId);if(issues.length)fail(issues.join('；'));
   if(typeof instanceId!=='string'||!instanceId)fail('缺单位实例ID');
   const c=data.cards.find(c=>c.card_id===cardId);
-  return {id:instanceId,cardId,name:c.name,attack:c.attack,baseAttack:c.attack,modifiers:[],hp:c.health,maxHp:c.health,disabled:false,contentVersion:data.version,slots:structuredClone(c.slots),skills:c.skills.map(r=>({slotId:r.slot_id,level:r.level,definition:structuredClone(data.skills.find(s=>s.skill_id===r.skill_id))}))};
+  return {id:instanceId,cardId,art:resolveArt(data,c),name:c.name,attack:c.attack,baseAttack:c.attack,modifiers:[],hp:c.health,maxHp:c.health,disabled:false,contentVersion:data.version,slots:structuredClone(c.slots),skills:c.skills.map(r=>({slotId:r.slot_id,level:r.level,definition:structuredClone(data.skills.find(s=>s.skill_id===r.skill_id))}))};
 }
 // Derived passives leave no cached bonuses behind when a skill is removed.
 export function passiveValue(unit,keyword){return (unit.skills||[]).reduce((n,s)=>n+(s.definition.passive===keyword?(keyword==='armor'?s.definition.levels[s.level].amount:1):0),0);}

@@ -1,9 +1,29 @@
-/** Position 1–3 is the battlefield; 4–8 is the bench. */
+/** Field 1–3, reserve 4–6; pairs are 1↔4, 2↔5, 3↔6. */
+export const FIELD_SIZE = 3, SLOT_COUNT = 6;
+export function reserveBehind(position) {
+  if (!isField(position)) throw Error('Invalid field position');
+  return position + FIELD_SIZE;
+}
+export function fieldAhead(position) {
+  if (!isBench(position)) throw Error('Invalid reserve position');
+  return position - FIELD_SIZE;
+}
+// Old eight-slot formations are accepted only when the removed slots are empty.
+// Never silently discard or relocate units in positions 7/8.
+export function migrateFormation(slots) {
+  if (!Array.isArray(slots)) throw Error('Formation must be an array');
+  if (slots.length === 8) {
+    if (slots.slice(6).some(x => x !== null)) throw Error('旧编队7/8号位有单位，请重新编队；三格备战区不能自动截断单位');
+    slots = slots.slice(0, SLOT_COUNT);
+  }
+  validateFormation(slots);
+  return [...slots];
+}
 export const isField = p => Number.isInteger(p) && p >= 1 && p <= 3;
-export const isBench = p => Number.isInteger(p) && p >= 4 && p <= 8;
+export const isBench = p => Number.isInteger(p) && p >= 4 && p <= SLOT_COUNT;
 
 export function validateFormation(slots) {
-  if (!Array.isArray(slots) || slots.length !== 8) throw new Error('Formation requires eight slots');
+  if (!Array.isArray(slots) || slots.length !== SLOT_COUNT) throw new Error('Formation requires six slots');
   const ids = slots.filter(x => x !== null);
   if (ids.some(x => typeof x !== 'string' || !x) || new Set(ids).size !== ids.length) throw new Error('Units must have unique non-empty IDs');
 }

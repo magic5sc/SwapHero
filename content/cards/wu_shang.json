@@ -1,0 +1,39 @@
+{
+  "card_id": "wu_shang",
+  "name": "雾裳",
+  "source_number": 22,
+  "source_text": "这个角色不受战斗伤害。",
+  "name_status": "confirmed",
+  "element": "水",
+  "category": "character",
+  "attack": 2,
+  "health": 3,
+  "art_id": "moon_mage",
+  "slots": [
+    {
+      "slot_id": "origin",
+      "type": "innate",
+      "capacity": 1
+    },
+    {
+      "slot_id": "skill_1",
+      "type": "skill",
+      "capacity": 1
+    },
+    {
+      "slot_id": "skill_2",
+      "type": "skill",
+      "capacity": 1
+    }
+  ],
+  "skills": [
+    {
+      "slot_id": "origin",
+      "skill_id": "mist_immunity",
+      "level": 1
+    }
+  ],
+  "status": "specified",
+  "blockers": [],
+  "attack_effect_id": "pixel_slash"
+}

@@ -1,13 +1,39 @@
 # SwapHero
 
-网页玩家对 AI 的开发测试版，当前使用无技能、低攻高血的占位卡；正式能力与部分规则尚未实现。
+Canonical project source: https://github.com/magic5sc/SwapHero
+Private test site: https://swaphero-play.lamentkddesign.chatgpt.site
+Rules: https://app.notion.com/p/406e7ee349ad81c2a7ecfdc573c7c606
 
-在项目目录运行 `python3 -m http.server 8000`，浏览器访问 http://localhost:8000。需 Python 3；浏览器及移动端尚待实际验收。
+## Run and test
 
-运行测试：`node --test test/*.test.mjs`。
+Serve `dist/` (for example `python3 -m http.server 8000 --directory dist`).
+Run `node --test test/*.test.mjs` from the repository root.
+`dist/index.html` is the game; `dist/editor.html` is the developer editor;
+`dist/playtest.html` plays an isolated editor snapshot. Source modules are in
+`dist/src/`, assets in `dist/assets/`, editable content in `content/`.
 
-- `src/formation.mjs`：编队和换位规则。
-- `src/battle.mjs`：基础回合、伤害和简易 AI。
-- `src/app.mjs`、`index.html`、`style.css`：网页界面。
-- Wiki：https://app.notion.com/p/338e7ee349ad8038a7e2c04c97239345
-- 待办：https://app.notion.com/p/406e7ee349ad81dba957ccd117266405
+## Rules update — 2026-10-29
+
+- Choose one match goal: `score_5` (default, five victory points) or
+  `elimination` (all enemy units defeated, including reserve units).
+- The existing all-units-defeated loss still applies in score games. Simultaneous
+  defeat remains an explicit paused error pending a design decision.
+- Each side has six slots: field 1–3, reserve 4–6. Corresponding pairs are
+  1↔4, 2↔5 and 3↔6. Any reserve may exchange with any field slot; outgoing
+  units occupy the incoming unit's original slot. AP and free bench swaps are unchanged.
+- `createGame(catalog, team, {victoryCondition:'elimination'})` configures a match.
+  The UI exposes the same choice before deployment; restarting preserves it.
+- `rear_ally` / `rear_enemy` effect targets use `zone:'bench'`. Optional
+  `field_position:1|2|3` selects a particular lane; omitted/null means the
+  source's field lane. Targets are unit identity snapshots at trigger time and
+  must still be alive in reserve at resolution. Empty reserve slots do nothing.
+  Existing skills are not changed. Editor target selection/export supports these fields.
+- `migrateFormation()` accepts old eight-slot formations only when slots 7/8 are
+  empty. Occupied removed slots are rejected with a reformation message; no units
+  are silently deleted. Normal formation APIs require six slots. There is no
+  saved in-progress match loader in this version.
+
+The previously deployed editor, art, animation and effects are retained. This
+checkout reconciles the earlier Site/GitHub drift into the `dist/` layout;
+old root-level browser files are replaced by their current `dist/` counterparts.
+See `content/README.md` for source ZIP, release JSON and separate client builds.

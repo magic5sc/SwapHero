@@ -1,0 +1,9 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
+import {DEFAULT_ASSETS,artIssues,resolveArt} from '../dist/src/art-assets.mjs';
+import {sourceFiles,importSourceFiles,createRelease,readRelease} from '../dist/src/content-package.mjs';
+import {createUnit} from '../dist/src/content.mjs';
+const catalog=JSON.parse(fs.readFileSync(new URL('../dist/data/releases/cards-0.3.0.json',import.meta.url)));
+test('art references resolve and snapshot independently of editing',()=>{const data=structuredClone(catalog),c=data.cards[0],u=createUnit(data,c.card_id,'player1');assert.ok(u.art.character.animations.idle);assert.equal(u.art.attackEffect.asset_id,'pixel_slash');data.art_assets.characters[0].name='changed';assert.notEqual(u.art.character.name,'changed');});
+test('asset library persists through source and release formats',()=>{const doc=importSourceFiles(sourceFiles(catalog,catalog.teams[0].cards));assert.deepEqual(doc.catalog.art_assets,catalog.art_assets);assert.deepEqual(readRelease(createRelease(doc.catalog,doc.team,'test-assets')).cards,catalog.cards);});
+test('reject missing refs, invalid animations and duplicate asset IDs',()=>{let d=structuredClone(catalog);d.cards[0].art_id='missing';assert.ok(artIssues(d).length);d=structuredClone(catalog);d.art_assets.characters[0].animations.attack='unknown';assert.ok(artIssues(d).length);d=structuredClone(catalog);d.art_assets.effects[0].asset_id=d.art_assets.characters[0].asset_id;assert.ok(artIssues(d).length);});
+test('legacy catalogs without assets use defaults without mutating input',()=>{const d=structuredClone(catalog);delete d.art_assets;for(const c of d.cards){delete c.art_id;delete c.attack_effect_id;}assert.deepEqual(artIssues(d),[]);assert.deepEqual(resolveArt(d,d.cards[0]),{character:null,attackEffect:null});assert.equal(d.art_assets,undefined);assert.equal(DEFAULT_ASSETS.characters.length,6);});

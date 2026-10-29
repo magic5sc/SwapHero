@@ -1,0 +1,39 @@
+{
+  "card_id": "jian_yan",
+  "name": "坚岩",
+  "source_number": 13,
+  "source_text": "离场时，回复 3 点生命力。",
+  "name_status": "confirmed",
+  "element": null,
+  "category": "character",
+  "attack": 0,
+  "health": 5,
+  "art_id": "knight",
+  "slots": [
+    {
+      "slot_id": "origin",
+      "type": "innate",
+      "capacity": 1
+    },
+    {
+      "slot_id": "skill_1",
+      "type": "skill",
+      "capacity": 1
+    },
+    {
+      "slot_id": "skill_2",
+      "type": "skill",
+      "capacity": 1
+    }
+  ],
+  "skills": [
+    {
+      "slot_id": "origin",
+      "skill_id": "exit_heal",
+      "level": 1
+    }
+  ],
+  "status": "specified",
+  "blockers": [],
+  "attack_effect_id": "pixel_slash"
+}

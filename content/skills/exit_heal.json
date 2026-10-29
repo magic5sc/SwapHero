@@ -1,0 +1,31 @@
+{
+  "skill_id": "exit_heal",
+  "name": "离场治疗",
+  "status": "specified",
+  "active_zone": "battlefield",
+  "passive": null,
+  "rules": [
+    {
+      "event": "unit_leave",
+      "subject": "self",
+      "effects": [
+        {
+          "op": "heal",
+          "target": "self",
+          "amount": "amount",
+          "duration": null,
+          "zone": "any",
+          "damage_type": null
+        }
+      ]
+    }
+  ],
+  "levels": {
+    "1": {
+      "amount": 3
+    }
+  },
+  "stacking": "single_instance",
+  "unload_policy": "remove_passive_and_listeners",
+  "blockers": []
+}

@@ -1,0 +1,39 @@
+{
+  "card_id": "sheng_wei",
+  "name": "声威",
+  "source_number": 7,
+  "source_text": "进场时，减少对方 1 点攻击力。",
+  "name_status": "confirmed",
+  "element": "风",
+  "category": "character",
+  "attack": 1,
+  "health": 8,
+  "art_id": "penguin",
+  "slots": [
+    {
+      "slot_id": "origin",
+      "type": "innate",
+      "capacity": 1
+    },
+    {
+      "slot_id": "skill_1",
+      "type": "skill",
+      "capacity": 1
+    },
+    {
+      "slot_id": "skill_2",
+      "type": "skill",
+      "capacity": 1
+    }
+  ],
+  "skills": [
+    {
+      "slot_id": "origin",
+      "skill_id": "arrival_weaken",
+      "level": 1
+    }
+  ],
+  "status": "specified",
+  "blockers": [],
+  "attack_effect_id": "pixel_slash"
+}

@@ -1,0 +1,39 @@
+{
+  "card_id": "wan_shi",
+  "name": "顽石",
+  "source_number": 6,
+  "source_text": "当其它己方角色入场时，恢复自身 1 点生命。",
+  "name_status": "confirmed",
+  "element": "地",
+  "category": "character",
+  "attack": 1,
+  "health": 6,
+  "art_id": "knight",
+  "slots": [
+    {
+      "slot_id": "origin",
+      "type": "innate",
+      "capacity": 1
+    },
+    {
+      "slot_id": "skill_1",
+      "type": "skill",
+      "capacity": 1
+    },
+    {
+      "slot_id": "skill_2",
+      "type": "skill",
+      "capacity": 1
+    }
+  ],
+  "skills": [
+    {
+      "slot_id": "origin",
+      "skill_id": "ally_arrival_heal",
+      "level": 1
+    }
+  ],
+  "status": "specified",
+  "blockers": [],
+  "attack_effect_id": "pixel_slash"
+}

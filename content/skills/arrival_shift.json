@@ -1,0 +1,29 @@
+{
+  "skill_id": "arrival_shift",
+  "name": "进场换位",
+  "status": "specified",
+  "active_zone": "battlefield",
+  "passive": null,
+  "rules": [
+    {
+      "event": "unit_enter",
+      "subject": "self",
+      "effects": [
+        {
+          "op": "swap_positions",
+          "target": "lower_ally",
+          "amount": null,
+          "duration": null,
+          "zone": "battlefield",
+          "damage_type": null
+        }
+      ]
+    }
+  ],
+  "levels": {
+    "1": {}
+  },
+  "stacking": "single_instance",
+  "unload_policy": "remove_passive_and_listeners",
+  "blockers": []
+}

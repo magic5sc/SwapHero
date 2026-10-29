@@ -1,0 +1,132 @@
+{
+  "format": "swaphero-source",
+  "format_version": 1,
+  "catalog_meta": {
+    "schema_version": 1,
+    "version": "cards-0.1.1",
+    "art_assets": {
+      "schema_version": 1,
+      "characters": [
+        {
+          "asset_id": "knight",
+          "name": "蓝披风剑士",
+          "type": "character",
+          "renderer": "spine_builtin",
+          "rig": "knight",
+          "animations": {
+            "idle": "idle",
+            "attack": "attack"
+          }
+        },
+        {
+          "asset_id": "moon_mage",
+          "name": "银发法师",
+          "type": "character",
+          "renderer": "spine_builtin",
+          "rig": "moon-mage",
+          "animations": {
+            "idle": "idle",
+            "attack": "attack"
+          }
+        },
+        {
+          "asset_id": "sun_mage",
+          "name": "红帽法师",
+          "type": "character",
+          "renderer": "spine_builtin",
+          "rig": "sun-mage",
+          "animations": {
+            "idle": "idle",
+            "attack": "attack"
+          }
+        },
+        {
+          "asset_id": "captain",
+          "name": "红发船长",
+          "type": "character",
+          "renderer": "spine_builtin",
+          "rig": "captain",
+          "animations": {
+            "idle": "idle",
+            "attack": "attack"
+          }
+        },
+        {
+          "asset_id": "penguin",
+          "name": "皇冠企鹅",
+          "type": "character",
+          "renderer": "spine_builtin",
+          "rig": "penguin",
+          "animations": {
+            "idle": "idle",
+            "attack": "attack"
+          }
+        },
+        {
+          "asset_id": "dragon",
+          "name": "赤翼幼龙",
+          "type": "character",
+          "renderer": "spine_builtin",
+          "rig": "dragon",
+          "animations": {
+            "idle": "idle",
+            "attack": "attack"
+          }
+        }
+      ],
+      "effects": [
+        {
+          "asset_id": "pixel_slash",
+          "name": "刀光命中·粒子",
+          "type": "effect",
+          "renderer": "particles",
+          "preset": "slash",
+          "color": "#fff2ab",
+          "duration_ms": 420,
+          "angle_deg": -45,
+          "particle_count": 14
+        },
+        {
+          "asset_id": "pixel_burst",
+          "name": "像素爆闪",
+          "type": "effect",
+          "renderer": "css",
+          "preset": "burst",
+          "color": "#7ee8ff",
+          "duration_ms": 350
+        },
+        {
+          "asset_id": "pixel_fireball_hit",
+          "name": "小火球命中·粒子",
+          "type": "effect",
+          "renderer": "particles",
+          "preset": "fireball",
+          "color": "#ff9b32",
+          "duration_ms": 480,
+          "particle_count": 18
+        }
+      ]
+    }
+  },
+  "card_files": [
+    "cards/wan_shi.json",
+    "cards/sheng_wei.json",
+    "cards/jie_de.json",
+    "cards/shou_lie.json",
+    "cards/mang_lei.json",
+    "cards/jian_yan.json",
+    "cards/ming_shou.json",
+    "cards/wu_shang.json"
+  ],
+  "skill_files": [
+    "skills/ally_arrival_heal.json",
+    "skills/arrival_weaken.json",
+    "skills/arrival_growth.json",
+    "skills/arrival_rally.json",
+    "skills/arrival_and_exit_damage.json",
+    "skills/exit_heal.json",
+    "skills/arrival_shift.json",
+    "skills/mist_immunity.json"
+  ],
+  "team_file": "teams/default.json"
+}
