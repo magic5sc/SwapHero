@@ -20,7 +20,7 @@
    <label for="victory-condition">本局胜利条件</label><select id="victory-condition"><option value="score_5">获得5点胜利点</option><option value="elimination">消灭敌方全部单位</option></select>
    <button id="enter-battle" class="primary">▶ 开始对战</button>
    <label for="roster-preset">第一批卡牌预设</label><select id="roster-preset"><option value="a">A · 顽石、声威、界德、狩猎、芒雷、坚岩</option><option value="b">B · 顽石、声威、界德、坚岩、冥守、雾裳</option></select><button id="enter-cards" class="ghost">▶ 第一批卡牌对战</button><button id="help-toggle" class="ghost" aria-expanded="false" aria-controls="help">▤ 玩法说明</button>
-   <div id="help" hidden>布阵时拖拽，免费调整己方位置。鼠标悬停或移动端长按卡牌查看详情，轻点不换人。战斗中将后备换入场上消耗 1 行动点，场下互换免费。普通单位换入当回合不能攻击。战场3格与备战3格前后一一对应，但可跨战线交换。胜利目标开局选择：获得5点胜利点，或消灭敌方全部单位（包括备战单位）。全灭对局不因达到5分结束。</div>
+   <div id="help" hidden>布阵时拖拽，免费调整己方位置。鼠标悬停或移动端长按卡牌查看详情，轻点不换人。战斗中将后备换入场上消耗1行动点，场下互换免费。仅场上无人时必须补入1人，已有前排可保留后备。普通单位换入当回合不能攻击。战场3格与备战3格前后一一对应，但可跨战线交换。胜利目标开局选择：获得5点胜利点，或消灭敌方全部单位（包括备战单位）。胜点对局只攻击对位，空位得分；全灭对局优先对位，空位按邻近顺序转攻，中间格优先1号位，均不攻击备战区。</div>
    <a class="ghost" href="cards.html">▤ 卡牌库 · 第一批</a><div class="team-preview"><h3>✦ 出战队伍 · 6 人 ✦</h3><div><span class="roster-portrait" data-hero="0"></span><span class="roster-portrait" data-hero="1"></span><span class="roster-portrait" data-hero="2"></span><span class="roster-portrait" data-hero="3"></span><span class="roster-portrait" data-hero="4"></span><span class="roster-portrait" data-hero="5"></span></div></div>
    <p class="home-note">点击开始，调整你的队伍</p><small class="asset-note">浮岛像素风 · Spine 骨骼动画测试版</small>
   </aside>

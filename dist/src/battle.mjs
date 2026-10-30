@@ -1,4 +1,4 @@
-import { normalizeVictoryCondition } from './match-rules.mjs';
+import { normalizeVictoryCondition, combatTarget } from './match-rules.mjs';
 import { canAttack, createUnit } from './content.mjs';
 import { collectEvent, collectEvents, collectPhase, drainStack, applyDamage, expireModifiers, otherSide } from './effects.mjs';
 import { deploySwap, swapBench, reinforce, exchange, mustReinforce } from './formation.mjs';
@@ -32,11 +32,11 @@ export function move(g, side, from, to) {
   drainStack(g);
 }
 export function resolveLane(g, side, lane, attackerId) {
-  const attacker = g.units[attackerId], own = g.sides[side], enemy = g.sides[otherSide(side)];
+  const attacker = g.units[attackerId], own = g.sides[side];
   if (g.winner||g.error||!attacker || !canAttack(attacker) || own.slots[lane - 1] !== attackerId) return false;
-  const targetId = enemy.slots[lane - 1];
+  const targetId = combatTarget(g,side,lane)?.id;
   if (!targetId) {
-    if(g.mode==='pve'){g.log.push(`${attacker.name} 攻击空路，无目标`);return true;}
+    if(g.victoryCondition==='elimination'){g.log.push(`${attacker.name} 攻击空路，无目标`);return true;}
     own.score++; g.log.push(`${attacker.name} 攻击空路，获得1分`);
     if (g.victoryCondition === 'score_5' && own.score >= 5) {g.winner = side;g.phase='finished';}
   } else {
@@ -52,8 +52,8 @@ export function endTurn(g, side, onAttack = null) {
   g.actionPoints = 0; g.phase = 'attack';
   const attacks = [3,2,1].map(lane => ({lane, id:g.sides[side].slots[lane - 1]})).filter(x => x.id && canAttack(g.units[x.id]));
   g.attackStep='declare';signalAttackers(g,side,attacks,'attack_declared');
-  if(!g.winner&&!g.error){g.attackStep='prepare';const events=[];for(const {lane,id} of attacks){if(g.sides[side].slots[lane-1]!==id||!canAttack(g.units[id]))continue;const target=g.sides[otherSide(side)].slots[lane-1];if(target)events.push({type:'before_damage',unit:target,side:otherSide(side),position:lane,source:id});}collectEvents(g,events);drainStack(g);}
-  if(!g.winner&&!g.error){g.attackStep='damage';for (const {lane,id} of attacks) { const before = onAttack ? structuredClone(g) : null;const attacked=resolveLane(g, side, lane, id);if(g.mode==='pve')drainStack(g);if (attacked&&onAttack) onAttack({side, lane, before, after: structuredClone(g)}); if (g.winner||g.error) break; }drainStack(g);}
+  if(!g.winner&&!g.error){g.attackStep='prepare';const events=[];for(const {lane,id} of attacks){if(g.sides[side].slots[lane-1]!==id||!canAttack(g.units[id]))continue;const target=combatTarget(g,side,lane);if(target)events.push({type:'before_damage',unit:target.id,side:otherSide(side),position:target.position,source:id});}collectEvents(g,events);drainStack(g);}
+  if(!g.winner&&!g.error){g.attackStep='damage';for (const {lane,id} of attacks) { const before = onAttack ? structuredClone(g) : null;const target=combatTarget(g,side,lane);const attacked=resolveLane(g, side, lane, id);if(g.mode==='pve')drainStack(g);if (attacked&&onAttack) onAttack({side, lane, targetId:target?.id??null, targetLane:target?.position??null, before, after: structuredClone(g)}); if (g.winner||g.error) break; }drainStack(g);}
   if(!g.winner&&!g.error){g.attackStep='end';collectPhase(g,'attack_end');drainStack(g);}
   if(!g.winner&&!g.error){collectPhase(g,'turn_end');drainStack(g);}
   expireModifiers(g,'turn');

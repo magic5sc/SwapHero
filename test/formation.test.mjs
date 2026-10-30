@@ -24,5 +24,5 @@ test('exchange is atomic and forbidden during mandatory reinforcement', () => {
   const result = exchange(s, 2, 4, 1);
   assert.deepEqual(result.events, [{type:'exit',unit:'a',position:1},{type:'enter',unit:'d',position:1}]);
   assert.equal(result.actionPoints, 1);
-  assert.throws(() => exchange([null,'b','c','d','e','f'], 2, 4, 2));
+  assert.equal(exchange([null,'b','c','d','e','f'], 2, 4, 2).actionPoints,1);
 });

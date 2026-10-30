@@ -26,7 +26,7 @@ test('cross-lane swaps keep outgoing unit in incoming original reserve and use b
 });
 test('elimination keeps playing at five points and counts reserve survivors',()=>{
  const g=elimination();start(g);g.sides.ai.slots.splice(0,3,null,null,null);g.sides.player.score=4;
- endTurn(g,'player');assert.equal(g.sides.player.score,7);assert.equal(g.winner,null);assert.equal(g.turn,'ai');
+ endTurn(g,'player');assert.equal(g.sides.player.score,4);assert.equal(g.winner,null);assert.equal(g.turn,'ai');
  playAI(g);assert.equal(g.winner,null);assert.equal(g.sides.ai.slots.filter(Boolean).length,3);
 });
 test('last reserve death wins immediately by skill damage in either goal',()=>{

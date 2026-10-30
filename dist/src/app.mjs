@@ -1,4 +1,4 @@
-import { victoryLabel } from './match-rules.mjs';
+import { victoryLabel, attackLabel } from './match-rules.mjs';
 import { loadPublishedCatalog } from './release-loader.mjs';
 import { canAttack } from './content.mjs';
 import { artForUnit, makeSprite, makeAttackEffect, hydrateArt } from './art.mjs';
@@ -39,7 +39,7 @@ function card(side, p) {
   const b = document.createElement(isPlayer ? 'button' : 'div');
   b.className = `card ${side} ${side==='ai'?'enemy':''} ${u ? '' : 'empty'} ${isPlayer && selected === p ? 'selected' : ''}`;
   if(isPlayer) { b.type='button'; b.dataset.position=p; b.disabled=(g.phase==='finished'||g.phase==='error')||playing; b.onclick=e=>e.preventDefault(); b.onpointerdown=e=>{beginInspect(e,id,b);beginDrag(e,p,b);};  if(animationPositions.includes(p)) b.classList.add('swap-arrival'); }
-  if(u && u.hp===0) b.classList.add('pending-defeat'); if(effect?.lane===p && effect.side===side && effect.stage==='attack') b.classList.add('perform-attack'); if(effect?.lane===p && effect.side!==side && effect.hit){b.classList.add('perform-hit');add(b,'span','damage-float',`−${effect.damage}`);} const pos=add(b,'div','card-top'); add(pos,'span','pos',p<=3?String(p):`${p-3}后`); if(u?.disabled&&!canAttack(u))add(pos,'span','disabled-label','无法攻击');
+  if(effect?.stage==='attack' && effect.targetLane===p && effect.side!==side)b.classList.add('attack-target'); if(u && u.hp===0) b.classList.add('pending-defeat'); if(effect?.lane===p && effect.side===side && effect.stage==='attack') b.classList.add('perform-attack'); if(effect?.targetLane===p && effect.side!==side && effect.hit){b.classList.add('perform-hit');add(b,'span','damage-float',`−${effect.damage}`);} const pos=add(b,'div','card-top'); add(pos,'span','pos',p<=3?String(p):`${p-3}后`); if(u?.disabled&&!canAttack(u))add(pos,'span','disabled-label','无法攻击');
   if(!u){add(b,'div','empty-mark','＋');add(b,'div','empty-label','空位置');b.setAttribute('aria-label',`${side==='player'?'我方':'对手'} ${p<=3?p+'号战场格':(p-3)+'号战线后方备战格'}，空位`);return b;}
   if(!isPlayer){b.tabIndex=0;b.onpointerdown=e=>beginInspect(e,id,b);}
   b.onpointerenter=e=>{if(e.pointerType==='mouse'&&!drag)showCardInfo(id,b);};
@@ -47,7 +47,7 @@ function card(side, p) {
   b.onkeydown=e=>{if(e.key==='Escape')hideCardInfo();};
 
   if(skillPulses.has(id)){const delta=skillPulses.get(id);b.classList.add('skill-pulse');add(b,'span','damage-float',delta>0?'+'+delta:String(delta));}
-  if(effect?.stage==='impact' && effect.hit && effect.lane===p && effect.side!==side && effect.attackEffect)b.append(makeAttackEffect(effect.attackEffect));
+  if(effect?.stage==='impact' && effect.hit && effect.targetLane===p && effect.side!==side && effect.attackEffect)b.append(makeAttackEffect(effect.attackEffect));
   b.dataset.unitId=id; const sprite=makeSprite('unit-sprite',artForUnit(u));sprite.dataset.instance=id;b.append(sprite);
   add(b,'div','card-name',u.name); add(b,'div','card-sub',(u.skills||[]).map(s=>s.definition.name).join(' · ')||'无技能');
   const stats=add(b,'div','stats');add(stats,'span','attack',`⚔ ${u.attack}`);add(stats,'span','health',`♥ ${u.hp} / ${u.maxHp}`);
@@ -66,12 +66,12 @@ function show() {
   }
   if(adventureHooks&&!playing&&!visual)adventureHooks.onChange(structuredClone(g));
   el('deployment-goal').value=view.victoryCondition;el('deployment-goal-wrap').hidden=g.phase!=='deployment'||playing||!!adventureHooks;
-  el('battle-goal').textContent='本局目标：'+victoryLabel(view.victoryCondition);
+  el('battle-goal').textContent='本局目标：'+victoryLabel(view.victoryCondition)+' · '+attackLabel(view.victoryCondition);
   el('victory-condition').disabled=playing;
   el('phase').textContent=g.error?'结算已暂停':playing ? '攻击表演中' : g.winner ? (g.winner==='player'?'我方胜利':'对手胜利') : g.phase==='deployment'?'布阵阶段':g.turn==='player'?'你的回合':'对手回合';
   el('ap').textContent=playing?'请稍候':g.winner?'对局结束':g.phase==='deployment'?'调整你的队伍':`行动点 ${g.actionPoints} / 2`;
   const required=g.phase==='action'&&g.turn==='player'&&mustReinforce(g.sides.player.slots,g.actionPoints);
-  el('hint').textContent=g.winner?'本场对战结束，可重新开始。':g.phase==='deployment'?'拖拽我方卡牌调整位置，完成后点击完成布阵。':required?'请拖拽后备卡到前排空位补位。':'拖拽后备卡到前排替换；后备之间也可拖拽互换。悬停或长按查看详情。';
+  el('hint').textContent=g.winner?'本场对战结束，可重新开始。':g.phase==='deployment'?'拖拽我方卡牌调整位置，完成后点击完成布阵。':required?'场上无人，请拖拽1名后备到前排空位。':'可保留后备，或拖拽到前排补位/替换；后备之间也可拖拽互换。悬停或长按查看详情。';
   el('feedback').textContent=g.error||feedback;
   const lanes=el('lanes');lanes.replaceChildren();for(const [side,label] of [['ai','对手战场'],['player','我方战场']]){const field=add(lanes,'div','field');add(field,'div','field-title',label);const row=add(field,'div','field-row');for(const p of [1,2,3])row.append(card(side,p));}
   for(const side of ['ai','player']){const container=el(side==='ai'?'enemy-bench':'player-bench');container.replaceChildren();for(let p=4;p<=6;p++)container.append(card(side,p));el(side==='ai'?'enemy-count':'reserve-count').textContent=`${g.sides[side].slots.slice(3).filter(Boolean).length} / 3`;}
@@ -93,11 +93,11 @@ el('start').onclick=()=>run(()=>{selected=null;if(g.mode==='pve'){const enemies=
     for(const f of group){
       visual=structuredClone(f.before);for(const x of ghosts){visual.sides[x.side].slots[x.pos]=x.id;visual.units[x.id]=structuredClone(x.unit);}
       const sequenceAttack=f.before.units[f.before.sides[side].slots[f.lane-1]]?.art?.character?.renderer==='sequence_builtin';
-      effect={side,lane:f.lane,hit:false,stage:'attack'};show();await wait(sequenceAttack?640:360);
-      const targetSide=side==='player'?'ai':'player', target=f.before.sides[targetSide].slots[f.lane-1];
+      effect={side,lane:f.lane,targetLane:f.targetLane,hit:false,stage:'attack'};show();await wait(sequenceAttack?640:360);
+      const targetSide=side==='player'?'ai':'player', target=f.targetId, targetLane=f.targetLane;
       visual=structuredClone(f.after);for(const x of ghosts){visual.sides[x.side].slots[x.pos]=x.id;visual.units[x.id]=structuredClone(x.unit);}
-      if(target && !f.after.sides[targetSide].slots[f.lane-1]){const unit=structuredClone(f.after.units[target]);visual.sides[targetSide].slots[f.lane-1]=target;ghosts.push({side:targetSide,pos:f.lane-1,id:target,unit});}
-      effect={side,lane:f.lane,hit:!!target,stage:'impact',attackEffect:f.before.units[f.before.sides[side].slots[f.lane-1]]?.art?.attackEffect,damage:target?f.before.units[target].hp-f.after.units[target].hp:0};show();if(!target&&g.mode!=='pve'){document.body.classList.remove('score-shake');void document.body.offsetWidth;document.body.classList.add('score-shake');const fx=add(document.body,'div','score-burst','胜利点 +1');setTimeout(()=>fx.remove(),800);}await wait(sequenceAttack?600:500);
+      if(target && !f.after.sides[targetSide].slots[targetLane-1]){const unit=structuredClone(f.after.units[target]);visual.sides[targetSide].slots[targetLane-1]=target;ghosts.push({side:targetSide,pos:targetLane-1,id:target,unit});}
+      effect={side,lane:f.lane,targetLane,hit:!!target,stage:'impact',attackEffect:f.before.units[f.before.sides[side].slots[f.lane-1]]?.art?.attackEffect,damage:target?f.before.units[target].hp-f.after.units[target].hp:0};show();if(!target&&g.victoryCondition==='score_5'){document.body.classList.remove('score-shake');void document.body.offsetWidth;document.body.classList.add('score-shake');const fx=add(document.body,'div','score-burst','胜利点 +1');setTimeout(()=>fx.remove(),800);}await wait(sequenceAttack?600:500);
     }
     if(group.length && ghosts.length){ effect=null; show(); document.querySelectorAll('.pending-defeat').forEach(n=>n.classList.add('perform-defeat')); await wait(400); }
   }

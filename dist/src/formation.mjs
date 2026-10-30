@@ -48,12 +48,13 @@ export function swapBench(slots, a, b) {
 export function mustReinforce(slots, actionPoints) {
   validateFormation(slots);
   if (!Number.isInteger(actionPoints) || actionPoints < 0) throw new Error('Invalid action points');
-  return actionPoints > 0 && slots.slice(0, 3).includes(null) && slots.slice(3).some(Boolean);
+  return actionPoints > 0 && !slots.slice(0, 3).some(Boolean) && slots.slice(3).some(Boolean);
 }
 
 /** The caller must resolve the returned entry event before accepting another action. */
 export function reinforce(slots, actionPoints, from, to) {
-  if (!mustReinforce(slots, actionPoints) || !isBench(from) || !isField(to) || !slots[from - 1] || slots[to - 1] !== null) throw new Error('Illegal reinforcement');
+  validateFormation(slots);
+  if (!Number.isInteger(actionPoints) || actionPoints < 1 || !isBench(from) || !isField(to) || !slots[from - 1] || slots[to - 1] !== null) throw new Error('Illegal reinforcement');
   const unit = slots[from - 1];
   const next = deploySwap(slots, from, to);
   return { slots: next, actionPoints: actionPoints - 1, events: [{ type: 'enter', unit, position: to }], cannotAttackThisTurn: unit };

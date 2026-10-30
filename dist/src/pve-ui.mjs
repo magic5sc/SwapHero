@@ -69,7 +69,7 @@ function roomPanel(parent){const box=el('section','room-panel',undefined,parent)
  button(box,'离开，继续选路',()=>leaveRoom(run),'primary');
 }
 function render(){
- root.replaceChildren();const header=el('header','pve-header');const title=el('div','',undefined,header);el('small','eyebrow','SWAPHERO · 浮岛远征',title);el('h1','','每一次换位，都是新的旅途',title);el('p','muted','冒险航图 · 单章测试版 0.5.2',title);
+ root.replaceChildren();const header=el('header','pve-header');const title=el('div','',undefined,header);el('small','eyebrow','SWAPHERO · 浮岛远征',title);el('h1','','每一次换位，都是新的旅途',title);el('p','muted','冒险航图 · 单章测试版 0.5.3',title);
  const nav=el('nav','',undefined,header);if(run){button(nav,'导出存档',exportSave);button(nav,'新周目',begin);}button(nav,'导入存档',importSave);const link=el('a','ghost','单场对战',nav);link.href='duel.html';
  if(notice||storageError)el('p','pve-alert',notice||storageError);
  if(!pack){el('p','pve-alert','正在读取冒险内容……');return;}

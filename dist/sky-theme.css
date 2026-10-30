@@ -70,3 +70,5 @@ body:has(#battle-screen:not([hidden]))::before{background-image:url('assets/sky-
 #deployment-goal-wrap{display:block;text-align:center;font-size:12px}
 #deployment-goal-wrap[hidden],.score-dots[hidden]{display:none}
 @media(max-width:650px){.bench,.field-row{gap:4px}.bench .unit-sprite{width:82px;height:82px}.battle-goal{font-size:13px}.bench .pos{font-size:9px}}
+
+.card.attack-target{outline:3px solid #f6b83e;outline-offset:3px}

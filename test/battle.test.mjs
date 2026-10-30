@@ -8,11 +8,11 @@ test('five points ends combat immediately',()=>{const g=createGame();start(g);g.
 test('forced reinforcement blocks ending turn and allows play after points run out',()=>{
   const g=createGame();start(g);g.sides.player.slots.splice(0,3,null,null,null);
   assert.throws(()=>endTurn(g,'player'),/强制补位/);
-  move(g,'player',4,1);assert.throws(()=>endTurn(g,'player'),/强制补位/);
+  move(g,'player',4,1);assert.equal(g.actionPoints,1);
   move(g,'player',5,2);assert.equal(g.actionPoints,0);assert.equal(g.sides.player.slots[2],null);
   endTurn(g,'player');assert.equal(g.turn,'ai');
 });
-test('AI fills vacancies using available points',()=>{
+test('AI reinforces one front unit and retains reserves',()=>{
   const g=createGame();start(g);endTurn(g,'player');g.sides.ai.slots.splice(0,3,null,null,null);
-  playAI(g);assert.equal(g.sides.ai.slots.slice(0,3).filter(Boolean).length,2);assert.equal(g.turn,'player');
+  playAI(g);assert.equal(g.sides.ai.slots.slice(0,3).filter(Boolean).length,1);assert.equal(g.turn,'player');
 });

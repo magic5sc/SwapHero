@@ -12,7 +12,8 @@
 #adventure .expedition-status strong{color:#305a78}
 #adventure .expedition-status small{margin-left:auto;max-width:100%;overflow-wrap:anywhere;color:#796b53}
 #adventure .expedition-layout{grid-template-columns:minmax(0,1fr) 290px;gap:18px}
-#adventure .map-panel{padding:0;border:2px solid #b59b70;border-radius:5px;background:#fff3d6;box-shadow:0 8px 24px #1b465b40,inset 0 0 0 4px #f8e4b8;overflow:hidden}
+#adventure .expedition-main{min-width:0;max-width:100%}
+#adventure .map-panel{min-width:0;max-width:100%;padding:0;border:2px solid #b59b70;border-radius:5px;background:#fff3d6;box-shadow:0 8px 24px #1b465b40,inset 0 0 0 4px #f8e4b8;overflow:hidden}
 #adventure .atlas-heading{padding:20px 26px 12px;text-align:center;background:linear-gradient(#fff7e9e8,#fff0d6d4),url('assets/chapter-map/atlas-background.png') center 8%/cover;border-bottom:1px solid #ceb88e;position:relative}
 #adventure .atlas-kicker{font-size:10px;letter-spacing:.3em;color:#997337}
 #adventure .atlas-heading h2{margin:7px 0;color:#254a67;font-size:27px;letter-spacing:.14em;text-shadow:0 1px #fff}
@@ -20,8 +21,8 @@
 #adventure .atlas-controls{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 18px;background:#fcf4e3;border-bottom:1px solid #d7c5a3}
 #adventure .route-status-key{font-size:11px;color:#536b73}
 #adventure button.atlas-locate{font-size:12px;padding:5px 10px;min-height:34px;background:#f5e9cb;border-color:#bca77f}
-#adventure .map-scroll{height:640px;max-height:72vh;min-height:360px;overflow:auto;border:0;border-radius:0;background:#f5ead0 url('assets/chapter-map/atlas-background.png') center/100% 100% no-repeat;scrollbar-color:#a78f65 #ede0c0;scrollbar-width:thin;box-shadow:inset 0 5px 12px #70573116}
-#adventure .route-map{min-width:620px;isolation:isolate;background:linear-gradient(90deg,transparent 10%,#fff6de77 22%,#fff5df88 49.5%,#b2945e22 50%,#fff5df88 50.5%,#fff6de77 78%,transparent 90%)}
+#adventure .map-scroll{height:640px;max-height:72vh;min-height:360px;overflow:auto;max-width:100%;overscroll-behavior:contain;border:0;border-radius:0;background:#f5ead0;scrollbar-color:#a78f65 #ede0c0;scrollbar-width:thin;box-shadow:inset 0 5px 12px #70573116}
+#adventure .route-map{min-width:620px;min-height:100%;isolation:isolate;background:linear-gradient(90deg,transparent 10%,#fff6de77 22%,#fff5df88 49.5%,#b2945e22 50%,#fff5df88 50.5%,#fff6de77 78%,transparent 90%),#f5ead0 url('assets/chapter-map/atlas-background.png') center/100% 100% no-repeat}
 #adventure .route-lines line{stroke:#5a98aa;stroke-width:3;stroke-dasharray:2 8;stroke-linecap:round;opacity:.78;vector-effect:non-scaling-stroke}
 #adventure .route-lines line.reachable{stroke:#318fa5;stroke-width:4;opacity:1;stroke-dasharray:3 7}
 #adventure .route-lines line.travelled{stroke:#dd9a30;stroke-width:5;stroke-dasharray:3 7;opacity:1}
@@ -58,7 +59,7 @@
 #adventure .room-panel{border-color:#bda77e;border-radius:5px;background:linear-gradient(#fff9eaf2,#f7edd6ed),url('assets/chapter-map/atlas-background.png') center/cover}
 #adventure .pve-footer{background:#fff6e2dc;border:1px solid #ccb890;padding:12px 18px;margin-top:18px;border-radius:4px}
 @media(max-width:1000px){#adventure .expedition-layout{grid-template-columns:minmax(0,1fr) 250px}#adventure .pve-team{padding:12px}}
-@media(max-width:850px){#adventure{padding:10px}#adventure .pve-header{padding:16px}#adventure .expedition-layout{grid-template-columns:1fr}#adventure .pve-team{order:0}#adventure .team-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#adventure .pve-unit{margin:0;min-width:0;padding-left:64px}#adventure .pve-portrait{width:60px;height:60px}#adventure .map-scroll{height:520px;max-height:70vh}#adventure .atlas-heading{padding:18px 10px 12px}#adventure .atlas-heading h2{font-size:23px}#adventure .expedition-status{gap:10px;font-size:13px;padding:12px}#adventure .map-legend{gap:10px 18px}#adventure .atlas-controls{padding:8px 10px}#adventure .route-status-key{font-size:10px}}
+@media(max-width:850px){#adventure{padding:10px}#adventure .pve-header{padding:16px}#adventure .expedition-layout{grid-template-columns:minmax(0,1fr)}#adventure .pve-team{order:0}#adventure .team-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}#adventure .pve-unit{margin:0;min-width:0;padding-left:64px}#adventure .pve-portrait{width:60px;height:60px}#adventure .map-scroll{height:520px;max-height:70vh}#adventure .atlas-heading{padding:18px 10px 12px}#adventure .atlas-heading h2{font-size:23px}#adventure .expedition-status{gap:10px;font-size:13px;padding:12px}#adventure .map-legend{gap:10px 18px}#adventure .atlas-controls{padding:8px 10px}#adventure .route-status-key{font-size:10px}}
 @media(max-width:420px){#adventure .team-list{grid-template-columns:1fr}#adventure .expedition-status small{margin-left:0;width:100%}#adventure .atlas-controls{flex-wrap:wrap}#adventure .map-legend{gap:10px;font-size:11px}}
 @media(prefers-reduced-motion:reduce){#adventure .map-node{transition:none}}
 #adventure .pve-header a.ghost{color:#234d66;background:#fff3d8;border:1px solid #d2bc8e;box-shadow:none;text-shadow:none;border-radius:4px}
