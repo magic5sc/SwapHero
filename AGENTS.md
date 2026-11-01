@@ -45,3 +45,7 @@ framework. Read docs/PVE-0.5.0.md and current Wiki. Latest owner decision on
 This overrides older Wiki victory statements. Do not implement artifacts or meta
 progression beyond its unavailable entry. Keep the separate test content pack,
 editor data, official cards, existing art and single-match duel route intact.
+
+## Tabletop presentation 0.6.0
+
+Keep live character references, animation rigs, cards and save data separate from UI concept art. Preview cutouts are art-document references only; never substitute them for current game characters without explicit approval. See docs/TABLETOP-0.6.0.md.

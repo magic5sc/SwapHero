@@ -1,10 +1,11 @@
+import {mountLeather,isTableTransition} from './tabletop.mjs';
 import { victoryLabel, attackLabel } from './match-rules.mjs';
 import { loadPublishedCatalog } from './release-loader.mjs';
 import { canAttack } from './content.mjs';
 import { artForUnit, makeSprite, makeAttackEffect, hydrateArt } from './art.mjs';
 import { createGame, deploy, start, rearrange, move, endTurn, playAI } from './battle.mjs';
 import { mustReinforce } from './formation.mjs';
-let adventureHooks=null;
+let adventureHooks=null;mountLeather(document.getElementById('battle-screen'));
 const selectedGoal=()=>document.getElementById('victory-condition')?.value||'score_5';
 let activeCatalog=null,activeTeam=null,rosterLabel=null;
 let labCatalog=null, useSkillLab=false, inspectedId=null, skillPulses=new Map();
@@ -134,7 +135,7 @@ el('victory-condition').onchange=()=>{if(g.phase==='deployment'&&!playing){g.vic
 el('deployment-goal').onchange=()=>{if(g.phase==='deployment'&&!playing){el('victory-condition').value=el('deployment-goal').value;g.victoryCondition=selectedGoal();show();}};
 // Navigation preserves the current local match.
 el('enter-battle').onclick=()=>el('enter-cards').click();
-el('back-home').onclick=()=>{if(playing)return;if(adventureHooks){adventureHooks.onExit(structuredClone(g));return;}el('battle-screen').hidden=true;el('home').hidden=false;};
+el('back-home').onclick=()=>{if(playing||isTableTransition())return;if(adventureHooks){adventureHooks.onExit(structuredClone(g));return;}el('battle-screen').hidden=true;el('home').hidden=false;};
 el('help-toggle').onclick=()=>{el('help').hidden=!el('help').hidden;el('help-toggle').setAttribute('aria-expanded',String(!el('help').hidden));};
 
 hydrateArt();

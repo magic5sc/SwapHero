@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+globalThis.Image=class{naturalWidth=0};
+globalThis.window={addEventListener(){}};
+globalThis.matchMedia=()=>({matches:true});
+globalThis.document={querySelectorAll:()=>[],body:{classList:{add(){},remove(){}}}};
+const {switchTable,closedRollTravel,isTableTransition}=await import('../dist/src/tabletop.mjs');
+function scene(type,events){const part=name=>({style:{},offsetHeight:64,hidden:false,animate(frames){events.push(name+':'+Object.keys(frames[0])[0]);return {finished:Promise.resolve(),cancel(){}};}});const surface=part(type+'-surface'),rods=[part('top'),part('bottom')],curl=part('curl'),root=part(type);root.hidden=type==='battle';root.clientHeight=700;root.querySelector=s=>s.includes('surface')?surface:curl;root.querySelectorAll=()=>rods;return root;}
+test('closed chapter retains two touching visible roller bodies on short/mobile/desktop screens',()=>{for(const [h,r] of [[250,64],[700,64],[900,96]]){const d=closedRollTravel(h,r);const visibleGap=(h-r-d+r*.12)-(d+r*.86);assert.ok(visibleGap<=0 && visibleGap>=-3);}});
+test('map -> battle -> map closes before sliding and leaves an expanded interactive destination',async()=>{const events=[],map=scene('map',events),battle=scene('battle',events);await switchTable(map,battle,'map','battle',()=>events.push('prepare-battle'));assert.equal(map.hidden,true);assert.equal(battle.hidden,false);assert.equal(battle.querySelector('.leather-surface').style.clipPath,'inset(0)');assert.ok(events.indexOf('map-surface:clipPath')<events.indexOf('map:transform'));assert.ok(events.indexOf('prepare-battle')<events.indexOf('battle:transform'));await switchTable(battle,map,'battle','map',()=>{});assert.equal(map.hidden,false);assert.equal(map.inert,false);assert.equal(map.querySelector('.paper-surface').style.clipPath,'inset(0)');assert.ok(map.querySelectorAll().every(r=>r.style.transform==='translateY(0px)'||r.style.transform==='translateY(0)'));assert.equal(isTableTransition(),false);});
+test('failed preparation restores the source instead of leaving an empty desk',async()=>{const a=scene('map',[]),b=scene('battle',[]);await assert.rejects(switchTable(a,b,'map','battle',()=>{throw Error('asset failure')}));assert.equal(a.hidden,false);assert.equal(b.hidden,true);assert.equal(a.inert,false);assert.equal(isTableTransition(),false);});

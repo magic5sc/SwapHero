@@ -1,3 +1,4 @@
+import {mountParchment,mountLeather,switchTable,isTableTransition} from './tabletop.mjs';
 import {newRun,availableNodes,enterNode,finishBattle,continueChapter,claimReward,buy,service,eventRecruit,leaveRoom,abandonRun,upgradePreview,candidates,QUALITY,encodeRun,decodeRun} from './pve.mjs';
 import {openAdventureBattle} from './app.mjs';
 import {makeSprite,artForUnit} from './art.mjs';
@@ -9,9 +10,15 @@ function mapIcon(parent,type){const image=el('img','map-icon',undefined,parent);
 const el=(tag,cls,text,parent=root)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;parent.append(e);return e;};
 function button(parent,text,fn,cls='',disabled=false){const b=el('button',cls,text,parent);b.type='button';b.disabled=disabled;b.onclick=()=>act(fn);return b;}
 function save(){if(!run)return;try{const raw=encodeRun(run);if(raw!==savedText){localStorage.setItem(KEY,raw);savedText=raw;}storageError='';}catch(e){storageError='保存失败：'+e.message+'。请导出存档备份。';}}
-function act(fn){try{notice='';fn();save();}catch(e){notice=e.message;}render();}
+async function act(fn){if(isTableTransition())return;try{notice='';await fn();save();}catch(e){notice=e.message;}if(!root.hidden)render();}
 function begin(){if(run&&!['failed','demo_complete','completed','abandoned'].includes(run.status)&&!confirm('放弃当前冒险并开始新周目？可先导出存档。'))return;run=newRun(pack,document.getElementById('run-seed')?.value.trim()||String(Date.now()));save();render();}
-function showBattle(){root.hidden=true;openAdventureBattle(run.battle,{onChange:b=>{run.battle=b;save();},onExit:b=>{run.battle=b;if(b.winner)finishBattle(run,b);save();document.getElementById('battle-screen').hidden=true;document.querySelector('.result-overlay')?.remove();root.hidden=false;render();}});}
+async function showBattle(){
+ const battleScreen=document.getElementById('battle-screen');mountLeather(battleScreen);
+ await switchTable(root,battleScreen,'map','battle',()=>openAdventureBattle(run.battle,{onChange:b=>{run.battle=b;save();},onExit:async b=>{
+  if(isTableTransition())return;run.battle=b;if(b.winner)finishBattle(run,b);save();document.querySelector('.result-overlay')?.remove();
+  await switchTable(battleScreen,root,'battle','map',()=>render());
+ }}));
+}
 function exportSave(){const blob=new Blob([encodeRun(run)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SwapHero-adventure.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
 function importSave(){const f=document.createElement('input');f.type='file';f.accept='.json,application/json';f.onchange=async()=>{try{const file=f.files[0];if(!file)return;if(file.size>3000000)throw Error('存档超过3MB');const next=decodeRun(await file.text());if(run&&!confirm('用导入的冒险替换当前进度？'))return;run=next;save();notice='存档已恢复，使用存档内的内容版本。';render();}catch(e){notice='导入失败：'+e.message;render();}};f.click();}
 function select(parent,items){const s=el('select','',undefined,parent);for(const [value,text] of items){const o=el('option','',text,s);o.value=value;}return s;}
@@ -25,17 +32,20 @@ function teamPanel(parent){
 function mapPanel(parent){
  const section=el('section','map-panel',undefined,parent);
  const heading=el('div','atlas-heading',undefined,section);el('small','atlas-kicker','EXPEDITION ATLAS',heading);el('h2','',run.pack.chapters[run.chapter].name,heading);
- el('p','muted','沿航图向上探索，选择亮起的下一站。',heading);
+
  const controls=el('div','atlas-controls',undefined,section);el('span','route-status-key','◇ 当前位置　◉ 可前往　✓ 已探索',controls);
  const scroller=el('div','map-scroll',undefined,section);scroller.tabIndex=0;scroller.setAttribute('aria-label','章节航图，可滚动查看全部路线');
+ // One continuous parchment texture, including the bands above/below the map.
+ const syncPaper=()=>document.querySelector('#adventure .paper-surface')?.style.setProperty('--map-scroll-y',`${-scroller.scrollTop}px`);
+ scroller.addEventListener('scroll',syncPaper,{passive:true});
  const map=el('div','route-map',undefined,scroller),step=102,height=(run.map.layers+1)*step+92;map.style.height=height+'px';
- const x=n=>110+n.col*80,y=n=>height-n.row*step-70;
+ const x=n=>55+n.col*98,y=n=>height-n.row*step-70;
  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox',`0 0 700 ${height}`);svg.setAttribute('preserveAspectRatio','none');svg.classList.add('route-lines');svg.setAttribute('aria-hidden','true');map.append(svg);
  const available=availableNodes(run);
  for(const n of run.map.nodes)for(const id of n.next){const to=run.map.nodes.find(x=>x.id===id),line=document.createElementNS(svg.namespaceURI,'line');line.setAttribute('x1',String(x(n)));line.setAttribute('y1',String(y(n)));line.setAttribute('x2',String(x(to)));line.setAttribute('y2',String(y(to)));if(run.visited.includes(n.id)&&run.visited.includes(id))line.classList.add('travelled');else if(n.id===run.current&&available.includes(id))line.classList.add('reachable');svg.append(line);}
- for(const n of run.map.nodes){const active=run.status==='map'&&available.includes(n.id),current=run.current===n.id,visited=run.visited.includes(n.id),b=button(map,'',()=>{enterNode(run,n.id);if(run.status==='battle')showBattle();},'map-node '+n.type+(active?' available':'')+(visited?' visited':'')+(current?' current':''),!active);b.style.left=`${x(n)/700*100}%`;b.style.top=y(n)+'px';mapIcon(b,n.type);b.title=`第${n.row+1}层 · ${names[n.type]}`;b.setAttribute('aria-label',b.title+(current?'，当前位置':active?'，可前往':visited?'，已探索':'，未到达'));if(current)b.setAttribute('aria-current','step');el('span','node-label',names[n.type],b);}
+ for(const n of run.map.nodes){const active=run.status==='map'&&available.includes(n.id),current=run.current===n.id,visited=run.visited.includes(n.id),b=button(map,'',()=>{enterNode(run,n.id);save();if(run.status==='battle')return showBattle();},'map-node '+n.type+(active?' available':'')+(visited?' visited':'')+(current?' current':''),!active);b.style.left=`${x(n)/700*100}%`;b.style.top=y(n)+'px';mapIcon(b,n.type);b.title=`第${n.row+1}层 · ${names[n.type]}`;b.setAttribute('aria-label',b.title+(current?'，当前位置':active?'，可前往':visited?'，已探索':'，未到达'));if(current)b.setAttribute('aria-current','step');el('span','node-label',names[n.type],b);}
  const compass=el('img','atlas-compass',undefined,map);compass.src=MAP_ART+'compass.svg';compass.alt='';
- const focusCurrent=()=>{const n=run.map.nodes.find(n=>n.id===run.current);scroller.scrollTop=y(n||{row:0})-scroller.clientHeight*.75;};
+ const focusCurrent=()=>{const n=run.map.nodes.find(n=>n.id===run.current);scroller.scrollTop=y(n||{row:0})-scroller.clientHeight*.75;syncPaper();};
  button(controls,'定位当前路线',focusCurrent,'atlas-locate');
  const legend=el('div','map-legend',undefined,section);for(const t of Object.keys(names)){const item=el('span','legend-item',undefined,legend);mapIcon(item,t);el('span','',names[t],item);}
  requestAnimationFrame(focusCurrent);
@@ -68,16 +78,17 @@ function roomPanel(parent){const box=el('section','room-panel',undefined,parent)
  }else{el('h3','',room.event==='spring'?'遗迹清泉':'旧日训练场',box);services(box);}
  button(box,'离开，继续选路',()=>leaveRoom(run),'primary');
 }
-function render(){
- root.replaceChildren();const header=el('header','pve-header');const title=el('div','',undefined,header);el('small','eyebrow','SWAPHERO · 浮岛远征',title);el('h1','','每一次换位，都是新的旅途',title);el('p','muted','冒险航图 · 单章测试版 0.5.3',title);
+function renderContent(){
+ root.replaceChildren();const header=el('header','pve-header');const title=el('div','',undefined,header);el('small','eyebrow','SWAPHERO',title);el('h1','','远征手记',title);el('p','muted','桌面远征 · 0.6.0',title);
  const nav=el('nav','',undefined,header);if(run){button(nav,'导出存档',exportSave);button(nav,'新周目',begin);}button(nav,'导入存档',importSave);const link=el('a','ghost','单场对战',nav);link.href='duel.html';
  if(notice||storageError)el('p','pve-alert',notice||storageError);
  if(!pack){el('p','pve-alert','正在读取冒险内容……');return;}
- if(!run){const hero=el('section','adventure-start');el('span','chapter-badge','CHAPTER 01',hero);el('h2','','浮岛遗迹',hero);el('p','','一位主角启程，沿分岔路线寻找伙伴与力量，抵达遗迹深处。',hero);el('p','','战斗之间伤亡保留，谨慎选择下一站。',hero);const label=el('label','','地图种子（可留空）',hero),input=el('input','',undefined,label);input.id='run-seed';input.placeholder='输入种子可重现路线';button(hero,'开始远征',begin,'primary');const note=el('details','',undefined,hero);el('summary','','本版本内容与规则',note);el('p','','使用独立测试角色与数值；3战场＋3备战，单主角开局，最多6人。普通/精英宝箱三选一，商店、事件、营地可招募、恢复和升级。全灭失败；章末全队恢复。神器、局间养成及后两章未开放。',note);return;}
+ if(!run){const hero=el('section','adventure-start');el('span','chapter-badge','CHAPTER 01',hero);el('h2','','第一章 · 启程',hero);el('p','','一位主角启程，沿分岔路线寻找伙伴与力量，抵达遗迹深处。',hero);el('p','','战斗之间伤亡保留，谨慎选择下一站。',hero);const label=el('label','','地图种子（可留空）',hero),input=el('input','',undefined,label);input.id='run-seed';input.placeholder='输入种子可重现路线';button(hero,'开始远征',begin,'primary');const note=el('details','',undefined,hero);el('summary','','本版本内容与规则',note);el('p','','使用独立测试角色与数值；3战场＋3备战，单主角开局，最多6人。普通/精英宝箱三选一，商店、事件、营地可招募、恢复和升级。全灭失败；章末全队恢复。神器、局间养成及后两章未开放。',note);return;}
  const status=el('div','expedition-status');el('strong','',run.pack.chapters[run.chapter].name,status);el('span','',`金币 ${run.gold}`,status);el('span','',`路线 ${run.visited.length} / ${run.map.layers+1}`,status);el('small','',`种子 ${run.seed}`,status);
- const layout=el('div','expedition-layout');const main=el('div','expedition-main',undefined,layout);if(run.status!=='map')roomPanel(main);mapPanel(main);teamPanel(layout);
- const footer=el('footer','pve-footer');el('p','muted','测试配置：宝箱混合池三选一，可跳过；营地一次行动；离队角色不返池。存档保存在当前浏览器，可导出后跨设备导入。',footer);button(footer,'局间养成（尚未开放）',()=>{notice='局间养成仅保留入口，资源带出和永久升级规则待定。';},'ghost');
+ const layout=el('div','expedition-layout');const main=el('div','expedition-main',undefined,layout);if(run.status!=='map')roomPanel(main);mapPanel(main);const crew=el('details','crew-drawer',header);el('summary','',`队伍 ${run.team.length}/6`,crew);teamPanel(crew);
+ const footer=el('details','pve-footer');el('summary','','远征管理',footer);el('p','muted','测试配置：宝箱混合池三选一，可跳过；营地一次行动；离队角色不返池。存档保存在当前浏览器，可导出后跨设备导入。',footer);button(footer,'局间养成（尚未开放）',()=>{notice='局间养成仅保留入口，资源带出和永久升级规则待定。';},'ghost');
  if(!['failed','demo_complete','completed','abandoned'].includes(run.status))button(footer,'放弃本次远征',()=>{if(confirm('确认放弃本次远征？不会自动获得胜利或资源带出。'))abandonRun(run);},'ghost');
 }
+function render(){renderContent();root.dataset.status=run?.status||'start';mountParchment(root);}
 try{const response=await fetch('data/pve-test.json');if(!response.ok)throw Error('内容加载失败');pack=await response.json();try{const raw=localStorage.getItem(KEY);if(raw){run=decodeRun(raw);savedText=raw;}}catch(e){notice='原存档未被覆盖：'+e.message;}}catch(e){notice=e.message;}
 render();
