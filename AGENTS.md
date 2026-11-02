@@ -49,3 +49,6 @@ editor data, official cards, existing art and single-match duel route intact.
 ## Tabletop presentation 0.6.0
 
 Keep live character references, animation rigs, cards and save data separate from UI concept art. Preview cutouts are art-document references only; never substitute them for current game characters without explicit approval. See docs/TABLETOP-0.6.0.md.
+
+## PvE Excel source
+For each release run `node scripts/compile-pve.mjs` before tests/build or Sites packaging. Commit the source workbook and generated data together. The workbook and schema guide are linked in docs/PVE-WORKBOOK.md.

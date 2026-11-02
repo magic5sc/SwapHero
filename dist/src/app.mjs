@@ -83,7 +83,7 @@ function show() {
 }
 function run(fn){try{fn();feedback='';}catch(e){feedback=e.message;}show();}
 function performMove(a,p){const before=structuredClone(g);run(()=>{if(g.phase==='deployment')deploy(g,a,p);else if(a>=4&&p>=4)rearrange(g,'player',a,p);else move(g,'player',a,p);inspectedId=before.sides.player.slots[a-1];selected=null;animationPositions=[a,p];});skillPulses=new Map(Object.values(g.units).filter(u=>before.units[u.id]&&u.hp!==before.units[u.id].hp).map(u=>[u.id,u.hp-before.units[u.id].hp]));show();setTimeout(()=>{skillPulses.clear();if(!playing)show();},700);if(animationPositions.length)setTimeout(()=>{animationPositions=[];},500);}
-el('start').onclick=()=>run(()=>{selected=null;if(g.mode==='pve'){const enemies=g.sides.ai.slots.filter(Boolean),positions=[0,1,2].sort((a,b)=>Number(!!g.sides.player.slots[b])-Number(!!g.sides.player.slots[a]));g.sides.ai.slots=Array(6).fill(null);enemies.forEach((id,i)=>g.sides.ai.slots[i<3?positions[i]:i]=id);}start(g);});el('end').onclick=async()=>{
+el('start').onclick=()=>run(()=>{selected=null;if(g.mode==='pve'&&!g.levelId){const enemies=g.sides.ai.slots.filter(Boolean),positions=[0,1,2].sort((a,b)=>Number(!!g.sides.player.slots[b])-Number(!!g.sides.player.slots[a]));g.sides.ai.slots=Array(6).fill(null);enemies.forEach((id,i)=>g.sides.ai.slots[i<3?positions[i]:i]=id);}start(g);});el('end').onclick=async()=>{
   if(playing)return; selected=null;const frames=[];let sim=structuredClone(g);
   try { endTurn(sim,'player',e=>frames.push(e));  }
   catch(e){feedback=e.message;show();return;}
@@ -151,4 +151,7 @@ el('enter-cards').onclick=async()=>{const button=el('enter-cards');if(playing)re
 // Development playtest calls this explicit API; normal game never reads editor storage.
 export function startConfiguredGame(snapshot){if(playing)throw Error('请等待表演结束');activeCatalog=structuredClone(snapshot.catalog);activeTeam=[...snapshot.team];useSkillLab=false;rosterLabel='开发端配置测试';g=createGame(activeCatalog,activeTeam,{victoryCondition:snapshot.victoryCondition||selectedGoal()});el('victory-condition').value=g.victoryCondition;g.log=[rosterLabel+' · '+activeCatalog.version];selected=null;inspectedId=null;feedback='正在测试独立配置快照；不会修改正式卡牌。';document.querySelector('.result-overlay')?.remove();el('home').hidden=true;el('battle-screen').hidden=false;show();}
 
-export function openAdventureBattle(battle,hooks){if(playing)throw Error('请等待战斗表演结束');adventureHooks=hooks;g=structuredClone(battle);rosterLabel='PvE 单章 · 测试内容';selected=null;visual=null;effect=null;inspectedId=null;feedback='';document.querySelector('.result-overlay')?.remove();el('home').hidden=true;el('battle-screen').hidden=false;el('back-home').textContent='保存并返回地图';show();}
+export function openAdventureBattle(battle,hooks){if(playing)throw Error('请等待战斗表演结束');adventureHooks=hooks;g=structuredClone(battle);const screen=el('battle-screen');
+ screen.style.setProperty('--level-texture',/^assets\/(?:[\w-]+\/)*[\w-]+\.(png|jpg|webp|svg)$/.test(g.background)?'url("'+g.background+'")':'url("assets/tabletop/leather.png")');
+ screen.querySelector('h1').firstChild.textContent=g.title||'战术对决';
+ rosterLabel='PvE 单章 · 测试内容';selected=null;visual=null;effect=null;inspectedId=null;feedback='';document.querySelector('.result-overlay')?.remove();el('home').hidden=true;el('battle-screen').hidden=false;el('back-home').textContent='保存并返回地图';show();}

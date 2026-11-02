@@ -1,18 +1,19 @@
 {
   "schema_version": 1,
-  "version": "pve-test-0.5.0",
+  "version": "pve-five-tables-v1",
   "cards": [
     {
       "card_id": "test_hero",
       "name": "旅途剑士 · 测试",
+      "role": "hero",
       "category": "test",
       "attack": 3,
       "health": 32,
       "art_id": null,
-      "status": "specified",
-      "blockers": [],
       "quality": "common",
       "gold_only": false,
+      "status": "specified",
+      "blockers": [],
       "slots": [
         {
           "slot_id": "attack_declared",
@@ -36,19 +37,27 @@
           "skill_id": "test_hero_strike",
           "level": 1
         }
+      ],
+      "learnable": [
+        "test_hero_strike",
+        "test_hero_focus",
+        "test_hero_arrival",
+        "test_hero_rest",
+        "shared_agility"
       ]
     },
     {
       "card_id": "test_ally_1",
       "name": "巡林客 · 测试",
+      "role": "ally",
       "category": "test",
       "attack": 2,
       "health": 18,
       "art_id": null,
-      "status": "specified",
-      "blockers": [],
       "quality": "common",
       "gold_only": false,
+      "status": "specified",
+      "blockers": [],
       "slots": [
         {
           "slot_id": "attack_declared",
@@ -66,19 +75,27 @@
           "capacity": 1
         }
       ],
-      "skills": []
+      "skills": [],
+      "learnable": [
+        "test_ally_1_strike",
+        "test_ally_1_focus",
+        "test_ally_1_arrival",
+        "test_ally_1_rest",
+        "shared_agility"
+      ]
     },
     {
       "card_id": "test_ally_2",
       "name": "晨光医者 · 测试",
+      "role": "ally",
       "category": "test",
       "attack": 2,
       "health": 18,
       "art_id": null,
-      "status": "specified",
-      "blockers": [],
       "quality": "rare",
       "gold_only": false,
+      "status": "specified",
+      "blockers": [],
       "slots": [
         {
           "slot_id": "attack_declared",
@@ -96,19 +113,26 @@
           "capacity": 1
         }
       ],
-      "skills": []
+      "skills": [],
+      "learnable": [
+        "test_ally_2_strike",
+        "test_ally_2_focus",
+        "test_ally_2_arrival",
+        "test_ally_2_rest"
+      ]
     },
     {
       "card_id": "test_ally_3",
       "name": "守桥人 · 测试",
+      "role": "ally",
       "category": "test",
       "attack": 2,
       "health": 18,
       "art_id": null,
-      "status": "specified",
-      "blockers": [],
       "quality": "common",
       "gold_only": false,
+      "status": "specified",
+      "blockers": [],
       "slots": [
         {
           "slot_id": "attack_declared",
@@ -126,19 +150,26 @@
           "capacity": 1
         }
       ],
-      "skills": []
+      "skills": [],
+      "learnable": [
+        "test_ally_3_strike",
+        "test_ally_3_focus",
+        "test_ally_3_arrival",
+        "test_ally_3_rest"
+      ]
     },
     {
       "card_id": "test_ally_4",
       "name": "风羽斥候 · 测试",
+      "role": "ally",
       "category": "test",
       "attack": 2,
       "health": 18,
       "art_id": null,
-      "status": "specified",
-      "blockers": [],
       "quality": "rare",
       "gold_only": false,
+      "status": "specified",
+      "blockers": [],
       "slots": [
         {
           "slot_id": "attack_declared",
@@ -156,19 +187,26 @@
           "capacity": 1
         }
       ],
-      "skills": []
+      "skills": [],
+      "learnable": [
+        "test_ally_4_strike",
+        "test_ally_4_focus",
+        "test_ally_4_arrival",
+        "test_ally_4_rest"
+      ]
     },
     {
       "card_id": "test_ally_5",
       "name": "赤焰学徒 · 测试",
+      "role": "ally",
       "category": "test",
       "attack": 2,
       "health": 18,
       "art_id": null,
-      "status": "specified",
-      "blockers": [],
       "quality": "epic",
       "gold_only": false,
+      "status": "specified",
+      "blockers": [],
       "slots": [
         {
           "slot_id": "attack_declared",
@@ -186,19 +224,26 @@
           "capacity": 1
         }
       ],
-      "skills": []
+      "skills": [],
+      "learnable": [
+        "test_ally_5_strike",
+        "test_ally_5_focus",
+        "test_ally_5_arrival",
+        "test_ally_5_rest"
+      ]
     },
     {
       "card_id": "test_ally_6",
       "name": "山岭卫士 · 测试",
+      "role": "ally",
       "category": "test",
       "attack": 2,
       "health": 18,
       "art_id": null,
-      "status": "specified",
-      "blockers": [],
       "quality": "common",
       "gold_only": false,
+      "status": "specified",
+      "blockers": [],
       "slots": [
         {
           "slot_id": "attack_declared",
@@ -216,19 +261,26 @@
           "capacity": 1
         }
       ],
-      "skills": []
+      "skills": [],
+      "learnable": [
+        "test_ally_6_strike",
+        "test_ally_6_focus",
+        "test_ally_6_arrival",
+        "test_ally_6_rest"
+      ]
     },
     {
       "card_id": "test_ally_7",
       "name": "星泉术士 · 测试",
+      "role": "ally",
       "category": "test",
       "attack": 2,
       "health": 18,
       "art_id": null,
-      "status": "specified",
-      "blockers": [],
       "quality": "legendary",
       "gold_only": true,
+      "status": "specified",
+      "blockers": [],
       "slots": [
         {
           "slot_id": "attack_declared",
@@ -246,63 +298,85 @@
           "capacity": 1
         }
       ],
-      "skills": []
+      "skills": [],
+      "learnable": [
+        "test_ally_7_strike",
+        "test_ally_7_focus",
+        "test_ally_7_arrival",
+        "test_ally_7_rest"
+      ]
     },
     {
       "card_id": "test_scout",
       "name": "浮岛哨兵 · 测试",
+      "role": "enemy",
       "category": "test",
       "attack": 1,
       "health": 6,
       "art_id": null,
+      "quality": "common",
+      "gold_only": false,
       "status": "specified",
       "blockers": [],
       "slots": [],
-      "skills": []
+      "skills": [],
+      "learnable": []
     },
     {
       "card_id": "test_guard",
       "name": "遗迹守卫 · 测试",
+      "role": "enemy",
       "category": "test",
       "attack": 2,
       "health": 12,
       "art_id": null,
+      "quality": "common",
+      "gold_only": false,
       "status": "specified",
       "blockers": [],
       "slots": [],
-      "skills": []
+      "skills": [],
+      "learnable": []
     },
     {
       "card_id": "test_elite",
       "name": "裂隙精英 · 测试",
+      "role": "enemy",
       "category": "test",
       "attack": 2,
       "health": 20,
       "art_id": null,
+      "quality": "common",
+      "gold_only": false,
       "status": "specified",
       "blockers": [],
       "slots": [],
-      "skills": []
+      "skills": [],
+      "learnable": []
     },
     {
       "card_id": "test_boss",
       "name": "第一章·守门巨像 · 测试",
+      "role": "enemy",
       "category": "test",
       "attack": 3,
       "health": 38,
       "art_id": null,
+      "quality": "common",
+      "gold_only": false,
       "status": "specified",
       "blockers": [],
       "slots": [],
-      "skills": []
+      "skills": [],
+      "learnable": []
     }
   ],
   "skills": [
     {
       "skill_id": "test_hero_strike",
-      "owner": "test_hero",
-      "slot": "attack_declared",
       "name": "横扫",
+      "description": "",
+      "slot": "attack_declared",
       "quality": "common",
       "gold_only": false,
       "status": "specified",
@@ -330,9 +404,9 @@
             {
               "op": "deal_damage",
               "target": "all_enemies",
-              "amount": "amount",
-              "duration": null,
               "zone": "battlefield",
+              "duration": null,
+              "amount": "amount",
               "damage_type": "skill"
             }
           ]
@@ -341,9 +415,9 @@
     },
     {
       "skill_id": "test_hero_focus",
-      "owner": "test_hero",
-      "slot": "attack_declared",
       "name": "回旋斩",
+      "description": "",
+      "slot": "attack_declared",
       "quality": "rare",
       "gold_only": false,
       "status": "specified",
@@ -371,9 +445,9 @@
             {
               "op": "deal_damage",
               "target": "all_enemies",
-              "amount": "amount",
-              "duration": null,
               "zone": "battlefield",
+              "duration": null,
+              "amount": "amount",
               "damage_type": "skill"
             }
           ]
@@ -382,9 +456,9 @@
     },
     {
       "skill_id": "test_hero_arrival",
-      "owner": "test_hero",
-      "slot": "unit_enter",
       "name": "入场冲击",
+      "description": "",
+      "slot": "unit_enter",
       "quality": "epic",
       "gold_only": true,
       "status": "specified",
@@ -412,9 +486,9 @@
             {
               "op": "deal_damage",
               "target": "opposing_unit",
-              "amount": "amount",
-              "duration": null,
               "zone": "battlefield",
+              "duration": null,
+              "amount": "amount",
               "damage_type": "skill"
             }
           ]
@@ -423,9 +497,9 @@
     },
     {
       "skill_id": "test_hero_rest",
-      "owner": "test_hero",
-      "slot": "unit_leave",
       "name": "退场休整",
+      "description": "",
+      "slot": "unit_leave",
       "quality": "rare",
       "gold_only": false,
       "status": "specified",
@@ -453,9 +527,9 @@
             {
               "op": "heal",
               "target": "self",
-              "amount": "amount",
+              "zone": "any",
               "duration": null,
-              "zone": "any"
+              "amount": "amount"
             }
           ]
         }
@@ -463,9 +537,9 @@
     },
     {
       "skill_id": "test_ally_1_strike",
-      "owner": "test_ally_1",
-      "slot": "attack_declared",
       "name": "追击斩",
+      "description": "",
+      "slot": "attack_declared",
       "quality": "common",
       "gold_only": false,
       "status": "specified",
@@ -493,9 +567,9 @@
             {
               "op": "deal_damage",
               "target": "opposing_unit",
-              "amount": "amount",
-              "duration": null,
               "zone": "battlefield",
+              "duration": null,
+              "amount": "amount",
               "damage_type": "skill"
             }
           ]
@@ -504,9 +578,9 @@
     },
     {
       "skill_id": "test_ally_1_focus",
-      "owner": "test_ally_1",
-      "slot": "attack_declared",
       "name": "蓄势",
+      "description": "",
+      "slot": "attack_declared",
       "quality": "rare",
       "gold_only": false,
       "status": "specified",
@@ -534,9 +608,9 @@
             {
               "op": "modify_attack",
               "target": "self",
-              "amount": "amount",
+              "zone": "battlefield",
               "duration": "turn",
-              "zone": "battlefield"
+              "amount": "amount"
             }
           ]
         }
@@ -544,9 +618,9 @@
     },
     {
       "skill_id": "test_ally_1_arrival",
-      "owner": "test_ally_1",
-      "slot": "unit_enter",
       "name": "入场冲击",
+      "description": "",
+      "slot": "unit_enter",
       "quality": "epic",
       "gold_only": true,
       "status": "specified",
@@ -574,9 +648,9 @@
             {
               "op": "deal_damage",
               "target": "opposing_unit",
-              "amount": "amount",
-              "duration": null,
               "zone": "battlefield",
+              "duration": null,
+              "amount": "amount",
               "damage_type": "skill"
             }
           ]
@@ -585,9 +659,9 @@
     },
     {
       "skill_id": "test_ally_1_rest",
-      "owner": "test_ally_1",
-      "slot": "unit_leave",
       "name": "退场休整",
+      "description": "",
+      "slot": "unit_leave",
       "quality": "rare",
       "gold_only": false,
       "status": "specified",
@@ -615,9 +689,9 @@
             {
               "op": "heal",
               "target": "self",
-              "amount": "amount",
+              "zone": "any",
               "duration": null,
-              "zone": "any"
+              "amount": "amount"
             }
           ]
         }
@@ -625,9 +699,9 @@
     },
     {
       "skill_id": "test_ally_2_strike",
-      "owner": "test_ally_2",
-      "slot": "attack_declared",
       "name": "追击斩",
+      "description": "",
+      "slot": "attack_declared",
       "quality": "common",
       "gold_only": false,
       "status": "specified",
@@ -655,9 +729,9 @@
             {
               "op": "deal_damage",
               "target": "opposing_unit",
-              "amount": "amount",
-              "duration": null,
               "zone": "battlefield",
+              "duration": null,
+              "amount": "amount",
               "damage_type": "skill"
             }
           ]
@@ -666,9 +740,9 @@
     },
     {
       "skill_id": "test_ally_2_focus",
-      "owner": "test_ally_2",
-      "slot": "attack_declared",
       "name": "蓄势",
+      "description": "",
+      "slot": "attack_declared",
       "quality": "rare",
       "gold_only": false,
       "status": "specified",
@@ -696,9 +770,9 @@
             {
               "op": "modify_attack",
               "target": "self",
-              "amount": "amount",
+              "zone": "battlefield",
               "duration": "turn",
-              "zone": "battlefield"
+              "amount": "amount"
             }
           ]
         }
@@ -706,9 +780,9 @@
     },
     {
       "skill_id": "test_ally_2_arrival",
-      "owner": "test_ally_2",
-      "slot": "unit_enter",
       "name": "入场冲击",
+      "description": "",
+      "slot": "unit_enter",
       "quality": "epic",
       "gold_only": true,
       "status": "specified",
@@ -736,9 +810,9 @@
             {
               "op": "deal_damage",
               "target": "opposing_unit",
-              "amount": "amount",
-              "duration": null,
               "zone": "battlefield",
+              "duration": null,
+              "amount": "amount",
               "damage_type": "skill"
             }
           ]
@@ -747,9 +821,9 @@
     },
     {
       "skill_id": "test_ally_2_rest",
-      "owner": "test_ally_2",
-      "slot": "unit_leave",
       "name": "退场休整",
+      "description": "",
+      "slot": "unit_leave",
       "quality": "rare",
       "gold_only": false,
       "status": "specified",
@@ -777,9 +851,9 @@
             {
               "op": "heal",
               "target": "self",
-              "amount": "amount",
+              "zone": "any",
               "duration": null,
-              "zone": "any"
+              "amount": "amount"
             }
           ]
         }
@@ -787,9 +861,9 @@
     },
     {
       "skill_id": "test_ally_3_strike",
-      "owner": "test_ally_3",
-      "slot": "attack_declared",
       "name": "追击斩",
+      "description": "",
+      "slot": "attack_declared",
       "quality": "common",
       "gold_only": false,
       "status": "specified",
@@ -817,9 +891,9 @@
             {
               "op": "deal_damage",
               "target": "opposing_unit",
-              "amount": "amount",
-              "duration": null,
               "zone": "battlefield",
+              "duration": null,
+              "amount": "amount",
               "damage_type": "skill"
             }
           ]
@@ -828,9 +902,9 @@
     },
     {
       "skill_id": "test_ally_3_focus",
-      "owner": "test_ally_3",
-      "slot": "attack_declared",
       "name": "蓄势",
+      "description": "",
+      "slot": "attack_declared",
       "quality": "rare",
       "gold_only": false,
       "status": "specified",
@@ -858,9 +932,9 @@
             {
               "op": "modify_attack",
               "target": "self",
-              "amount": "amount",
+              "zone": "battlefield",
               "duration": "turn",
-              "zone": "battlefield"
+              "amount": "amount"
             }
           ]
         }
@@ -868,9 +942,9 @@
     },
     {
       "skill_id": "test_ally_3_arrival",
-      "owner": "test_ally_3",
-      "slot": "unit_enter",
       "name": "入场冲击",
+      "description": "",
+      "slot": "unit_enter",
       "quality": "epic",
       "gold_only": true,
       "status": "specified",
@@ -898,9 +972,9 @@
             {
               "op": "deal_damage",
               "target": "opposing_unit",
-              "amount": "amount",
-              "duration": null,
               "zone": "battlefield",
+              "duration": null,
+              "amount": "amount",
               "damage_type": "skill"
             }
           ]
@@ -909,9 +983,9 @@
     },
     {
       "skill_id": "test_ally_3_rest",
-      "owner": "test_ally_3",
-      "slot": "unit_leave",
       "name": "退场休整",
+      "description": "",
+      "slot": "unit_leave",
       "quality": "rare",
       "gold_only": false,
       "status": "specified",
@@ -939,9 +1013,9 @@
             {
               "op": "heal",
               "target": "self",
-              "amount": "amount",
+              "zone": "any",
               "duration": null,
-              "zone": "any"
+              "amount": "amount"
             }
           ]
         }
@@ -949,9 +1023,9 @@
     },
     {
       "skill_id": "test_ally_4_strike",
-      "owner": "test_ally_4",
-      "slot": "attack_declared",
       "name": "追击斩",
+      "description": "",
+      "slot": "attack_declared",
       "quality": "common",
       "gold_only": false,
       "status": "specified",
@@ -979,9 +1053,9 @@
             {
               "op": "deal_damage",
               "target": "opposing_unit",
-              "amount": "amount",
-              "duration": null,
               "zone": "battlefield",
+              "duration": null,
+              "amount": "amount",
               "damage_type": "skill"
             }
           ]
@@ -990,9 +1064,9 @@
     },
     {
       "skill_id": "test_ally_4_focus",
-      "owner": "test_ally_4",
-      "slot": "attack_declared",
       "name": "蓄势",
+      "description": "",
+      "slot": "attack_declared",
       "quality": "rare",
       "gold_only": false,
       "status": "specified",
@@ -1020,9 +1094,9 @@
             {
               "op": "modify_attack",
               "target": "self",
-              "amount": "amount",
+              "zone": "battlefield",
               "duration": "turn",
-              "zone": "battlefield"
+              "amount": "amount"
             }
           ]
         }
@@ -1030,9 +1104,9 @@
     },
     {
       "skill_id": "test_ally_4_arrival",
-      "owner": "test_ally_4",
-      "slot": "unit_enter",
       "name": "入场冲击",
+      "description": "",
+      "slot": "unit_enter",
       "quality": "epic",
       "gold_only": true,
       "status": "specified",
@@ -1060,9 +1134,9 @@
             {
               "op": "deal_damage",
               "target": "opposing_unit",
-              "amount": "amount",
-              "duration": null,
               "zone": "battlefield",
+              "duration": null,
+              "amount": "amount",
               "damage_type": "skill"
             }
           ]
@@ -1071,9 +1145,9 @@
     },
     {
       "skill_id": "test_ally_4_rest",
-      "owner": "test_ally_4",
-      "slot": "unit_leave",
       "name": "退场休整",
+      "description": "",
+      "slot": "unit_leave",
       "quality": "rare",
       "gold_only": false,
       "status": "specified",
@@ -1101,9 +1175,9 @@
             {
               "op": "heal",
               "target": "self",
-              "amount": "amount",
+              "zone": "any",
               "duration": null,
-              "zone": "any"
+              "amount": "amount"
             }
           ]
         }
@@ -1111,9 +1185,9 @@
     },
     {
       "skill_id": "test_ally_5_strike",
-      "owner": "test_ally_5",
-      "slot": "attack_declared",
       "name": "追击斩",
+      "description": "",
+      "slot": "attack_declared",
       "quality": "common",
       "gold_only": false,
       "status": "specified",
@@ -1141,9 +1215,9 @@
             {
               "op": "deal_damage",
               "target": "opposing_unit",
-              "amount": "amount",
-              "duration": null,
               "zone": "battlefield",
+              "duration": null,
+              "amount": "amount",
               "damage_type": "skill"
             }
           ]
@@ -1152,9 +1226,9 @@
     },
     {
       "skill_id": "test_ally_5_focus",
-      "owner": "test_ally_5",
-      "slot": "attack_declared",
       "name": "蓄势",
+      "description": "",
+      "slot": "attack_declared",
       "quality": "rare",
       "gold_only": false,
       "status": "specified",
@@ -1182,9 +1256,9 @@
             {
               "op": "modify_attack",
               "target": "self",
-              "amount": "amount",
+              "zone": "battlefield",
               "duration": "turn",
-              "zone": "battlefield"
+              "amount": "amount"
             }
           ]
         }
@@ -1192,9 +1266,9 @@
     },
     {
       "skill_id": "test_ally_5_arrival",
-      "owner": "test_ally_5",
-      "slot": "unit_enter",
       "name": "入场冲击",
+      "description": "",
+      "slot": "unit_enter",
       "quality": "epic",
       "gold_only": true,
       "status": "specified",
@@ -1222,9 +1296,9 @@
             {
               "op": "deal_damage",
               "target": "opposing_unit",
-              "amount": "amount",
-              "duration": null,
               "zone": "battlefield",
+              "duration": null,
+              "amount": "amount",
               "damage_type": "skill"
             }
           ]
@@ -1233,9 +1307,9 @@
     },
     {
       "skill_id": "test_ally_5_rest",
-      "owner": "test_ally_5",
-      "slot": "unit_leave",
       "name": "退场休整",
+      "description": "",
+      "slot": "unit_leave",
       "quality": "rare",
       "gold_only": false,
       "status": "specified",
@@ -1263,9 +1337,9 @@
             {
               "op": "heal",
               "target": "self",
-              "amount": "amount",
+              "zone": "any",
               "duration": null,
-              "zone": "any"
+              "amount": "amount"
             }
           ]
         }
@@ -1273,9 +1347,9 @@
     },
     {
       "skill_id": "test_ally_6_strike",
-      "owner": "test_ally_6",
-      "slot": "attack_declared",
       "name": "追击斩",
+      "description": "",
+      "slot": "attack_declared",
       "quality": "common",
       "gold_only": false,
       "status": "specified",
@@ -1303,9 +1377,9 @@
             {
               "op": "deal_damage",
               "target": "opposing_unit",
-              "amount": "amount",
-              "duration": null,
               "zone": "battlefield",
+              "duration": null,
+              "amount": "amount",
               "damage_type": "skill"
             }
           ]
@@ -1314,9 +1388,9 @@
     },
     {
       "skill_id": "test_ally_6_focus",
-      "owner": "test_ally_6",
-      "slot": "attack_declared",
       "name": "蓄势",
+      "description": "",
+      "slot": "attack_declared",
       "quality": "rare",
       "gold_only": false,
       "status": "specified",
@@ -1344,9 +1418,9 @@
             {
               "op": "modify_attack",
               "target": "self",
-              "amount": "amount",
+              "zone": "battlefield",
               "duration": "turn",
-              "zone": "battlefield"
+              "amount": "amount"
             }
           ]
         }
@@ -1354,9 +1428,9 @@
     },
     {
       "skill_id": "test_ally_6_arrival",
-      "owner": "test_ally_6",
-      "slot": "unit_enter",
       "name": "入场冲击",
+      "description": "",
+      "slot": "unit_enter",
       "quality": "epic",
       "gold_only": true,
       "status": "specified",
@@ -1384,9 +1458,9 @@
             {
               "op": "deal_damage",
               "target": "opposing_unit",
-              "amount": "amount",
-              "duration": null,
               "zone": "battlefield",
+              "duration": null,
+              "amount": "amount",
               "damage_type": "skill"
             }
           ]
@@ -1395,9 +1469,9 @@
     },
     {
       "skill_id": "test_ally_6_rest",
-      "owner": "test_ally_6",
-      "slot": "unit_leave",
       "name": "退场休整",
+      "description": "",
+      "slot": "unit_leave",
       "quality": "rare",
       "gold_only": false,
       "status": "specified",
@@ -1425,9 +1499,9 @@
             {
               "op": "heal",
               "target": "self",
-              "amount": "amount",
+              "zone": "any",
               "duration": null,
-              "zone": "any"
+              "amount": "amount"
             }
           ]
         }
@@ -1435,9 +1509,9 @@
     },
     {
       "skill_id": "test_ally_7_strike",
-      "owner": "test_ally_7",
-      "slot": "attack_declared",
       "name": "追击斩",
+      "description": "",
+      "slot": "attack_declared",
       "quality": "common",
       "gold_only": false,
       "status": "specified",
@@ -1465,9 +1539,9 @@
             {
               "op": "deal_damage",
               "target": "opposing_unit",
-              "amount": "amount",
-              "duration": null,
               "zone": "battlefield",
+              "duration": null,
+              "amount": "amount",
               "damage_type": "skill"
             }
           ]
@@ -1476,9 +1550,9 @@
     },
     {
       "skill_id": "test_ally_7_focus",
-      "owner": "test_ally_7",
-      "slot": "attack_declared",
       "name": "蓄势",
+      "description": "",
+      "slot": "attack_declared",
       "quality": "rare",
       "gold_only": false,
       "status": "specified",
@@ -1506,9 +1580,9 @@
             {
               "op": "modify_attack",
               "target": "self",
-              "amount": "amount",
+              "zone": "battlefield",
               "duration": "turn",
-              "zone": "battlefield"
+              "amount": "amount"
             }
           ]
         }
@@ -1516,9 +1590,9 @@
     },
     {
       "skill_id": "test_ally_7_arrival",
-      "owner": "test_ally_7",
-      "slot": "unit_enter",
       "name": "入场冲击",
+      "description": "",
+      "slot": "unit_enter",
       "quality": "epic",
       "gold_only": true,
       "status": "specified",
@@ -1546,9 +1620,9 @@
             {
               "op": "deal_damage",
               "target": "opposing_unit",
-              "amount": "amount",
-              "duration": null,
               "zone": "battlefield",
+              "duration": null,
+              "amount": "amount",
               "damage_type": "skill"
             }
           ]
@@ -1557,9 +1631,9 @@
     },
     {
       "skill_id": "test_ally_7_rest",
-      "owner": "test_ally_7",
-      "slot": "unit_leave",
       "name": "退场休整",
+      "description": "",
+      "slot": "unit_leave",
       "quality": "rare",
       "gold_only": false,
       "status": "specified",
@@ -1587,13 +1661,39 @@
             {
               "op": "heal",
               "target": "self",
-              "amount": "amount",
+              "zone": "any",
               "duration": null,
-              "zone": "any"
+              "amount": "amount"
             }
           ]
         }
       ]
+    },
+    {
+      "skill_id": "shared_agility",
+      "name": "敏捷",
+      "description": "换入当回合可普通攻击",
+      "slot": "attack_declared",
+      "quality": "rare",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": "agile",
+      "levels": {
+        "1": {
+          "amount": 1
+        },
+        "2": {
+          "amount": 1
+        },
+        "3": {
+          "amount": 1
+        }
+      },
+      "rules": []
     }
   ],
   "hero": "test_hero",
@@ -1611,19 +1711,173 @@
       "id": "island",
       "name": "第一章 · 浮岛遗迹",
       "layers": 15,
-      "available": true
+      "available": true,
+      "background": "assets/tabletop/parchment.png",
+      "pools": {
+        "combat": "island_normal",
+        "elite": "island_elite",
+        "boss": "island_boss"
+      }
     },
     {
       "id": "chapter_2",
       "name": "第二章",
       "layers": 14,
-      "available": false
+      "available": false,
+      "background": "assets/tabletop/parchment.png",
+      "pools": {
+        "combat": "",
+        "elite": "",
+        "boss": ""
+      }
     },
     {
       "id": "chapter_3",
       "name": "chapter 3",
       "layers": 13,
-      "available": false
+      "available": false,
+      "background": "assets/tabletop/parchment.png",
+      "pools": {
+        "combat": "",
+        "elite": "",
+        "boss": ""
+      }
+    }
+  ],
+  "levels": [
+    {
+      "id": "scout",
+      "name": "浮岛哨兵",
+      "slots": [
+        "test_scout",
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "victoryCondition": "elimination",
+      "background": "assets/tabletop/leather.png",
+      "title": ""
+    },
+    {
+      "id": "patrol",
+      "name": "巡逻小队",
+      "slots": [
+        "test_guard",
+        "test_scout",
+        null,
+        null,
+        null,
+        null
+      ],
+      "victoryCondition": "elimination",
+      "background": "assets/tabletop/leather.png",
+      "title": ""
+    },
+    {
+      "id": "squad",
+      "name": "守卫小队",
+      "slots": [
+        "test_guard",
+        "test_guard",
+        "test_scout",
+        null,
+        null,
+        null
+      ],
+      "victoryCondition": "elimination",
+      "background": "assets/tabletop/leather.png",
+      "title": ""
+    },
+    {
+      "id": "elite",
+      "name": "精英守卫",
+      "slots": [
+        "test_elite",
+        "test_guard",
+        null,
+        null,
+        null,
+        null
+      ],
+      "victoryCondition": "elimination",
+      "background": "assets/tabletop/leather.png",
+      "title": ""
+    },
+    {
+      "id": "gate",
+      "name": "守门巨像",
+      "slots": [
+        "test_boss",
+        "test_guard",
+        "test_guard",
+        null,
+        null,
+        null
+      ],
+      "victoryCondition": "elimination",
+      "background": "assets/tabletop/leather.png",
+      "title": ""
+    },
+    {
+      "id": "scout_flank",
+      "name": "侧翼哨兵",
+      "slots": [
+        null,
+        null,
+        "test_scout",
+        null,
+        null,
+        null
+      ],
+      "victoryCondition": "elimination",
+      "background": "assets/tabletop/leather.png",
+      "title": ""
+    }
+  ],
+  "nodes": [
+    {
+      "id": "island_normal",
+      "level": "scout",
+      "weight": 3,
+      "min": 1,
+      "max": 5
+    },
+    {
+      "id": "island_normal",
+      "level": "patrol",
+      "weight": 1,
+      "min": 6,
+      "max": 10
+    },
+    {
+      "id": "island_normal",
+      "level": "squad",
+      "weight": 1,
+      "min": 11,
+      "max": 15
+    },
+    {
+      "id": "island_elite",
+      "level": "elite",
+      "weight": 1,
+      "min": 1,
+      "max": 31
+    },
+    {
+      "id": "island_boss",
+      "level": "gate",
+      "weight": 1,
+      "min": 1,
+      "max": 31
+    },
+    {
+      "id": "island_normal",
+      "level": "scout_flank",
+      "weight": 1,
+      "min": 2,
+      "max": 5
     }
   ],
   "config": {

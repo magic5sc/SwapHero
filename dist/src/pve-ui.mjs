@@ -1,5 +1,5 @@
 import {mountParchment,mountLeather,switchTable,isTableTransition} from './tabletop.mjs';
-import {newRun,availableNodes,enterNode,finishBattle,continueChapter,claimReward,buy,service,eventRecruit,leaveRoom,abandonRun,upgradePreview,candidates,QUALITY,encodeRun,decodeRun} from './pve.mjs';
+import {newRun,rewardRecipient,availableNodes,enterNode,finishBattle,continueChapter,claimReward,buy,service,eventRecruit,leaveRoom,abandonRun,upgradePreview,candidates,QUALITY,encodeRun,decodeRun} from './pve.mjs';
 import {openAdventureBattle} from './app.mjs';
 import {makeSprite,artForUnit} from './art.mjs';
 const root=document.getElementById('adventure'),KEY='swaphero.adventure.v1';
@@ -59,11 +59,11 @@ function mapPanel(parent){
  const legend=el('div','map-legend',undefined,section);for(const t of Object.keys(names)){const item=el('span','legend-item',undefined,legend);mapIcon(item,t);el('span','',names[t],item);}
  requestAnimationFrame(focusCurrent);
 }
-function rewardDescription(item){if(item.type==='character'){const c=run.pack.cards.find(c=>c.card_id===item.id);return `加入队伍 · 攻击 ${c.attack} / 生命 ${c.health}`;}if(item.type==='skill'){const s=run.pack.skills.find(s=>s.skill_id===item.id),u=run.team.find(u=>u.cardId===s.owner),old=u?.skills.find(b=>b.slotId===s.slot);const effect=s.rules[0].effects[0];return `${u?.name} · ${{attack_declared:'攻击时',unit_enter:'入场时',unit_leave:'离场时'}[s.slot]} · ${{deal_damage:effect.target==='all_enemies'?'所有敌方场上单位技能伤害':'对位技能伤害',heal:'治疗自己',modify_attack:'本回合加攻'}[effect.op]} ${s.levels[1].amount}${old?'；替换并弃置「'+old.definition.name+'」':''}`;}const b=run.pack.config.buffs.find(b=>b.id===item.id);return `本周目永久强化：攻击 +${b.attack} / 最大生命 +${b.hp}（不回复生命）`;}
+function rewardDescription(item){if(item.type==='character'){const c=run.pack.cards.find(c=>c.card_id===item.id);return `加入队伍 · 攻击 ${c.attack} / 生命 ${c.health}`;}if(item.type==='skill'){const s=run.pack.skills.find(s=>s.skill_id===item.id),u=rewardRecipient(run,item),old=u?.skills.find(b=>b.slotId===s.slot);const effect=s.rules[0]?.effects[0];if(!effect)return (s.description||s.name)+(old?'；替换并弃置「'+old.definition.name+'」':'');return `${u?.name} · ${{attack_declared:'攻击时',unit_enter:'入场时',unit_leave:'离场时'}[s.slot]} · ${{deal_damage:effect.target==='all_enemies'?'所有敌方场上单位技能伤害':'对位技能伤害',heal:'治疗自己',modify_attack:'本回合加攻'}[effect.op]} ${s.levels[1].amount}${old?'；替换并弃置「'+old.definition.name+'」':''}`;}const b=run.pack.config.buffs.find(b=>b.id===item.id);return `本周目永久强化：攻击 +${b.attack} / 最大生命 +${b.hp}（不回复生命）`;}
 function rewardCard(parent,item,onClaim,price,disabled=false){const card=el('article','reward-card quality-'+item.quality,undefined,parent);el('small','quality',QUALITY[item.quality]+' · '+{character:'角色',skill:'技能',buff:'数值强化'}[item.type],card);el('h3','',item.name,card);el('p','',rewardDescription(item),card);let target=null,replacement=null;
  if(item.type==='buff')target=select(card,run.team.map(u=>[u.id,u.name]));
  if(item.type==='character'&&run.team.length===6){el('p','muted','队伍已满：选择离队者，成长保留并满血复活。',card);replacement=select(card,[['','选择离队角色'],...run.team.filter(u=>u.cardId!==run.pack.hero).map(u=>[u.id,u.name])]);}
- button(card,disabled?'已售出':price?`购买 · ${price} 金币`:'选择奖励',()=>{if(item.type==='skill'&&run.team.some(u=>u.skills.some(b=>b.slotId===run.pack.skills.find(s=>s.skill_id===item.id).slot)&&u.cardId===run.pack.skills.find(s=>s.skill_id===item.id).owner)&&!confirm('替换后原技能直接弃置，是否继续？'))return;return onClaim({targetId:target?.value,replaceId:replacement?.value});},'primary',disabled||!!price&&run.gold<price);
+ button(card,disabled?'已售出':price?`购买 · ${price} 金币`:'选择奖励',()=>{if(item.type==='skill'&&rewardRecipient(run,item)?.skills.some(b=>b.slotId===run.pack.skills.find(s=>s.skill_id===item.id).slot)&&!confirm('替换后原技能直接弃置，是否继续？'))return;return onClaim({targetId:target?.value,replaceId:replacement?.value});},'primary',disabled||!!price&&run.gold<price);
 }
 function presentChest(){
  if(document.querySelector('.victory-loot'))return;
@@ -141,6 +141,8 @@ function roomPanel(parent){const box=el('section','room-panel',undefined,parent)
  button(box,'离开，继续选路',()=>leaveRoom(run),'primary');
 }
 function renderContent(){
+ const background=run?.pack.chapters[run.chapter]?.background;
+ root.style.setProperty('--map-texture',/^assets\/(?:[\w-]+\/)*[\w-]+\.(png|jpg|webp|svg)$/.test(background)?'url("'+background+'")':'url("assets/tabletop/parchment.png")');
  root.replaceChildren();const header=el('header','pve-header');const title=el('div','',undefined,header);el('small','eyebrow','SWAPHERO',title);el('h1','','远征手记',title);el('p','muted','桌面远征 · 0.6.0',title);
  const nav=el('nav','',undefined,header);if(run){button(nav,'导出存档',exportSave);button(nav,'新周目',begin);}button(nav,'导入存档',importSave);const link=el('a','ghost','单场对战',nav);link.href='duel.html';
  if(notice||storageError)el('p','pve-alert',notice||storageError);

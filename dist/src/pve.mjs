@@ -11,7 +11,7 @@ export function validatePack(p){const e=validateCatalog(p);if(e.length)fail(e.jo
  if(!Array.isArray(c.buffs)||c.buffs.some(b=>!QUALITY[b.quality]||!Number.isInteger(b.attack)||b.attack<0||!Number.isInteger(b.hp)||b.hp<0))fail('强化配置无效');
  if(!Array.isArray(p.recruits)||p.recruits.some(id=>!p.cards.some(c=>c.card_id===id)))fail('招募配置无效');
  if(p.chapters.some(c=>!Number.isInteger(c.layers)||c.layers<7||c.layers>30||typeof c.available!=='boolean'))fail('章节配置无效');
- for(const s of p.skills)if(!p.cards.some(c=>c.card_id===s.owner&&c.slots.some(slot=>slot.slot_id===s.slot))||!QUALITY[s.quality]||![1,2,3].every(l=>s.levels[l]))fail('冒险技能配置无效');return p;}
+ for(const s of p.skills)if((!p.levels&&!p.cards.some(c=>c.card_id===s.owner&&c.slots.some(slot=>slot.slot_id===s.slot)))||!QUALITY[s.quality]||![1,2,3].every(l=>s.levels[l]))fail('冒险技能配置无效');return p;}
 export function newRun(pack,seed=String(Date.now())){
  validatePack(pack);const hero=createUnit(pack,pack.hero,'hero');
  return {schemaVersion:1,contentVersion:pack.version,pack:copy(pack),seed:String(seed),chapter:0,status:'map',gold:pack.config.initialGold,team:[hero],departed:[],map:generateMap(seed,pack.chapters[0].layers),current:null,visited:[],room:null,battle:null,unknown:{combat:pack.config.unknownCombat,shop:pack.config.unknownShop},revision:0};
@@ -21,11 +21,24 @@ export const unitMax=u=>u.maxHp;
 const rand=(r,suffix)=>seeded(`${r.seed}:${r.chapter}:${r.current}:${suffix}`);
 const card=r=>id=>r.pack.cards.find(c=>c.card_id===id);
 const skill=r=>id=>r.pack.skills.find(s=>s.skill_id===id);
-const ownedSkills=r=>new Set([...r.team,...r.departed].flatMap(u=>u.skills.map(s=>s.definition.skill_id)));
+function canLearn(pack,u,s){
+ const c=pack.cards.find(c=>c.card_id===u.cardId);
+ return c?.learnable ? c.learnable.includes(s.skill_id) : s.owner===u.cardId;
+}
+export function rewardRecipient(r,item){
+ return item.recipient ? r.team.find(u=>u.id===item.recipient) : r.team.find(u=>u.cardId===skill(r)(item.id)?.owner);
+}
+function matchesReward(r,c,item){
+ return c.id===item.id&&c.type===item.type&&(item.type!=='skill'||c.recipient===rewardRecipient(r,item)?.id);
+}
 export function candidates(r,source='silver'){
- const all=[],seen=new Set([...r.team,...r.departed].map(u=>u.cardId)),owned=ownedSkills(r);
+ const all=[],seen=new Set([...r.team,...r.departed].map(u=>u.cardId));
  for(const id of r.pack.recruits){const c=card(r)(id);if(!seen.has(id)&&(!c.gold_only||source==='gold'))all.push({type:'character',id,quality:c.quality,name:c.name});}
- for(const s of r.pack.skills)if(r.team.some(u=>u.cardId===s.owner)&&!owned.has(s.skill_id)&&(!s.gold_only||source==='gold'))all.push({type:'skill',id:s.skill_id,quality:s.quality,name:s.name});
+ for(const u of r.team)for(const s of r.pack.skills){
+  if(canLearn(r.pack,u,s)&&!u.skills.some(b=>b.definition.skill_id===s.skill_id)&&(!s.gold_only||source==='gold')){
+   all.push({type:'skill',id:s.skill_id,recipient:u.id,quality:s.quality,name:u.name+'获得'+s.name});
+  }
+ }
  for(const b of r.pack.config.buffs)if(!b.gold_only||source==='gold')all.push({type:'buff',id:b.id,quality:b.quality,name:b.name});
  return all;
 }
@@ -38,13 +51,30 @@ export function rewardChoices(r,source){
  return chosen;
 }
 function snapshotUnit(u){const n=copy(u);n.attack=n.baseAttack;n.modifiers=[];n.disabled=false;return n;}
-function encounter(r,type){
+function encounter(r,type,previewLevel=null){
  const row=r.map.nodes.find(n=>n.id===r.current).row;
- const ids=type==='boss'?['test_boss','test_guard','test_guard']:type==='elite'?['test_elite','test_guard']:row<5?['test_scout']:row<10?['test_guard','test_scout']:['test_guard','test_guard','test_scout'];
+ const chapter=r.pack.chapters[r.chapter];
+ let level=previewLevel;
+ if(!level&&r.pack.levels){
+  const pool=r.pack.nodes.filter(n=>n.id===chapter.pools[type]&&n.min<=row+1&&row+1<=n.max);
+  let roll=rand(r,'encounter')()*pool.reduce((sum,n)=>sum+n.weight,0);
+  const pick=pool.find(n=>(roll-=n.weight)<0);
+  if(!pick)fail('本层缺少可用关卡');
+  level=r.pack.levels.find(l=>l.id===pick.level);
+ }
+ // Older runs retain their original content snapshot.
+ const ids=level?level.slots:type==='boss'?['test_boss','test_guard','test_guard']:type==='elite'?['test_elite','test_guard']:row<5?['test_scout']:row<10?['test_guard','test_scout']:['test_guard','test_guard','test_scout'];
  const units={},sides={player:{slots:Array(6).fill(null),score:0},ai:{slots:Array(6).fill(null),score:0}};
  r.team.filter(u=>u.hp>0).forEach((u,i)=>{units[u.id]=snapshotUnit(u);sides.player.slots[[1,0,2,3,4,5][i]]=u.id;});
- ids.forEach((id,i)=>{const uid=`enemy-${i+1}`;units[uid]=createUnit(r.pack,id,uid);sides.ai.slots[i]=uid;});
- return {mode:'pve',units,sides,victoryCondition:'elimination',phase:'deployment',turn:'player',actionPoints:0,winner:null,stack:[],trace:[],contentVersion:r.contentVersion,log:['PvE：消灭全部敌方单位；双方同时全灭玩家失败。'],nodeId:r.current};
+ ids.forEach((id,i)=>{if(!id)return;const uid=`enemy-${i+1}`;units[uid]=createUnit(r.pack,id,uid);sides.ai.slots[i]=uid;});
+ return {mode:'pve',units,sides,levelId:level?.id||null,background:level?.background||'',title:level?.title||level?.name||'',victoryCondition:level?.victoryCondition||'elimination',phase:'deployment',turn:'player',actionPoints:0,winner:null,stack:[],trace:[],contentVersion:r.contentVersion,log:['PvE：消灭全部敌方单位；双方同时全灭玩家失败。'],nodeId:r.current};
+}
+export function previewLevel(pack,id){
+ const r=newRun(pack,'level-preview');
+ r.current=availableNodes(r)[0];
+ const level=pack.levels.find(l=>l.id===id);
+ if(!level)fail('未知预览关卡');
+ return encounter(r,'combat',level);
 }
 export function enterNode(r,id){
  if(r.status!=='map'||!availableNodes(r).includes(id))fail('只能进入连线上的下一个节点');
@@ -84,12 +114,12 @@ export function continueChapter(r){
  r.chapter++;r.current=null;r.visited=[];r.room=null;r.map=generateMap(`${r.seed}:${r.chapter}`,next.layers);r.unknown={combat:r.pack.config.unknownCombat,shop:r.pack.config.unknownShop};r.status='map';
 }
 function applyReward(r,item,targetId,replaceId){
- if(!candidates(r,'gold').some(c=>c.type===item.type&&c.id===item.id))fail('该奖励已不在合法候选池');
+ if(!candidates(r,'gold').some(c=>matchesReward(r,c,item)))fail('该奖励已不在合法候选池');
  if(item.type==='character'){
   if(r.team.length>=6){const index=r.team.findIndex(u=>u.id===replaceId);if(index<0||r.team[index].cardId===r.pack.hero)fail('队伍已满，请选择非主角离队，或放弃招募');const u=r.team.splice(index,1)[0];u.hp=u.maxHp;r.departed.push(u);}
   r.team.push(createUnit(r.pack,item.id,item.id));
  }else if(item.type==='skill'){
-  const s=skill(r)(item.id),u=r.team.find(u=>u.cardId===s.owner);if(!u||!u.slots.some(x=>x.slot_id===s.slot))fail('没有可装配该技能的角色');
+  const s=skill(r)(item.id),u=rewardRecipient(r,item);if(!u||!u.slots.some(x=>x.slot_id===s.slot))fail('没有可装配该技能的角色');
   u.skills=u.skills.filter(b=>b.slotId!==s.slot);u.skills.push({slotId:s.slot,level:1,definition:copy(s)});
  }else{
   const u=r.team.find(u=>u.id===targetId),b=r.pack.config.buffs.find(b=>b.id===item.id);if(!u||!b)fail('请选择强化角色');u.baseAttack+=b.attack;u.attack=u.baseAttack;u.maxHp+=b.hp;u.growth??=[];u.growth.push(b.id);
@@ -131,9 +161,9 @@ export function validateRun(r){
  if(r.contentVersion!==r.pack.version||typeof r.seed!=='string'||!Number.isInteger(r.gold)||r.gold<0||!Number.isInteger(r.chapter)||!r.pack.chapters[r.chapter])fail('存档内容版本或进度损坏');
  if(!['map','room','reward','battle','failed','chapter_complete','demo_complete','completed','abandoned'].includes(r.status))fail('存档阶段无效');
  if(!Array.isArray(r.team)||r.team.length<1||r.team.length>6||!Array.isArray(r.departed)||!r.team.some(u=>u.cardId===r.pack.hero))fail('队伍存档无效');
- const ids=new Set(),cards=new Set(),skills=new Set();for(const u of [...r.team,...r.departed]){
+ const ids=new Set(),cards=new Set();for(const u of [...r.team,...r.departed]){
   if(!u||ids.has(u.id)||cards.has(u.cardId)||!r.pack.cards.some(c=>c.card_id===u.cardId)||!Number.isInteger(u.hp)||!Number.isInteger(u.maxHp)||u.hp<0||u.hp>u.maxHp||u.maxHp<1||!Number.isInteger(u.baseAttack)||u.baseAttack<0)fail('角色存档无效');ids.add(u.id);cards.add(u.cardId);
-  const slots=new Set();for(const b of u.skills){const s=skill(r)(b.definition?.skill_id);if(!s||s.owner!==u.cardId||slots.has(s.slot)||skills.has(s.skill_id)||b.slotId!==s.slot||![1,2,3].includes(b.level)||!s.levels[b.level]||JSON.stringify(b.definition)!==JSON.stringify(s))fail('技能存档无效');slots.add(s.slot);skills.add(s.skill_id);}
+  const slots=new Set(),skills=new Set();for(const b of u.skills){const s=skill(r)(b.definition?.skill_id);if(!s||(!canLearn(r.pack,u,s)&&!card(r)(u.cardId).skills.some(ref=>ref.skill_id===s.skill_id))||slots.has(s.slot)||skills.has(s.skill_id)||b.slotId!==s.slot||![1,2,3].includes(b.level)||!s.levels[b.level]||JSON.stringify(b.definition)!==JSON.stringify(s))fail('技能存档无效');slots.add(s.slot);skills.add(s.skill_id);}
  }
  const expected=generateMap(r.chapter===0?r.seed:`${r.seed}:${r.chapter}`,r.pack.chapters[r.chapter].layers);if(JSON.stringify(expected)!==JSON.stringify(r.map))fail('地图存档损坏');
  let previous=null;for(const id of r.visited){if(!(previous?r.map.nodes.find(n=>n.id===previous)?.next:r.map.nodes.filter(n=>n.row===0).map(n=>n.id)).includes(id))fail('节点路线无效');previous=id;}if(previous!==r.current)fail('当前节点不匹配');
@@ -141,14 +171,14 @@ export function validateRun(r){
  if(!Array.isArray(r.visited)||!r.unknown||!Number.isFinite(r.unknown.combat)||!Number.isFinite(r.unknown.shop))fail('冒险计数无效');
  if(['room','reward'].includes(r.status)){
   const room=r.room;if(typeof room.resolved!=='boolean'||room.resolved||!['combat','elite','boss','shop','camp','event'].includes(room.type))fail('节点状态无效');
-  if(r.status==='reward'&&(!Array.isArray(room.choices)||room.choices.length>3||room.choices.some(item=>!candidates(r,'gold').some(c=>c.id===item.id&&c.type===item.type&&c.quality===item.quality))))fail('奖励存档无效');
+  if(r.status==='reward'&&(!Array.isArray(room.choices)||room.choices.length>3||room.choices.some(item=>!candidates(r,'gold').some(c=>matchesReward(r,c,item)&&c.quality===item.quality))))fail('奖励存档无效');
   if(r.status==='room'&&(!Number.isInteger(room.actions)||room.actions<0||!Array.isArray(room.bought)))fail('服务存档无效');
   if(room.type==='shop'&&(!Array.isArray(room.goods)||room.goods.some(item=>!r.pack.skills.some(s=>s.skill_id===item.id))||(room.recruit&&!r.pack.recruits.includes(room.recruit.id))))fail('商店存档无效');
  }
  if(r.status==='battle'||(r.status==='reward'&&r.battle!=null)){
   const b=r.battle;
   if(r.status==='reward'&&(b.phase!=='finished'||b.winner!=='player'))fail('胜利战场存档无效');
-  if(!b||b.mode!=='pve'||b.nodeId!==r.current||b.victoryCondition!=='elimination'||!['deployment','action','finished','error'].includes(b.phase)||!['player','ai'].includes(b.turn)||!Number.isInteger(b.actionPoints)||b.actionPoints<0||b.actionPoints>2||b.stack?.length)fail('战斗断点无效');
+  if(!b||b.mode!=='pve'||b.nodeId!==r.current||!['score_5','elimination'].includes(b.victoryCondition)||!['deployment','action','finished','error'].includes(b.phase)||!['player','ai'].includes(b.turn)||!Number.isInteger(b.actionPoints)||b.actionPoints<0||b.actionPoints>2||b.stack?.length)fail('战斗断点无效');
   const seen=new Set();for(const side of ['player','ai']){validateFormation(b.sides[side].slots);for(const id of b.sides[side].slots.filter(Boolean)){const u=b.units[id];if(!u||seen.has(id)||!Number.isFinite(u.hp)||u.hp<=0||u.hp>u.maxHp)fail('战斗单位无效');if(side==='player'&&!r.team.some(t=>t.id===id))fail('战斗队伍不匹配');seen.add(id);}}
  }
  return r;

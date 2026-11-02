@@ -1,0 +1,60 @@
+{
+  "label": "测试配置 v1（非最终平衡）",
+  "initialGold": 35,
+  "combatGold": 15,
+  "eliteGold": 30,
+  "healPrice": 15,
+  "revivePrice": 25,
+  "upgradePrice": 25,
+  "recruitPrice": 25,
+  "skillPrice": 20,
+  "healAmount": 12,
+  "campActions": 1,
+  "unknownCombat": 0.1,
+  "unknownShop": 0.03,
+  "weights": {
+    "silver": [
+      70,
+      23,
+      6,
+      1
+    ],
+    "gold": [
+      30,
+      40,
+      23,
+      7
+    ]
+  },
+  "buffs": [
+    {
+      "id": "attack",
+      "name": "磨砺",
+      "quality": "common",
+      "attack": 1,
+      "hp": 0
+    },
+    {
+      "id": "health",
+      "name": "坚韧",
+      "quality": "rare",
+      "attack": 0,
+      "hp": 4
+    },
+    {
+      "id": "power",
+      "name": "锐意",
+      "quality": "epic",
+      "attack": 2,
+      "hp": 0
+    },
+    {
+      "id": "legend",
+      "name": "勇者之力",
+      "quality": "legendary",
+      "attack": 3,
+      "hp": 4,
+      "gold_only": true
+    }
+  ]
+}
