@@ -42,7 +42,7 @@ function encounter(r,type){
  const row=r.map.nodes.find(n=>n.id===r.current).row;
  const ids=type==='boss'?['test_boss','test_guard','test_guard']:type==='elite'?['test_elite','test_guard']:row<5?['test_scout']:row<10?['test_guard','test_scout']:['test_guard','test_guard','test_scout'];
  const units={},sides={player:{slots:Array(6).fill(null),score:0},ai:{slots:Array(6).fill(null),score:0}};
- r.team.filter(u=>u.hp>0).forEach((u,i)=>{units[u.id]=snapshotUnit(u);sides.player.slots[i]=u.id;});
+ r.team.filter(u=>u.hp>0).forEach((u,i)=>{units[u.id]=snapshotUnit(u);sides.player.slots[[1,0,2,3,4,5][i]]=u.id;});
  ids.forEach((id,i)=>{const uid=`enemy-${i+1}`;units[uid]=createUnit(r.pack,id,uid);sides.ai.slots[i]=uid;});
  return {mode:'pve',units,sides,victoryCondition:'elimination',phase:'deployment',turn:'player',actionPoints:0,winner:null,stack:[],trace:[],contentVersion:r.contentVersion,log:['PvE：消灭全部敌方单位；双方同时全灭玩家失败。'],nodeId:r.current};
 }

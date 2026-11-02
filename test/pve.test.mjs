@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {newRun,enterNode,availableNodes,finishBattle,claimReward,candidates,service,leaveRoom,buy,continueChapter,encodeRun,decodeRun,rewardChoices,eventRecruit,abandonRun} from '../dist/src/pve.mjs';
 import {generateMap} from '../dist/src/pve-map.mjs';
-import {start,endTurn,playAI,move} from '../dist/src/battle.mjs';
+import {start,endTurn,playAI,move,deploy} from '../dist/src/battle.mjs';
 import {applyDamage,drainStack} from '../dist/src/effects.mjs';
 import {mustReinforce} from '../dist/src/formation.mjs';
 const pack=JSON.parse(readFileSync(new URL('../dist/data/pve-test.json',import.meta.url)));
@@ -15,7 +15,7 @@ test('single hero, three chapter schema, first chapter only; independent snapsho
 test('100 seeded maps: links, crossings, fixed nodes, constraints and reproducibility',()=>{for(let seed=0;seed<100;seed++){const m=generateMap(seed),ids=new Set(m.nodes.map(n=>n.id));assert.deepEqual(m,generateMap(seed));for(const n of m.nodes){if(n.row===0)assert.equal(n.type,'combat');if(n.row===14)assert.equal(n.type,'camp');if(n.row<5)assert.ok(!['elite','camp'].includes(n.type));for(const id of n.next){assert.ok(ids.has(id));const t=m.nodes.find(x=>x.id===id);assert.equal(t.row,n.row+1);if(t.type!=='boss')assert.ok(Math.abs(t.col-n.col)<=1);if(['elite','camp','shop'].includes(n.type))assert.notEqual(t.type,n.type);}}for(let row=0;row<14;row++){const edges=m.nodes.filter(n=>n.row===row).flatMap(n=>n.next.map(id=>[n.col,m.nodes.find(t=>t.id===id).col]));for(const [a,b] of edges)for(const [c,d] of edges)assert.ok((a-c)*(b-d)>=0);}}});
 test('cannot enter disconnected node or enter twice; reward fixed and one claim only',()=>{const r=fresh();assert.throws(()=>enterNode(r,'boss'));battle(r);assert.throws(()=>enterNode(r,availableNodes(r)[0]));win(r);const picks=structuredClone(r.room.choices);assert.deepEqual(picks,rewardChoices(r,'silver'));claimReward(r,null);assert.throws(()=>claimReward(r,0));});
 test('damage persists between battles, no implicit heal or permanent combat attack buffs',()=>{const r=fresh(),b=battle(r);b.units.hero.hp=8;b.units.hero.attack=99;win(r);assert.equal(r.team[0].hp,8);assert.equal(r.team[0].baseAttack,3);claimReward(r,null);const id=availableNodes(r).find(id=>r.map.nodes.find(n=>n.id===id).type==='combat');if(id){enterNode(r,id);assert.equal(r.battle.units.hero.hp,8);assert.equal(r.battle.units.hero.attack,3);}});
-test('full chain resolves lethal retaliation; simultaneous wipe loses PvE but legacy unchanged',()=>{const r=fresh(),b=battle(r);b.units.hero.hp=1;b.units['enemy-1'].hp=1;b.units['enemy-1'].skills=[{level:1,definition:{skill_id:'retaliate',name:'反击测试',levels:{1:{amount:1}},rules:[{event:'damage_taken',subject:'self',effects:[{op:'deal_damage',target:'opposing_unit',amount:'amount',zone:'battlefield',damage_type:'skill'}]}]}}];applyDamage(b,'hero','enemy-1',1);assert.equal(b.winner,null);assert.equal(b.stack.length,1);drainStack(b);assert.equal(b.units.hero.hp,0);assert.equal(b.winner,'ai');finishBattle(r,b);assert.equal(r.status,'failed');assert.throws(()=>service(r,'revive','hero'));});
+test('full chain resolves lethal retaliation; simultaneous wipe loses PvE but legacy unchanged',()=>{const r=fresh(),b=battle(r);b.sides.ai.slots=[null,'enemy-1',null,null,null,null];b.units.hero.hp=1;b.units['enemy-1'].hp=1;b.units['enemy-1'].skills=[{level:1,definition:{skill_id:'retaliate',name:'反击测试',levels:{1:{amount:1}},rules:[{event:'damage_taken',subject:'self',effects:[{op:'deal_damage',target:'opposing_unit',amount:'amount',zone:'battlefield',damage_type:'skill'}]}]}}];applyDamage(b,'hero','enemy-1',1);assert.equal(b.winner,null);assert.equal(b.stack.length,1);drainStack(b);assert.equal(b.units.hero.hp,0);assert.equal(b.winner,'ai');finishBattle(r,b);assert.equal(r.status,'failed');assert.throws(()=>service(r,'revive','hero'));});
 test('real first encounter through shared turn engine grants silver reward',()=>{const r=fresh(),b=battle(r);start(b);for(let i=0;i<20&&!b.winner;i++){if(b.turn==='player')endTurn(b,'player');else playAI(b);}assert.equal(b.winner,'player');finishBattle(r,b);assert.equal(r.status,'reward');assert.ok(r.room.choices.length>0);assert.equal(r.gold,pack.config.initialGold+pack.config.combatGold);});
 test('skill filtering, replace discards, upgrades max three, no duplicate upgrade loot',()=>{const r=fresh(),owner=r.team[0];assert.ok(!candidates(r).some(c=>c.id==='test_hero_strike'));r.status='reward';r.room={choices:[{type:'skill',id:'test_hero_focus'}],resolved:false};claimReward(r,0);assert.equal(owner.skills[0].definition.skill_id,'test_hero_focus');assert.ok(candidates(r).some(c=>c.id==='test_hero_strike'));room(r,'shop');r.gold=100;service(r,'upgrade','hero','attack_declared');service(r,'upgrade','hero','attack_declared');assert.equal(owner.skills[0].level,3);assert.throws(()=>service(r,'upgrade','hero','attack_declared'));assert.ok(candidates(r).every(c=>c.type!=='upgrade'));});
 test('six members include dead, hero protected, departed growth survives and excluded from pools',()=>{const r=fresh();for(const id of pack.recruits.slice(0,5)){r.status='reward';r.room={choices:[{type:'character',id}],resolved:false};claimReward(r,0);}const old=r.team[1];old.hp=0;old.baseAttack=9;old.attack=9;old.skills=[{slotId:'attack_declared',level:2,definition:structuredClone(pack.skills.find(s=>s.owner===old.cardId))}];r.status='reward';r.room={choices:[{type:'character',id:pack.recruits[5]}],resolved:false};assert.throws(()=>claimReward(r,0,{replaceId:'hero'}));assert.equal(r.team.length,6);claimReward(r,0,{replaceId:old.id});assert.equal(r.departed[0].hp,old.maxHp);assert.equal(r.departed[0].baseAttack,9);assert.equal(r.departed[0].skills[0].level,2);assert.ok(!candidates(r,'gold').some(c=>c.id===old.cardId||c.id===old.skills[0].definition.skill_id));});
@@ -26,7 +26,7 @@ test('save round trip uses content snapshot; corrupt/future saves reject',()=>{c
 test('all gold-only choices excluded from silver and no artifacts exist',()=>{const r=fresh();const silver=candidates(r),gold=candidates(r,'gold');assert.ok(gold.length>silver.length);assert.ok(!silver.some(c=>c.id==='test_hero_arrival'));assert.ok(gold.some(c=>c.id==='test_hero_arrival'));assert.ok(gold.every(c=>['character','skill','buff'].includes(c.type)));});
 test('abandoning does not award victory, chapter restoration, or meta currency',()=>{const r=fresh();r.team[0].hp=2;abandonRun(r);assert.equal(r.status,'abandoned');assert.equal(r.team[0].hp,2);assert.equal(r.gold,35);});
 test('single hero has a configured sweep to finish off-lane enemies without recruiting',()=>{const r=fresh(),b=battle(r);b.sides.ai.slots=[null,null,'enemy-1',null,null,null];start(b);for(let i=0;i<30&&!b.winner;i++){if(b.turn==='player')endTurn(b,'player');else playAI(b);}assert.equal(b.winner,'player');});
-test('death event chain is drained before deciding simultaneous defeat',()=>{const r=fresh(),b=battle(r);b.units.hero.hp=1;b.units['enemy-1'].skills=[{level:1,definition:{skill_id:'last_breath',name:'死亡测试',levels:{1:{amount:1}},rules:[{event:'unit_defeated',subject:'self',effects:[{op:'deal_damage',target:'opposing_unit',amount:'amount',zone:'battlefield',damage_type:'skill'}]}]}}];applyDamage(b,'hero','enemy-1',99);assert.equal(b.winner,null);drainStack(b);assert.equal(b.winner,'ai');assert.equal(b.stack.length,0);});
+test('death event chain is drained before deciding simultaneous defeat',()=>{const r=fresh(),b=battle(r);b.sides.ai.slots=[null,'enemy-1',null,null,null,null];b.units.hero.hp=1;b.units['enemy-1'].skills=[{level:1,definition:{skill_id:'last_breath',name:'死亡测试',levels:{1:{amount:1}},rules:[{event:'unit_defeated',subject:'self',effects:[{op:'deal_damage',target:'opposing_unit',amount:'amount',zone:'battlefield',damage_type:'skill'}]}]}}];applyDamage(b,'hero','enemy-1',99);assert.equal(b.winner,null);drainStack(b);assert.equal(b.winner,'ai');assert.equal(b.stack.length,0);});
 test('complete real single-chapter journey with legal services and battle actions',()=>{
  const r=newRun(pack,'full-chapter');let steps=0;
  while(!['demo_complete','failed'].includes(r.status)&&steps++<100){
@@ -43,4 +43,26 @@ test('complete real single-chapter journey with legal services and battle action
   assert.deepEqual(decodeRun(encodeRun(r)),r);
  }
  assert.equal(r.status,'demo_complete');assert.equal(r.visited.length,16);
+});
+
+test('PvE default player deployment fills center, left, right for one through six survivors',()=>{
+ for(let count=1;count<=6;count++){
+  const r=fresh();
+  for(const id of pack.recruits.slice(0,count-1)){r.status='reward';r.room={choices:[{type:'character',id}],resolved:false};claimReward(r,0);}
+  const ids=r.team.map(u=>u.id),b=battle(r);
+  assert.deepEqual(b.sides.player.slots,[ids[1]??null,ids[0],ids[2]??null,ids[3]??null,ids[4]??null,ids[5]??null]);
+  assert.deepEqual(b.sides.ai.slots,['enemy-1',null,null,null,null,null]);
+ }
+});
+test('default deployment skips dead members; manual and saved battle positions are preserved',()=>{
+ const r=fresh();
+ for(const id of pack.recruits.slice(0,2)){r.status='reward';r.room={choices:[{type:'character',id}],resolved:false};claimReward(r,0);}
+ r.team[0].hp=0;
+ const b=battle(r);
+ assert.deepEqual(b.sides.player.slots,[r.team[2].id,r.team[1].id,null,null,null,null]);
+ deploy(b,2,3);
+ const saved=decodeRun(encodeRun(r));
+ assert.deepEqual(saved.battle.sides.player.slots,[r.team[2].id,null,r.team[1].id,null,null,null]);
+ const legacy=fresh();battle(legacy);deploy(legacy.battle,2,1);
+ assert.deepEqual(decodeRun(encodeRun(legacy)).battle.sides.player.slots,['hero',null,null,null,null,null]);
 });
