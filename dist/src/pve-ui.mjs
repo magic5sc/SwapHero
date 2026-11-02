@@ -74,12 +74,14 @@ function presentChest(){
  const panel=el('section','loot-panel',undefined,dialog);
  el('small','loot-label','战利品',panel);
  el('h2','','战斗胜利',panel).id='loot-title';
- const chest=el('button','loot-chest '+(rare?'silver':'gold'),undefined,panel);
- chest.setAttribute('aria-label','打开'+(rare?'稀有银宝箱':'普通金宝箱'));
- const icon=el('span','chest-icon',undefined,chest);
- icon.setAttribute('aria-hidden','true');
- el('i','chest-lid',undefined,icon);el('i','chest-lock',undefined,icon);
- const hint=el('p','loot-hint',rare?'稀有银宝箱 · 点击开启':'普通金宝箱 · 点击开启',panel);
+ const chest=el('button','loot-chest '+(rare?'silver':'copper'),undefined,panel);
+ chest.setAttribute('aria-label','打开'+(rare?'稀有银宝箱':'普通铜宝箱'));
+ for(const state of ['closed','open']){
+  const icon=el('img','chest-icon '+state,undefined,chest);
+  icon.src='assets/chests/'+(rare?'silver':'copper')+'-'+state+'.webp';
+  icon.alt='';icon.draggable=false;
+ }
+ const hint=el('p','loot-hint',rare?'稀有银宝箱 · 点击开启':'普通铜宝箱 · 点击开启',panel);
  const error=el('p','loot-error',storageError,panel);
  error.setAttribute('role','alert');
  const returnToMap=async(index,options)=>{

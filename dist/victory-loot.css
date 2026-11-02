@@ -3,20 +3,19 @@ dialog.victory-loot[open]{position:fixed;inset:0;display:block;width:min(92vw,78
 .loot-panel{padding:clamp(12px,3vw,28px);background:#162c26b8}
 .loot-label{letter-spacing:.45em;color:#efd69b}
 .loot-panel h2{color:#ffe69c;margin:4px 0 10px;font-size:clamp(26px,5vw,44px)}
-button.loot-chest{display:block;background:transparent;border:0;box-shadow:none;margin:10px auto;padding:8px;color:inherit;cursor:pointer;--metal:#f7ca5a;--shadow:#a05e29;--shine:#fff1ac}
-button.loot-chest.silver{--metal:#c4dae8;--shadow:#637d96;--shine:#f0faff}
-.chest-icon,.chest-lid,.chest-lock{display:block;box-sizing:border-box}
-.chest-icon{position:relative;width:90px;height:53px;margin:11px 0 0;border:4px solid #392e26;border-radius:4px;background:linear-gradient(90deg,var(--shadow) 7%,var(--metal) 7% 19%,var(--shadow) 19% 81%,var(--metal) 81% 93%,var(--shadow) 93%);box-shadow:inset 0 -5px #44332280,0 4px #15251f;transform-origin:center bottom;animation:chest-beckon 3.1s infinite}
-.chest-lid{position:absolute;left:-5px;right:-5px;top:-12px;height:28px;border:4px solid #392e26;border-radius:12px 12px 3px 3px;background:linear-gradient(var(--shine),var(--metal) 38%,var(--shadow));transition:transform .24s;transform-origin:center bottom}
-.chest-lock{position:absolute;left:34px;top:7px;width:15px;height:18px;background:var(--shine);border:3px solid #513e2e}
-.opened .chest-icon{animation:none}.opened .chest-lid{transform:translateY(-10px) scaleY(.55)}.loot-chest.opened{opacity:1}
+button.loot-chest{display:grid;place-items:center;background:transparent;border:0;box-shadow:none;margin:4px auto;padding:0;cursor:pointer}
+.chest-icon{grid-area:1/1;width:128px;height:128px;image-rendering:pixelated;transform-origin:center bottom}
+.chest-icon.closed{animation:chest-beckon 3.1s infinite}
+.chest-icon.open,.opened .chest-icon.closed{visibility:hidden}
+.opened .chest-icon.open{visibility:visible}
+.loot-chest.opened{opacity:1}
 @keyframes chest-beckon{0%,69%,89%,100%{transform:rotate(0)}73%,81%{transform:rotate(-6deg)}77%,85%{transform:rotate(5deg)}}
 .loot-hint{margin:6px}.loot-error:empty{display:none}.loot-error{color:#ffd6a5}
 .loot-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(155px,100%),1fr));gap:10px;margin:14px 0}
 .loot-cards .reward-card{background:#f7e7c2;color:#303a32;text-align:left;border:2px solid #bd9b61;border-radius:7px;padding:12px;display:flex;flex-direction:column;gap:6px}
 .loot-cards h3,.loot-cards p{margin:0}.loot-cards select{max-width:100%}.loot-cards button{margin-top:auto}.loot-skip{padding:7px 14px}
-@media(max-width:550px){.loot-cards{grid-template-columns:1fr}.loot-cards .reward-card{padding:8px}.loot-panel:has(.loot-cards) .loot-chest{display:none}}
-@media(prefers-reduced-motion:reduce){.chest-icon{animation:none}.chest-lid{transition:none}}
+@media(max-width:550px){.loot-cards{grid-template-columns:1fr}.loot-cards .reward-card{padding:8px}.loot-panel:has(.loot-cards) .chest-icon{width:72px;height:72px}}
+@media(prefers-reduced-motion:reduce){.chest-icon.closed{animation:none}}
 
 .loot-cards .reward-card{position:relative;transform-style:preserve-3d}
 .loot-cards .reward-card>*{backface-visibility:hidden}
