@@ -145,8 +145,10 @@ export function validateRun(r){
   if(r.status==='room'&&(!Number.isInteger(room.actions)||room.actions<0||!Array.isArray(room.bought)))fail('服务存档无效');
   if(room.type==='shop'&&(!Array.isArray(room.goods)||room.goods.some(item=>!r.pack.skills.some(s=>s.skill_id===item.id))||(room.recruit&&!r.pack.recruits.includes(room.recruit.id))))fail('商店存档无效');
  }
- if(r.status==='battle'){
-  const b=r.battle;if(!b||b.mode!=='pve'||b.nodeId!==r.current||b.victoryCondition!=='elimination'||!['deployment','action','finished','error'].includes(b.phase)||!['player','ai'].includes(b.turn)||!Number.isInteger(b.actionPoints)||b.actionPoints<0||b.actionPoints>2||b.stack?.length)fail('战斗断点无效');
+ if(r.status==='battle'||(r.status==='reward'&&r.battle!=null)){
+  const b=r.battle;
+  if(r.status==='reward'&&(b.phase!=='finished'||b.winner!=='player'))fail('胜利战场存档无效');
+  if(!b||b.mode!=='pve'||b.nodeId!==r.current||b.victoryCondition!=='elimination'||!['deployment','action','finished','error'].includes(b.phase)||!['player','ai'].includes(b.turn)||!Number.isInteger(b.actionPoints)||b.actionPoints<0||b.actionPoints>2||b.stack?.length)fail('战斗断点无效');
   const seen=new Set();for(const side of ['player','ai']){validateFormation(b.sides[side].slots);for(const id of b.sides[side].slots.filter(Boolean)){const u=b.units[id];if(!u||seen.has(id)||!Number.isFinite(u.hp)||u.hp<=0||u.hp>u.maxHp)fail('战斗单位无效');if(side==='player'&&!r.team.some(t=>t.id===id))fail('战斗队伍不匹配');seen.add(id);}}
  }
  return r;

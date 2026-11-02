@@ -14,10 +14,19 @@ async function act(fn){if(isTableTransition())return;try{notice='';await fn();sa
 function begin(){if(run&&!['failed','demo_complete','completed','abandoned'].includes(run.status)&&!confirm('放弃当前冒险并开始新周目？可先导出存档。'))return;run=newRun(pack,document.getElementById('run-seed')?.value.trim()||String(Date.now()));save();render();}
 async function showBattle(){
  const battleScreen=document.getElementById('battle-screen');mountLeather(battleScreen);
- await switchTable(root,battleScreen,'map','battle',()=>openAdventureBattle(run.battle,{onChange:b=>{run.battle=b;save();},onExit:async b=>{
+ await switchTable(root,battleScreen,'map','battle',()=>openAdventureBattle(run.battle,battleHooks()));
+}
+function battleHooks(){
+ const battleScreen=document.getElementById('battle-screen');
+ return {onChange:b=>{if(run.status==='battle'){run.battle=b;save();}},onVictory:b=>{
+  if(b.winner!=='player'||run.room.type==='boss')return false;
+  if(run.status==='battle'){finishBattle(run,b);run.battle=b;save();}
+  if(run.status!=='reward')return false;
+  presentChest();return true;
+ },onExit:async b=>{
   if(isTableTransition())return;run.battle=b;if(b.winner)finishBattle(run,b);save();document.querySelector('.result-overlay')?.remove();
   await switchTable(battleScreen,root,'battle','map',()=>render());
- }}));
+ }};
 }
 function exportSave(){const blob=new Blob([encodeRun(run)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SwapHero-adventure.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
 function importSave(){const f=document.createElement('input');f.type='file';f.accept='.json,application/json';f.onchange=async()=>{try{const file=f.files[0];if(!file)return;if(file.size>3000000)throw Error('存档超过3MB');const next=decodeRun(await file.text());if(run&&!confirm('用导入的冒险替换当前进度？'))return;run=next;save();notice='存档已恢复，使用存档内的内容版本。';render();}catch(e){notice='导入失败：'+e.message;render();}};f.click();}
@@ -54,7 +63,59 @@ function rewardDescription(item){if(item.type==='character'){const c=run.pack.ca
 function rewardCard(parent,item,onClaim,price,disabled=false){const card=el('article','reward-card quality-'+item.quality,undefined,parent);el('small','quality',QUALITY[item.quality]+' · '+{character:'角色',skill:'技能',buff:'数值强化'}[item.type],card);el('h3','',item.name,card);el('p','',rewardDescription(item),card);let target=null,replacement=null;
  if(item.type==='buff')target=select(card,run.team.map(u=>[u.id,u.name]));
  if(item.type==='character'&&run.team.length===6){el('p','muted','队伍已满：选择离队者，成长保留并满血复活。',card);replacement=select(card,[['','选择离队角色'],...run.team.filter(u=>u.cardId!==run.pack.hero).map(u=>[u.id,u.name])]);}
- button(card,disabled?'已售出':price?`购买 · ${price} 金币`:'选择奖励',()=>{if(item.type==='skill'&&run.team.some(u=>u.skills.some(b=>b.slotId===run.pack.skills.find(s=>s.skill_id===item.id).slot)&&u.cardId===run.pack.skills.find(s=>s.skill_id===item.id).owner)&&!confirm('替换后原技能直接弃置，是否继续？'))return;onClaim({targetId:target?.value,replaceId:replacement?.value});},'primary',disabled||!!price&&run.gold<price);
+ button(card,disabled?'已售出':price?`购买 · ${price} 金币`:'选择奖励',()=>{if(item.type==='skill'&&run.team.some(u=>u.skills.some(b=>b.slotId===run.pack.skills.find(s=>s.skill_id===item.id).slot)&&u.cardId===run.pack.skills.find(s=>s.skill_id===item.id).owner)&&!confirm('替换后原技能直接弃置，是否继续？'))return;return onClaim({targetId:target?.value,replaceId:replacement?.value});},'primary',disabled||!!price&&run.gold<price);
+}
+function presentChest(){
+ if(document.querySelector('.victory-loot'))return;
+ const rare=run.room.type==='elite';
+ const dialog=el('dialog','victory-loot result-overlay',undefined,document.body);
+ dialog.setAttribute('aria-labelledby','loot-title');
+ dialog.oncancel=event=>event.preventDefault();
+ const panel=el('section','loot-panel',undefined,dialog);
+ el('small','loot-label','战利品',panel);
+ el('h2','','战斗胜利',panel).id='loot-title';
+ const chest=el('button','loot-chest '+(rare?'silver':'gold'),undefined,panel);
+ chest.setAttribute('aria-label','打开'+(rare?'稀有银宝箱':'普通金宝箱'));
+ const icon=el('span','chest-icon',undefined,chest);
+ icon.setAttribute('aria-hidden','true');
+ el('i','chest-lid',undefined,icon);el('i','chest-lock',undefined,icon);
+ const hint=el('p','loot-hint',rare?'稀有银宝箱 · 点击开启':'普通金宝箱 · 点击开启',panel);
+ const error=el('p','loot-error',storageError,panel);
+ error.setAttribute('role','alert');
+ const returnToMap=async(index,options)=>{
+  if(run.status!=='reward')return;
+  try{claimReward(run,index,options);}catch(e){error.textContent=e.message;return;}
+  run.battle=null;save();dialog.close();dialog.remove();
+  const board=document.getElementById('battle-screen');
+  if(board.hidden){root.hidden=false;render();return;}
+  await switchTable(board,root,'battle','map',render);
+ };
+ const reveal=async(animate)=>{
+  chest.disabled=true;chest.classList.add('opened');
+  hint.textContent='选择一项奖励';
+  const grid=el('div','loot-cards',undefined,panel);grid.inert=true;
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const animations=[];
+  run.room.choices.forEach((item,i)=>{
+   rewardCard(grid,item,options=>returnToMap(i,options));
+   const card=grid.lastElementChild;
+   if(animate&&!reduced){
+    const back=el('span','loot-card-back','✦',card);
+    back.setAttribute('aria-hidden','true');
+    const animation=card.animate([{transform:'perspective(700px) rotateY(-180deg)'},{transform:'perspective(700px) rotateY(0deg)'}],{duration:520,delay:260+i*240,fill:'backwards',easing:'ease-in-out'});
+    animation.finished.then(()=>back.remove(),()=>back.remove());
+    animations.push(animation.finished);
+   }
+  });
+  await Promise.allSettled(animations);
+  if(!dialog.isConnected)return;
+  grid.inert=false;
+  button(panel,'放弃奖励，继续选路',()=>returnToMap(null),'loot-skip');
+  grid.querySelector('button')?.focus({preventScroll:true});
+ };
+ chest.onclick=()=>{if(chest.disabled)return;run.room.chestOpened=true;save();reveal(true);};
+ dialog.showModal();
+ if(run.room.chestOpened)reveal(false);
 }
 function services(parent){const type=run.room.type,c=run.pack.config;el('h3','','治疗、复活与技能升级',parent);if(type!=='shop')el('p','muted',`剩余行动 ${run.room.actions}；每次服务消耗 1 行动`,parent);
  const target=select(parent,run.team.map(u=>[u.id,`${u.name} · ${u.hp}/${u.maxHp}`]));
@@ -63,7 +124,6 @@ function services(parent){const type=run.room.type,c=run.pack.config;el('h3','',
  if(type!=='event'||run.room.event==='training')for(const u of run.team)for(const s of u.skills){const change=upgradePreview(s);if(!change.after)continue;const row=el('div','upgrade-row',undefined,parent);el('p','',`${u.name} · ${s.definition.name} Lv.${s.level} → ${s.level+1}　效果数值 ${change.before.amount} → ${change.after.amount}`,row);button(row,type==='shop'?`升级 · ${c.upgradePrice} 金币`:'升级 · 1 行动',()=>service(run,'upgrade',u.id,s.slotId),'',type!=='shop'&&run.room.actions===0);}
 }
 function roomPanel(parent){const box=el('section','room-panel',undefined,parent),room=run.room;
- if(run.status==='reward'){el('h2','',room.type==='elite'?'金色宝箱 · 三选一':'银色宝箱 · 三选一',box);el('p','muted','奖励已固定，刷新不会重抽。选择一项，或放弃本次奖励。',box);if(room.type==='elite')el('p','muted','本版本暂不提供神器奖励。',box);const grid=el('div','reward-grid',undefined,box);room.choices.forEach((item,i)=>rewardCard(grid,item,options=>claimReward(run,i,options)));button(box,'放弃奖励，继续选路',()=>claimReward(run,null),'ghost');return;}
  if(run.status==='battle'){el('h2','','战斗进行中',box);el('p','','当前战斗已保存，可以继续。若对局无法推进，可保存退出或自行放弃本次冒险。',box);button(box,'继续战斗',showBattle,'primary');return;}
  if(run.status==='chapter_complete'){el('h2','','第一章完成！',box);el('p','','全队已复活并恢复满生命。你已击败本章 Boss。',box);button(box,'查看单章结算',()=>continueChapter(run),'primary');return;}
  if(['failed','demo_complete','completed','abandoned'].includes(run.status)){el('h2','',run.status==='failed'?'远征失败':run.status==='abandoned'?'已结束本次远征':'单章体验完成',box);el('p','',run.status==='failed'?'全队阵亡，本次冒险结束。双方同时全灭也判玩家失败。':run.status==='abandoned'?'本次进度保留，可导出回看。':'第二、三章尚未开放。这是单章完成，不是三章通关。',box);el('p','',`已探索 ${run.visited.length} 个节点 · 剩余 ${run.gold} 金币`,box);el('p','muted','局间养成尚未开放；本版本不带出资源或永久属性。',box);button(box,'开始新的远征',begin,'primary');return;}
@@ -89,6 +149,6 @@ function renderContent(){
  const footer=el('details','pve-footer');el('summary','','远征管理',footer);el('p','muted','测试配置：宝箱混合池三选一，可跳过；营地一次行动；离队角色不返池。存档保存在当前浏览器，可导出后跨设备导入。',footer);button(footer,'局间养成（尚未开放）',()=>{notice='局间养成仅保留入口，资源带出和永久升级规则待定。';},'ghost');
  if(!['failed','demo_complete','completed','abandoned'].includes(run.status))button(footer,'放弃本次远征',()=>{if(confirm('确认放弃本次远征？不会自动获得胜利或资源带出。'))abandonRun(run);},'ghost');
 }
-function render(){renderContent();root.dataset.status=run?.status||'start';mountParchment(root);}
+function render(){if(run?.status==='reward'){root.hidden=true;const board=document.getElementById('battle-screen');mountLeather(board);if(run.battle){openAdventureBattle(run.battle,battleHooks());}else{board.hidden=false;presentChest();}return;}renderContent();root.dataset.status=run?.status||'start';mountParchment(root);}
 try{const response=await fetch('data/pve-test.json');if(!response.ok)throw Error('内容加载失败');pack=await response.json();try{const raw=localStorage.getItem(KEY);if(raw){run=decodeRun(raw);savedText=raw;}}catch(e){notice='原存档未被覆盖：'+e.message;}}catch(e){notice=e.message;}
 render();
