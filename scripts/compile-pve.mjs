@@ -2,7 +2,8 @@ import fs from 'node:fs';
 import XLSX from '../dist/vendor/xlsx/xlsx.min.js';
 import {columns,compileTables} from '../dist/src/workbook.mjs';
 const wb=XLSX.read(fs.readFileSync('dist/config/SwapHero.xlsx'),{type:'buffer'});
-if(![5,7].includes(wb.SheetNames.length))throw Error('工作簿需要五张或七张表');
+for(const name of ['Skill','Character','Level','Node','Chapter'])if(!wb.Sheets[name])throw Error('缺少 '+name+' 工作表');
+if(!!wb.Sheets.Dialogue!==!!wb.Sheets.DialogueLine)throw Error('Dialogue 与 DialogueLine 必须同时存在');
 const tables=Object.fromEntries(Object.keys(columns).filter(name=>wb.Sheets[name]).map(name=>[name,XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:''})]));
 const result=compileTables(tables,JSON.parse(fs.readFileSync('dist/config/economy.json')),{assetExists:path=>fs.existsSync('dist/'+path)});
 for(const [name,items,col] of [['Level',result.levels,'场景背景'],['Chapter',result.chapters,'地图背景']]){

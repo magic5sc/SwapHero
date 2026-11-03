@@ -15,8 +15,8 @@ function load(bytes){
   if(!columns[key].split(' ').every(c=>rows[0]?.includes(c)))throw Error(key+' 表头不完整');
   parsed[key]=rows;
  }
- if(![5,7].includes(next.SheetNames.length))throw Error('请使用五表或七表工作簿');
- tables=normalizeTables(parsed);workbook=next;workbook.SheetNames=Object.keys(columns);index=1;dirty=false;render();message('已载入工作簿');
+ if(!!next.Sheets.Dialogue!==!!next.Sheets.DialogueLine)throw Error('Dialogue 与 DialogueLine 必须同时存在');
+ tables=normalizeTables(parsed);workbook=next;for(const name of Object.keys(columns))if(!workbook.SheetNames.includes(name))workbook.SheetNames.push(name);index=1;dirty=false;render();message('已载入工作簿');
 }
 function ids(name){return [...new Set(tables[name].slice(1).map(row=>row[tables[name][0].indexOf(columns[name].split(' ')[0])]).filter(Boolean))];}
 function options(key){

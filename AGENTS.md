@@ -67,3 +67,11 @@ are interface fixtures, not approved character assets. Game-only builds exclude
 the test hub; the unified Site and developer build include it.
 Every code delivery must repeat the clickable game URL and relevant test/editor
 URLs in its final reply, even when the addresses are unchanged.
+
+## Dialogue authoring
+`dist/dialogue-editor.html` is the quick Excel authoring page; see
+docs/DIALOGUE-STUDIO.md for the AI task/result and browser-agent interfaces.
+Preserve unrelated sheets/formulas/custom columns. AI results stage on a copy and
+must not silently apply, publish, invent lore or expose model credentials. The
+current page has no standalone model backend. Keep its independent draft key and
+exclude authoring assets from game-only builds.

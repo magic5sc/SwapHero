@@ -1,0 +1,23 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SwapHero · 对话工坊</title><link rel="stylesheet" href="dialogue-editor.css"><link rel="stylesheet" href="dialogue.css"></head><body>
+<header class="topbar"><div><a href="tests.html">← 功能测试台</a><span class="brand">SWAPHERO / DIALOGUE STUDIO</span><h1>对话工坊</h1></div><div class="toolbar"><button id="open-book">读取 Excel</button><input id="book-file" type="file" accept=".xlsx" hidden><button id="export-book" class="primary">导出更新后的 Excel</button></div></header>
+<p id="status" role="status" aria-live="polite">正在读取工作簿…</p>
+<main class="workspace"><aside class="sidebar"><div class="sidebar-head"><h2>对话</h2><button id="new-dialogue" aria-label="新建对话">＋ 新建</button></div><input id="search-dialogues" type="search" placeholder="搜索名称或 ID" aria-label="搜索对话"><div id="dialogue-list"></div><a class="full-editor" href="config-editor.html">完整七表编辑器 ↗</a></aside>
+<section class="editor"><div class="editor-header"><div><input id="dialogue-name" class="title-input" aria-label="对话名称" placeholder="对话名称"><small id="dialogue-id"></small></div><div class="toolbar"><button id="preview-dialogue">▶ 预览</button><button id="assist" class="ai-button">✦ AI 辅助</button></div></div>
+<div class="binding-bar"><span>使用位置</span><select id="bind-location" aria-label="添加使用位置"><option value="">选择位置并关联…</option></select><div id="bindings" class="chips"></div></div>
+<p class="guide">选角色、写台词即可。ID 和句序自动处理；角色默认立绘、已导入的画面设置会保留，右侧立绘自动镜像。</p>
+<div id="line-list" aria-label="台词列表"></div><button id="add-line" class="wide-add">＋ 添加一句</button>
+<details class="notes-panel"><summary>细节备注（可选）</summary><label>语气、背景、人物关系、字数或其他要求<textarea id="dialogue-notes" rows="4" placeholder="例如：剑士克制，斥候急躁；最多6句；不新增世界观设定。备注可交给 AI 转成候选台词或画面设置。"></textarea></label><p class="subtle">备注随 Excel 保存，供 AI 参考。已有姓名、立绘、站位和背景字段会原样保留；精确手动调整可用完整七表编辑器。</p></details>
+<div class="editor-footer"><span id="draft-state">浏览器独立草稿</span><button id="delete-dialogue" class="text-button">删除当前对话</button></div>
+</section></main>
+<dialog id="ai-panel"><div class="modal-heading"><div><span class="brand">ASSISTED WRITING</span><h2>让 AI 帮你写</h2></div><button id="close-ai" aria-label="关闭 AI 辅助">✕</button></div>
+<p>只需说明要写什么。当前工作簿的角色、已有对白、挂载位置和可用图片会自动整理进任务包。</p>
+<label>要写什么 <span class="required">必填</span><textarea id="ai-goal" rows="3" placeholder="例如：为第一章所有普通关卡补充战前对白，每段3～5句，推进“寻找失踪向导”的线索。"></textarea></label>
+<label>细节备注 <span class="subtle">可选，与当前对话共用</span><textarea id="ai-notes" rows="3" placeholder="所有补充要求放在这里。未确认的人设或世界观请写为待确认。"></textarea></label>
+<div class="toolbar"><button id="prepare-task" class="primary">整理 AI 任务</button><button id="copy-task">复制给 AI</button><button id="download-task">下载任务包</button></div>
+<p id="ai-state" role="status" class="subtle">尚未配置在线模型。你可以把任务包交给 Codex，再导入候选；支持网页工具的浏览器也可由 AI 直接读取任务并回填候选。</p>
+<details><summary>查看自动整理的信息</summary><pre id="task-summary">尚未整理任务</pre></details>
+<hr><label>导入 AI 候选<textarea id="result-json" rows="4" placeholder="粘贴 AI 返回的候选 JSON，或读取结果文件。导入后先预览，不会直接覆盖工作簿。"></textarea></label>
+<div class="toolbar"><button id="stage-json">校验并预览候选</button><button id="open-result">读取结果 JSON</button><input id="result-file" type="file" accept=".json" hidden></div>
+<section id="proposal" hidden><h3>待审阅候选</h3><div id="proposal-list"></div><div id="proposal-questions"></div><p class="subtle">应用只修改当前浏览器草稿；导出 Excel 并发布后才会进入游戏。</p><button id="apply-proposal" class="primary">应用这些候选到草稿</button></section>
+</dialog>
+<script type="module" src="src/dialogue-studio.mjs"></script></body></html>
