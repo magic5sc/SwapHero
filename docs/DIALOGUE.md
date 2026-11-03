@@ -56,3 +56,7 @@ round trips, five-table compatibility, invalid rows, inherited background restor
 trigger identity, skip policy, fixed node selection, delayed/idempotent rewards,
 Boss ordering and failure. Browser scope and deployment references are recorded
 in the Wiki; device testing and owner art/story acceptance remain separate.
+
+Right-side dialogue portraits are horizontally mirrored by the image-only CSS rule
+(2026-11-03 owner correction). Left-side portraits, names, dialogue text and
+backgrounds retain their orientation, including after line changes and reload.
