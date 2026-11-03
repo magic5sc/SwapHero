@@ -1,8 +1,11 @@
+import {playDialogue,isDialoguePlaying} from './dialogue-player.mjs';
+import {playOpening,playNode,playBeforeBattle,settleBattle} from './dialogue-flow.mjs';
 import {mountParchment,mountLeather,switchTable,isTableTransition} from './tabletop.mjs';
-import {newRun,rewardRecipient,availableNodes,enterNode,finishBattle,continueChapter,claimReward,buy,service,eventRecruit,leaveRoom,abandonRun,upgradePreview,candidates,QUALITY,encodeRun,decodeRun} from './pve.mjs';
+import {newRun,rewardRecipient,availableNodes,enterNode,continueChapter,claimReward,buy,service,eventRecruit,leaveRoom,abandonRun,upgradePreview,candidates,QUALITY,encodeRun,decodeRun} from './pve.mjs';
 import {openAdventureBattle} from './app.mjs';
 import {makeSprite,artForUnit} from './art.mjs';
 const root=document.getElementById('adventure'),KEY='swaphero.adventure.v1';
+let outcomeBusy=false,flowBusy=false;
 let run=null,pack=null,notice='',storageError='',savedText=null;
 const names={combat:'普通战斗',elite:'精英战斗',shop:'商店',event:'未知事件',camp:'营地',boss:'章节 Boss'};
 const MAP_ART='assets/chapter-map/';
@@ -10,26 +13,45 @@ function mapIcon(parent,type){const image=el('img','map-icon',undefined,parent);
 const el=(tag,cls,text,parent=root)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;parent.append(e);return e;};
 function button(parent,text,fn,cls='',disabled=false){const b=el('button',cls,text,parent);b.type='button';b.disabled=disabled;b.onclick=()=>act(fn);return b;}
 function save(){if(!run)return;try{const raw=encodeRun(run);if(raw!==savedText){localStorage.setItem(KEY,raw);savedText=raw;}storageError='';}catch(e){storageError='保存失败：'+e.message+'。请导出存档备份。';}}
-async function act(fn){if(isTableTransition())return;try{notice='';await fn();save();}catch(e){notice=e.message;}if(!root.hidden)render();}
-function begin(){if(run&&!['failed','demo_complete','completed','abandoned'].includes(run.status)&&!confirm('放弃当前冒险并开始新周目？可先导出存档。'))return;run=newRun(pack,document.getElementById('run-seed')?.value.trim()||String(Date.now()));save();render();}
+async function act(fn){if(isTableTransition()||isDialoguePlaying()||flowBusy)return;try{notice='';await fn();save();}catch(e){notice=e.message;}if(!root.hidden)render();}
+async function begin(){if(run&&!['failed','demo_complete','completed','abandoned'].includes(run.status)&&!confirm('放弃当前冒险并开始新周目？可先导出存档。'))return;run=newRun(pack,document.getElementById('run-seed')?.value.trim()||String(Date.now()));save();render();await opening();}
 async function showBattle(){
  const battleScreen=document.getElementById('battle-screen');mountLeather(battleScreen);
  await switchTable(root,battleScreen,'map','battle',()=>openAdventureBattle(run.battle,battleHooks()));
+ await playBeforeBattle(run,dialogue);if(run.battle?.winner)await outcome(run.battle);
+}
+function dialogue(id,phase){return playDialogue(id,{run,phase,save,restored:restoring});}
+let restoring=false;
+async function opening(){if(!run||run.status!=='map')return;flowBusy=true;try{await playOpening(run,dialogue);}finally{flowBusy=false;}}
+async function chooseNode(id){
+ flowBusy=true;
+ try{enterNode(run,id);save();await playNode(run,dialogue);if(run.status==='battle')await showBattle();}
+ finally{flowBusy=false;}
+}
+async function outcome(b){
+ if(outcomeBusy)return;outcomeBusy=true;
+ try{
+  await settleBattle(run,structuredClone(b),dialogue,save);
+  if(run.status==='reward')presentChest();
+  else if(['failed','chapter_complete'].includes(run.status)){
+   await switchTable(document.getElementById('battle-screen'),root,'battle','map',render);
+  }
+ }catch(e){notice=e.message;root.hidden=false;renderContent();mountParchment(root);}
+ finally{outcomeBusy=false;}
 }
 function battleHooks(){
  const battleScreen=document.getElementById('battle-screen');
  return {onChange:b=>{if(run.status==='battle'){run.battle=b;save();}},onVictory:b=>{
-  if(b.winner!=='player'||run.room.type==='boss')return false;
-  if(run.status==='battle'){finishBattle(run,b);run.battle=b;save();}
-  if(run.status!=='reward')return false;
-  presentChest();return true;
+  // show() calls this only after the last attack/defeat presentation.
+  if(!isTableTransition())queueMicrotask(()=>outcome(b));return true;
  },onExit:async b=>{
-  if(isTableTransition())return;run.battle=b;if(b.winner)finishBattle(run,b);save();document.querySelector('.result-overlay')?.remove();
+  if(isTableTransition()||isDialoguePlaying())return;
+  run.battle=b;if(b.winner){await outcome(b);return;}save();
   await switchTable(battleScreen,root,'battle','map',()=>render());
  }};
 }
 function exportSave(){const blob=new Blob([encodeRun(run)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='SwapHero-adventure.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
-function importSave(){const f=document.createElement('input');f.type='file';f.accept='.json,application/json';f.onchange=async()=>{try{const file=f.files[0];if(!file)return;if(file.size>3000000)throw Error('存档超过3MB');const next=decodeRun(await file.text());if(run&&!confirm('用导入的冒险替换当前进度？'))return;run=next;save();notice='存档已恢复，使用存档内的内容版本。';render();}catch(e){notice='导入失败：'+e.message;render();}};f.click();}
+function importSave(){const f=document.createElement('input');f.type='file';f.accept='.json,application/json';f.onchange=async()=>{try{const file=f.files[0];if(!file)return;if(file.size>3000000)throw Error('存档超过3MB');const next=decodeRun(await file.text());if(run&&!confirm('用导入的冒险替换当前进度？'))return;run=next;save();notice='存档已恢复，使用存档内的内容版本。';render();await restoreDialogueFlow();}catch(e){notice='导入失败：'+e.message;render();}};f.click();}
 function select(parent,items){const s=el('select','',undefined,parent);for(const [value,text] of items){const o=el('option','',text,s);o.value=value;}return s;}
 function teamPanel(parent){
  const panel=el('section','pve-team',undefined,parent);el('h2','','远征队伍 '+run.team.length+' / 6',panel);
@@ -52,7 +74,7 @@ function mapPanel(parent){
  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox',`0 0 700 ${height}`);svg.setAttribute('preserveAspectRatio','none');svg.classList.add('route-lines');svg.setAttribute('aria-hidden','true');map.append(svg);
  const available=availableNodes(run);
  for(const n of run.map.nodes)for(const id of n.next){const to=run.map.nodes.find(x=>x.id===id),line=document.createElementNS(svg.namespaceURI,'line');line.setAttribute('x1',String(x(n)));line.setAttribute('y1',String(y(n)));line.setAttribute('x2',String(x(to)));line.setAttribute('y2',String(y(to)));if(run.visited.includes(n.id)&&run.visited.includes(id))line.classList.add('travelled');else if(n.id===run.current&&available.includes(id))line.classList.add('reachable');svg.append(line);}
- for(const n of run.map.nodes){const active=run.status==='map'&&available.includes(n.id),current=run.current===n.id,visited=run.visited.includes(n.id),b=button(map,'',()=>{enterNode(run,n.id);save();if(run.status==='battle')return showBattle();},'map-node '+n.type+(active?' available':'')+(visited?' visited':'')+(current?' current':''),!active);b.style.left=`${x(n)/700*100}%`;b.style.top=y(n)+'px';mapIcon(b,n.type);b.title=`第${n.row+1}层 · ${names[n.type]}`;b.setAttribute('aria-label',b.title+(current?'，当前位置':active?'，可前往':visited?'，已探索':'，未到达'));if(current)b.setAttribute('aria-current','step');el('span','node-label',names[n.type],b);}
+ for(const n of run.map.nodes){const active=run.status==='map'&&available.includes(n.id),current=run.current===n.id,visited=run.visited.includes(n.id),b=button(map,'',()=>chooseNode(n.id),'map-node '+n.type+(active?' available':'')+(visited?' visited':'')+(current?' current':''),!active);b.style.left=`${x(n)/700*100}%`;b.style.top=y(n)+'px';mapIcon(b,n.type);b.title=`第${n.row+1}层 · ${names[n.type]}`;b.setAttribute('aria-label',b.title+(current?'，当前位置':active?'，可前往':visited?'，已探索':'，未到达'));if(current)b.setAttribute('aria-current','step');el('span','node-label',names[n.type],b);}
  const compass=el('img','atlas-compass',undefined,map);compass.src=MAP_ART+'compass.svg';compass.alt='';
  const focusCurrent=()=>{const n=run.map.nodes.find(n=>n.id===run.current);scroller.scrollTop=y(n||{row:0})-scroller.clientHeight*.75;syncPaper();};
  button(controls,'定位当前路线',focusCurrent,'atlas-locate');
@@ -127,7 +149,7 @@ function services(parent){const type=run.room.type,c=run.pack.config;el('h3','',
 }
 function roomPanel(parent){const box=el('section','room-panel',undefined,parent),room=run.room;
  if(run.status==='battle'){el('h2','','战斗进行中',box);el('p','','当前战斗已保存，可以继续。若对局无法推进，可保存退出或自行放弃本次冒险。',box);button(box,'继续战斗',showBattle,'primary');return;}
- if(run.status==='chapter_complete'){el('h2','','第一章完成！',box);el('p','','全队已复活并恢复满生命。你已击败本章 Boss。',box);button(box,'查看单章结算',()=>continueChapter(run),'primary');return;}
+ if(run.status==='chapter_complete'){el('h2','','第一章完成！',box);el('p','','全队已复活并恢复满生命。你已击败本章 Boss。',box);button(box,'查看单章结算',async()=>{continueChapter(run);save();render();await opening();},'primary');return;}
  if(['failed','demo_complete','completed','abandoned'].includes(run.status)){el('h2','',run.status==='failed'?'远征失败':run.status==='abandoned'?'已结束本次远征':'单章体验完成',box);el('p','',run.status==='failed'?'全队阵亡，本次冒险结束。双方同时全灭也判玩家失败。':run.status==='abandoned'?'本次进度保留，可导出回看。':'第二、三章尚未开放。这是单章完成，不是三章通关。',box);el('p','',`已探索 ${run.visited.length} 个节点 · 剩余 ${run.gold} 金币`,box);el('p','muted','局间养成尚未开放；本版本不带出资源或永久属性。',box);button(box,'开始新的远征',begin,'primary');return;}
  if(run.status!=='room')return;
  el('h2','',names[room.type],box);
@@ -156,3 +178,18 @@ function renderContent(){
 function render(){if(run?.status==='reward'){root.hidden=true;const board=document.getElementById('battle-screen');mountLeather(board);if(run.battle){openAdventureBattle(run.battle,battleHooks());}else{board.hidden=false;presentChest();}return;}renderContent();root.dataset.status=run?.status||'start';mountParchment(root);}
 try{const response=await fetch('data/pve-test.json');if(!response.ok)throw Error('内容加载失败');pack=await response.json();try{const raw=localStorage.getItem(KEY);if(raw){run=decodeRun(raw);savedText=raw;}}catch(e){notice='原存档未被覆盖：'+e.message;}}catch(e){notice=e.message;}
 render();
+async function restoreDialogueFlow(){
+ if(!run)return;restoring=true;flowBusy=true;
+ try{
+  const phase=run.dialogueProgress?.active?.phase;
+  if(phase==='node'){
+   document.querySelector('.victory-loot')?.remove();document.getElementById('battle-screen').hidden=true;root.hidden=false;renderContent();mountParchment(root);
+   await playNode(run,dialogue);if(run.status==='battle')await showBattle();else render();
+  }else if(run.status==='battle'&&(phase||run.battle?.winner)){
+   const board=document.getElementById('battle-screen');root.hidden=true;mountLeather(board);openAdventureBattle(run.battle,battleHooks());
+   if(!run.battle.winner)await playBeforeBattle(run,dialogue);else await outcome(run.battle);
+  }else if(run.status==='map')await playOpening(run,dialogue);
+ }catch(e){notice=e.message;root.hidden=false;renderContent();mountParchment(root);}
+ finally{restoring=false;flowBusy=false;}
+}
+await restoreDialogueFlow();

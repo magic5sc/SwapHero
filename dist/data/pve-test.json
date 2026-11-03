@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "version": "pve-five-tables-v1",
+  "version": "pve-dialogue-v1",
   "cards": [
     {
       "card_id": "test_hero",
@@ -44,7 +44,8 @@
         "test_hero_arrival",
         "test_hero_rest",
         "shared_agility"
-      ]
+      ],
+      "dialoguePortrait": ""
     },
     {
       "card_id": "test_ally_1",
@@ -82,7 +83,8 @@
         "test_ally_1_arrival",
         "test_ally_1_rest",
         "shared_agility"
-      ]
+      ],
+      "dialoguePortrait": ""
     },
     {
       "card_id": "test_ally_2",
@@ -119,7 +121,8 @@
         "test_ally_2_focus",
         "test_ally_2_arrival",
         "test_ally_2_rest"
-      ]
+      ],
+      "dialoguePortrait": ""
     },
     {
       "card_id": "test_ally_3",
@@ -156,7 +159,8 @@
         "test_ally_3_focus",
         "test_ally_3_arrival",
         "test_ally_3_rest"
-      ]
+      ],
+      "dialoguePortrait": ""
     },
     {
       "card_id": "test_ally_4",
@@ -193,7 +197,8 @@
         "test_ally_4_focus",
         "test_ally_4_arrival",
         "test_ally_4_rest"
-      ]
+      ],
+      "dialoguePortrait": ""
     },
     {
       "card_id": "test_ally_5",
@@ -230,7 +235,8 @@
         "test_ally_5_focus",
         "test_ally_5_arrival",
         "test_ally_5_rest"
-      ]
+      ],
+      "dialoguePortrait": ""
     },
     {
       "card_id": "test_ally_6",
@@ -267,7 +273,8 @@
         "test_ally_6_focus",
         "test_ally_6_arrival",
         "test_ally_6_rest"
-      ]
+      ],
+      "dialoguePortrait": ""
     },
     {
       "card_id": "test_ally_7",
@@ -304,7 +311,8 @@
         "test_ally_7_focus",
         "test_ally_7_arrival",
         "test_ally_7_rest"
-      ]
+      ],
+      "dialoguePortrait": ""
     },
     {
       "card_id": "test_scout",
@@ -320,7 +328,8 @@
       "blockers": [],
       "slots": [],
       "skills": [],
-      "learnable": []
+      "learnable": [],
+      "dialoguePortrait": ""
     },
     {
       "card_id": "test_guard",
@@ -336,7 +345,8 @@
       "blockers": [],
       "slots": [],
       "skills": [],
-      "learnable": []
+      "learnable": [],
+      "dialoguePortrait": ""
     },
     {
       "card_id": "test_elite",
@@ -352,7 +362,8 @@
       "blockers": [],
       "slots": [],
       "skills": [],
-      "learnable": []
+      "learnable": [],
+      "dialoguePortrait": ""
     },
     {
       "card_id": "test_boss",
@@ -368,7 +379,8 @@
       "blockers": [],
       "slots": [],
       "skills": [],
-      "learnable": []
+      "learnable": [],
+      "dialoguePortrait": ""
     }
   ],
   "skills": [
@@ -1717,7 +1729,9 @@
         "combat": "island_normal",
         "elite": "island_elite",
         "boss": "island_boss"
-      }
+      },
+      "openingDialogue": "dlg_test_opening",
+      "endingDialogue": "dlg_test_ending"
     },
     {
       "id": "chapter_2",
@@ -1729,7 +1743,9 @@
         "combat": "",
         "elite": "",
         "boss": ""
-      }
+      },
+      "openingDialogue": "",
+      "endingDialogue": ""
     },
     {
       "id": "chapter_3",
@@ -1741,7 +1757,9 @@
         "combat": "",
         "elite": "",
         "boss": ""
-      }
+      },
+      "openingDialogue": "",
+      "endingDialogue": ""
     }
   ],
   "levels": [
@@ -1758,7 +1776,10 @@
       ],
       "victoryCondition": "elimination",
       "background": "assets/tabletop/leather.png",
-      "title": ""
+      "title": "",
+      "beforeDialogue": "dlg_test_before",
+      "victoryDialogue": "dlg_test_victory",
+      "defeatDialogue": "dlg_test_defeat"
     },
     {
       "id": "patrol",
@@ -1773,7 +1794,10 @@
       ],
       "victoryCondition": "elimination",
       "background": "assets/tabletop/leather.png",
-      "title": ""
+      "title": "",
+      "beforeDialogue": "dlg_test_before",
+      "victoryDialogue": "dlg_test_victory",
+      "defeatDialogue": "dlg_test_defeat"
     },
     {
       "id": "squad",
@@ -1788,7 +1812,10 @@
       ],
       "victoryCondition": "elimination",
       "background": "assets/tabletop/leather.png",
-      "title": ""
+      "title": "",
+      "beforeDialogue": "dlg_test_before",
+      "victoryDialogue": "dlg_test_victory",
+      "defeatDialogue": "dlg_test_defeat"
     },
     {
       "id": "elite",
@@ -1803,7 +1830,10 @@
       ],
       "victoryCondition": "elimination",
       "background": "assets/tabletop/leather.png",
-      "title": ""
+      "title": "",
+      "beforeDialogue": "dlg_test_before",
+      "victoryDialogue": "dlg_test_victory",
+      "defeatDialogue": "dlg_test_defeat"
     },
     {
       "id": "gate",
@@ -1818,7 +1848,10 @@
       ],
       "victoryCondition": "elimination",
       "background": "assets/tabletop/leather.png",
-      "title": ""
+      "title": "",
+      "beforeDialogue": "dlg_test_before",
+      "victoryDialogue": "dlg_test_victory",
+      "defeatDialogue": "dlg_test_defeat"
     },
     {
       "id": "scout_flank",
@@ -1833,7 +1866,10 @@
       ],
       "victoryCondition": "elimination",
       "background": "assets/tabletop/leather.png",
-      "title": ""
+      "title": "",
+      "beforeDialogue": "dlg_test_before",
+      "victoryDialogue": "dlg_test_victory",
+      "defeatDialogue": "dlg_test_defeat"
     }
   ],
   "nodes": [
@@ -1842,42 +1878,135 @@
       "level": "scout",
       "weight": 3,
       "min": 1,
-      "max": 5
+      "max": 5,
+      "dialogue": ""
     },
     {
       "id": "island_normal",
       "level": "patrol",
       "weight": 1,
       "min": 6,
-      "max": 10
+      "max": 10,
+      "dialogue": ""
     },
     {
       "id": "island_normal",
       "level": "squad",
       "weight": 1,
       "min": 11,
-      "max": 15
+      "max": 15,
+      "dialogue": ""
     },
     {
       "id": "island_elite",
       "level": "elite",
       "weight": 1,
       "min": 1,
-      "max": 31
+      "max": 31,
+      "dialogue": ""
     },
     {
       "id": "island_boss",
       "level": "gate",
       "weight": 1,
       "min": 1,
-      "max": 31
+      "max": 31,
+      "dialogue": ""
     },
     {
       "id": "island_normal",
       "level": "scout_flank",
       "weight": 1,
       "min": 2,
-      "max": 5
+      "max": 5,
+      "dialogue": ""
+    }
+  ],
+  "dialogues": [
+    {
+      "id": "dlg_test_opening",
+      "name": "测试章节开场",
+      "skip": true,
+      "lines": [
+        {
+          "order": 10,
+          "text": "远征开始。沿地图路线前进，战斗之间会保留生命与伤亡。",
+          "character": "",
+          "name": "",
+          "portrait": "",
+          "side": "left",
+          "backgroundAction": "",
+          "background": ""
+        }
+      ]
+    },
+    {
+      "id": "dlg_test_before",
+      "name": "测试战前",
+      "skip": true,
+      "lines": [
+        {
+          "order": 10,
+          "text": "拖拽我方角色调整站位。准备好后，点击完成布阵。",
+          "character": "",
+          "name": "",
+          "portrait": "",
+          "side": "left",
+          "backgroundAction": "",
+          "background": ""
+        }
+      ]
+    },
+    {
+      "id": "dlg_test_victory",
+      "name": "测试胜利",
+      "skip": true,
+      "lines": [
+        {
+          "order": 10,
+          "text": "战斗结束。接下来打开宝箱，选择本次奖励。",
+          "character": "",
+          "name": "",
+          "portrait": "",
+          "side": "left",
+          "backgroundAction": "",
+          "background": ""
+        }
+      ]
+    },
+    {
+      "id": "dlg_test_defeat",
+      "name": "测试失败",
+      "skip": true,
+      "lines": [
+        {
+          "order": 10,
+          "text": "本次远征结束。你可以重新启程。",
+          "character": "",
+          "name": "",
+          "portrait": "",
+          "side": "left",
+          "backgroundAction": "",
+          "background": ""
+        }
+      ]
+    },
+    {
+      "id": "dlg_test_ending",
+      "name": "测试章末",
+      "skip": true,
+      "lines": [
+        {
+          "order": 10,
+          "text": "第一章已完成。全队将恢复，后续章节暂未开放。",
+          "character": "",
+          "name": "",
+          "portrait": "",
+          "side": "left",
+          "backgroundAction": "",
+          "background": ""
+        }
+      ]
     }
   ],
   "config": {

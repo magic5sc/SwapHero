@@ -1,10 +1,11 @@
 import {createUnit,validateCatalog} from './content.mjs';
 import {generateMap,seeded,shuffle} from './pve-map.mjs';
 import {validateFormation} from './formation.mjs';
+import {validateDialogues,validateDialogueProgress} from './dialogue.mjs';
 const copy=x=>structuredClone(x);
 const fail=msg=>{throw Error(msg);};
 export const QUALITY={common:'普通',rare:'稀有',epic:'史诗',legendary:'传说'};
-export function validatePack(p){const e=validateCatalog(p);if(e.length)fail(e.join('；'));if(!p.chapters?.[0]?.available||!p.config||!p.cards.some(c=>c.card_id===p.hero))fail('冒险内容包不完整');
+export function validatePack(p){const e=validateCatalog(p);if(e.length)fail(e.join('；'));if(!p.chapters?.[0]?.available||!p.config||!p.cards.some(c=>c.card_id===p.hero))fail('冒险内容包不完整');validateDialogues(p);
  const c=p.config;for(const key of ['initialGold','combatGold','eliteGold','healPrice','revivePrice','upgradePrice','recruitPrice','skillPrice','healAmount','campActions'])if(!Number.isInteger(c[key])||c[key]<0)fail('经济配置无效');
  for(const key of ['unknownCombat','unknownShop'])if(!Number.isFinite(c[key])||c[key]<0||c[key]>1)fail('事件概率无效');
  for(const source of ['silver','gold'])if(!Array.isArray(c.weights?.[source])||c.weights[source].length!==4||c.weights[source].some(n=>!Number.isFinite(n)||n<=0))fail('宝箱权重无效');
@@ -60,7 +61,7 @@ function encounter(r,type,previewLevel=null){
   let roll=rand(r,'encounter')()*pool.reduce((sum,n)=>sum+n.weight,0);
   const pick=pool.find(n=>(roll-=n.weight)<0);
   if(!pick)fail('本层缺少可用关卡');
-  level=r.pack.levels.find(l=>l.id===pick.level);
+  level=r.pack.levels.find(l=>l.id===pick.level);r.room.dialogue=pick.dialogue||'';
  }
  // Older runs retain their original content snapshot.
  const ids=level?level.slots:type==='boss'?['test_boss','test_guard','test_guard']:type==='elite'?['test_elite','test_guard']:row<5?['test_scout']:row<10?['test_guard','test_scout']:['test_guard','test_guard','test_scout'];
@@ -181,7 +182,7 @@ export function validateRun(r){
   if(!b||b.mode!=='pve'||b.nodeId!==r.current||!['score_5','elimination'].includes(b.victoryCondition)||!['deployment','action','finished','error'].includes(b.phase)||!['player','ai'].includes(b.turn)||!Number.isInteger(b.actionPoints)||b.actionPoints<0||b.actionPoints>2||b.stack?.length)fail('战斗断点无效');
   const seen=new Set();for(const side of ['player','ai']){validateFormation(b.sides[side].slots);for(const id of b.sides[side].slots.filter(Boolean)){const u=b.units[id];if(!u||seen.has(id)||!Number.isFinite(u.hp)||u.hp<=0||u.hp>u.maxHp)fail('战斗单位无效');if(side==='player'&&!r.team.some(t=>t.id===id))fail('战斗队伍不匹配');seen.add(id);}}
  }
- return r;
+ validateDialogueProgress(r);return r;
 }
 export function encodeRun(r){validateRun(r);return JSON.stringify({format:'swaphero-adventure',version:1,run:r});}
 export function decodeRun(raw){if(typeof raw!=='string'||raw.length>3000000)fail('存档过大或格式错误');const data=JSON.parse(raw);if(data.format!=='swaphero-adventure'||data.version!==1)fail('不是支持的冒险存档');return validateRun(data.run);}

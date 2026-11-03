@@ -1,23 +1,29 @@
-import {columns,positions,compileTables} from './workbook.mjs';
+import {columns,positions,compileTables,normalizeTables} from './workbook.mjs';
+import {playDialogue} from './dialogue-player.mjs';
 const $=id=>document.getElementById(id);
-const names={Skill:'技能',Character:'角色',Level:'关卡',Node:'节点',Chapter:'章节'};
+const names={Skill:'技能',Character:'角色',Level:'关卡',Node:'节点',Chapter:'章节',Dialogue:'对话',DialogueLine:'台词'};
 const help={Skill:'每行一个技能。等级列填写对应效果的数值。',Character:'多个 ID 用英文逗号分隔，初始技能写作 SkillID@等级。',Level:'从敌方视角配置时仍按屏幕左、中、右填写。上排为备战，下排为战场。',Node:'相同 NodeID 的行属于同一候选池。层数从 1 开始，留空表示不限。',Chapter:'普通、精英与 Boss 分别引用节点池。'};
+help.Dialogue='每段一个唯一入口。预览不会修改远征存档。';help.DialogueLine='句序按数值排序，可用10、20、30插句。首句背景留空时为透明叠加。图片资源 ID 使用 assets/ 下已发布图片路径。';
 let sheet='Level',index=1,tables,workbook,config,dirty=false;
 const message=text=>{$('status').textContent=text;};
 function load(bytes){
  const next=XLSX.read(bytes,{type:'array'});
  const parsed={};
  for(const key of Object.keys(columns)){
-  if(!next.Sheets[key])throw Error('缺少 '+key+' 工作表');
+  if(!next.Sheets[key]){if(['Dialogue','DialogueLine'].includes(key))continue;throw Error('缺少 '+key+' 工作表');}
   const rows=XLSX.utils.sheet_to_json(next.Sheets[key],{header:1,defval:''});
   if(!columns[key].split(' ').every(c=>rows[0]?.includes(c)))throw Error(key+' 表头不完整');
   parsed[key]=rows;
  }
- if(next.SheetNames.length!==5)throw Error('请使用五表工作簿');
- tables=parsed;workbook=next;index=1;dirty=false;render();message('已载入工作簿');
+ if(![5,7].includes(next.SheetNames.length))throw Error('请使用五表或七表工作簿');
+ tables=normalizeTables(parsed);workbook=next;workbook.SheetNames=Object.keys(columns);index=1;dirty=false;render();message('已载入工作簿');
 }
 function ids(name){return [...new Set(tables[name].slice(1).map(row=>row[tables[name][0].indexOf(columns[name].split(' ')[0])]).filter(Boolean))];}
 function options(key){
+ if(key.endsWith('对话ID')||key==='DialogueID'&&sheet==='DialogueLine')return ids('Dialogue');
+ if(key==='说话角色ID')return ids('Character');
+ if(['默认对话立绘ID','立绘ID覆盖','背景图ID'].includes(key))return [...new Set(Object.values(tables).flatMap(rows=>rows.slice(1).flatMap(r=>r.filter(v=>typeof v==='string'&&v.startsWith('assets/')))))];
+ if(key==='站位')return ['左','右'];if(key==='背景操作')return ['沿用上一句','显示图片','恢复原场景'];if(key==='允许跳过')return ['true','false'];
  if(positions.includes(key))return ids('Character');
  if(sheet==='Node'&&key==='LevelID')return ids('Level');
  if(['普通节点','精英节点','Boss节点'].includes(key))return ids('Node');
@@ -26,12 +32,18 @@ function options(key){
 function field(parent,key,row){
  const col=tables[sheet][0].indexOf(key),choices=options(key);
  const label=document.createElement('label');label.textContent=key;parent.append(label);
- const input=document.createElement(choices?'select':'input');
+ const input=document.createElement(key==='正文'?'textarea':'input');
  const value=String(row[col]??'');
- if(choices)for(const v of new Set(['',...choices,value]))input.add(new Option(v||'—',v));
+ if(choices){const list=document.createElement('datalist');list.id='choices-'+key;for(const v of new Set(['',...choices,value]))list.append(new Option(v||'—',v));label.append(list);input.setAttribute('list',list.id);}
  input.value=value;
  input.oninput=()=>{row[col]=input.value;dirty=true;message('有待导出的修改');refreshRows();};
  label.append(input);
+ if(key==='背景图ID')input.disabled=row[tables[sheet][0].indexOf('背景操作')]!=='显示图片';
+ if(key==='背景操作')input.addEventListener('change',()=>{if(input.value!=='显示图片')row[tables[sheet][0].indexOf('背景图ID')]='';render();});
+ if(key.endsWith('对话ID')){
+  const preview=document.createElement('button');preview.type='button';preview.textContent='预览对话';preview.onclick=()=>previewDialogue(input.value);label.append(preview);
+  const jump=document.createElement('button');jump.type='button';jump.textContent='编辑对话';jump.onclick=()=>{const i=tables.Dialogue.findIndex((r,i)=>i&&r[0]===input.value);if(i>0){sheet='Dialogue';index=i;render();}};label.append(jump);
+ }
  if(sheet==='Character'&&['初始技能','可学技能'].includes(key)){
   const picker=document.createElement('select');picker.setAttribute('aria-label','添加'+key);
   picker.add(new Option('选择技能以追加',''));
@@ -43,7 +55,7 @@ function field(parent,key,row){
  }
 }
 function refreshRows(){
- const list=$('rows');list.replaceChildren();tables[sheet].slice(1).forEach((r,i)=>list.add(new Option(r.slice(0,2).join(' · '),i+1)));list.value=index;
+ const list=$('rows');list.replaceChildren();tables[sheet].slice(1).forEach((r,i)=>list.add(new Option(r.slice(0,2).join(' · '),i+1)));list.value=index;filterRows();
 }
 function render(){
  $('tabs').replaceChildren();
@@ -54,6 +66,15 @@ function render(){
  const parent=$('form');parent.replaceChildren();const row=tables[sheet][index];if(!row)return;
  const group=document.createElement('div');group.className='fields';parent.append(group);
  for(const key of tables[sheet][0])if(sheet!=='Level'||!positions.includes(key))field(group,key,row);
+ if(['Dialogue','DialogueLine'].includes(sheet)){
+  const id=row[tables[sheet][0].indexOf('DialogueID')],preview=document.createElement('button');preview.textContent='预览整段对话';preview.onclick=()=>previewDialogue(id);parent.append(preview);
+  if(sheet==='Dialogue'){
+   const refs=document.createElement('p'),used=[];
+   for(const [name,rows] of Object.entries(tables))if(!['Dialogue','DialogueLine'].includes(name))rows.slice(1).forEach((r,i)=>rows[0].forEach((key,j)=>{if(key.endsWith('对话ID')&&r[j]===id)used.push(name+' 第'+(i+2)+'行 '+key);}));
+   refs.textContent='引用位置：'+(used.join('；')||'无');parent.append(refs);
+   const lines=document.createElement('button');lines.textContent='编辑本段台词';lines.onclick=()=>{sheet='DialogueLine';index=Math.max(1,tables.DialogueLine.findIndex((r,i)=>i&&r[0]===id));$('search').value=id;render();};parent.append(lines);
+  }
+ }
  if(sheet==='Level'){const formation=document.createElement('div');formation.className='formation';parent.append(formation);for(const key of [...positions.slice(3),...positions.slice(0,3)])field(formation,key,row);
   const play=document.createElement('button');play.textContent='试玩当前布局';parent.append(play);
   play.onclick=()=>{try{
@@ -66,15 +87,18 @@ $('rows').onchange=e=>{index=Number(e.target.value);render();};
 function add(copy){const list=tables[sheet];list.push(copy&&list[index]?[...list[index]]:list[0].map(()=>''));index=list.length-1;dirty=true;render();}
 $('add').onclick=()=>add(false);$('copy').onclick=()=>add(true);
 $('remove').onclick=()=>{if(tables[sheet][index]&&confirm('删除当前记录？')){tables[sheet].splice(index,1);index=Math.max(1,index-1);dirty=true;render();}};
-$('validate').onclick=()=>{try{compileTables(tables,config);message('五表数据及引用校验通过');}catch(e){message(e.message);}};
+$('validate').onclick=()=>{try{compileTables(tables,config);message('七表数据及引用校验通过');}catch(e){message(e.message);}};
 $('export').onclick=()=>{try{
  compileTables(tables,config);
  for(const [name,rows] of Object.entries(tables)){
-  const previous=workbook.Sheets[name],next=XLSX.utils.aoa_to_sheet(rows);next['!cols']=previous['!cols']||rows[0].map(()=>({wch:22}));next['!autofilter']={ref:next['!ref']};workbook.Sheets[name]=next;
+  const previous=workbook.Sheets[name],next=XLSX.utils.aoa_to_sheet(rows);next['!cols']=previous?.['!cols']||rows[0].map(()=>({wch:22}));next['!autofilter']={ref:next['!ref']};workbook.Sheets[name]=next;
  }
  XLSX.writeFile(workbook,'SwapHero.xlsx',{compression:true});dirty=false;message('已导出工作簿。将文件纳入项目后，发布时会从该版本转换。');
  }catch(e){message(e.message);}};
 $('import').onclick=()=>$('file').click();
 $('file').onchange=async e=>{try{const file=e.target.files[0];if(!file||dirty&&!confirm('替换未导出的修改？'))return;if(file.size>5000000)throw Error('工作簿超过 5 MB');load(await file.arrayBuffer());}catch(err){message(err.message);}finally{e.target.value='';}};
 window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
+async function previewDialogue(id){try{if(!id)throw Error('请先填写对话 ID');const pack=compileTables(tables,config);await playDialogue(id,{run:{pack,chapter:0,current:'preview'},phase:'before'});}catch(e){message(e.message);}}
+function filterRows(){const q=$('search').value.trim().toLowerCase();for(const o of $('rows').options)o.hidden=!!q&&!o.textContent.toLowerCase().includes(q);}
+$('search').oninput=filterRows;
 try{const [book,economy]=await Promise.all([fetch('config/SwapHero.xlsx'),fetch('config/economy.json')]);config=await economy.json();load(await book.arrayBuffer());}catch(e){message(e.message);}

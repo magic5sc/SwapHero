@@ -52,3 +52,9 @@ Keep live character references, animation rigs, cards and save data separate fro
 
 ## PvE Excel source
 For each release run `node scripts/compile-pve.mjs` before tests/build or Sites packaging. Commit the source workbook and generated data together. The workbook and schema guide are linked in docs/PVE-WORKBOOK.md.
+
+## Dialogue system
+Seven-sheet workbook with backwards-compatible five-sheet loading. See docs/DIALOGUE.md.
+Keep dialogue portraits separate from battle art; preserve all six dialogue hooks,
+stable node picks, saved trigger/line progress and settlement after the last animation.
+The included narrator text is test content; approved story portraits remain separate.
