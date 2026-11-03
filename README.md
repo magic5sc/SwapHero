@@ -47,3 +47,7 @@ The previously deployed editor, art, animation and effects are retained. This
 checkout reconciles the earlier Site/GitHub drift into the `dist/` layout;
 old root-level browser files are replaced by their current `dist/` counterparts.
 See `content/README.md` for source ZIP, release JSON and separate client builds.
+
+## Browser test room
+
+Open `dist/tests.html` for existing feature entry points and an isolated dialogue lab. See [test scope and storage](docs/TEST-HUB.md).

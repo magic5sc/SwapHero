@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SwapHero · 功能测试台</title><link rel="stylesheet" href="test-hub.css"><link rel="stylesheet" href="dialogue.css"></head>
+<body><main>
+<header class="masthead"><div><span class="eyebrow">SWAPHERO / TEST ROOM</span><h1>功能测试台</h1><p>从这里复查已做过的功能，或直接试播一段对话。</p></div><a class="button" href="index.html">进入游戏 ↗</a></header>
+<nav class="jump"><a href="#dialogue">01 对话系统</a><a href="#existing">02 已有功能</a></nav>
+<section id="dialogue" aria-labelledby="dialogue-title"><div class="section-heading"><div><span class="eyebrow">01 / NEW</span><h2 id="dialogue-title">对话系统试验台</h2></div><span class="tag">独立测试断点</span></div>
+<p class="intro">无需开新远征。对话使用与游戏相同的播放器；测试人物是标注为 TEST 的图形占位。测试断点单独保存，不读取或覆盖正式远征、卡牌草稿。</p>
+<div class="lab-layout"><div><div id="adventure"><div class="map-scroll" tabindex="0" aria-label="对话测试场景"><div class="test-scene" id="test-scene"><span id="scene-label" class="tag">地图场景</span><h3>浮岛边缘 · 测试场景</h3><p>对话首句透明时，这个场景应仍可见。</p><button id="scene-probe">场景按钮 · 点击 0 次</button><div class="scene-route" aria-hidden="true">◇ ─── ◉ ─── ◇</div></div></div></div>
+<div class="readout" aria-live="polite"><strong id="status">正在载入测试内容…</strong><p id="detail"></p></div>
+<div class="actions"><button id="resume" disabled>继续测试断点</button><button id="restart" disabled>重播当前用例</button></div>
+<p class="hint">对话中可直接刷新页面：恢复当前句、继承背景和流程。底层场景按钮应保持锁定，关闭输入不应穿透。流程用例模拟战斗结果，仅检查接续，不替代真实战斗验收。</p></div>
+<aside><h3>选择测试用例</h3><div id="cases" class="case-list"></div><p class="hint">开始新用例只替换这里的测试断点；重复播放不会给正式远征发奖。</p></aside></div>
+<details class="checklist"><summary>手动验收要点</summary><ul><li>逐字显示：一次补全，再次推进；空格、回车可用。</li><li>背景：透明 → 显示图片 → 留空继承 → 恢复场景。</li><li>左右立绘、姓名覆盖与旁白隐藏；相邻同立绘保持原位。</li><li>不可跳过时没有跳过按钮，Esc不会退出。</li><li>对话中刷新恢复当前句；胜利、Boss及失败接续只发生一次。</li><li>结束后底层按钮不因关闭输入而增加点击次数。</li></ul></details></section>
+<section id="existing" aria-labelledby="existing-title"><div class="section-heading"><div><span class="eyebrow">02 / EXISTING</span><h2 id="existing-title">已有功能入口</h2></div></div><div class="feature-grid">
+<article><span class="tag">战斗 / 规则</span><h3>单场对战与技能试验队</h3><p>验证六格布阵、跨线交换、补位、攻击顺序、五胜点与全灭。进入后可选择技能试验队，检查进退场及触发效果。</p><a href="duel.html">打开单场对战 →</a></article>
+<article><span class="tag">卡牌 / 角色 / 动画</span><h3>卡牌编辑器与独立试玩</h3><p>选择角色、美术引用、待机与攻击预览，编辑技能与队伍后“保存并试玩”。试玩需要先在编辑器生成快照。</p><a href="editor.html">打开卡牌编辑器 →</a></article>
+<article><span class="tag">粒子 / 逐帧</span><h3>刀光与小火球</h3><p>播放、暂停、慢放、时间条逐帧，调整数量与颜色。预览参数不直接改正式配置。</p><div class="links"><a href="effects.html?preset=slash">刀光命中 →</a><a href="effects.html?preset=fireball">小火球爆炸 →</a></div></article>
+<article><span class="tag">Excel / 关卡</span><h3>七表配置工坊</h3><p>编辑技能、角色、六格敌人站位、节点、章节与对话；校验、导入导出、当前布局独立试玩。修改需导出工作簿后发布。</p><a href="config-editor.html">打开配置工坊 →</a></article>
+<article><span class="tag">正式配置</span><h3>第一批卡牌库</h3><p>检查已发布卡牌原文、数值、技能配置与待确认项，不把测试内容视为正式卡牌。</p><a href="cards.html">打开卡牌库 →</a></article>
+<article><span class="tag">完整流程</span><h3>PvE远征</h3><p>复查路线地图、卷轴转场、中左右出生、战斗、铜银宝箱、招募与成长。此入口使用游戏原有远征存档。</p><a href="index.html">打开游戏主流程 →</a></article>
+</div></section><footer>测试台的完成提示仅表示用例执行结束，视觉、手机实机与负责人验收仍需实际检查。</footer>
+</main><script type="module" src="src/test-hub.mjs"></script></body></html>

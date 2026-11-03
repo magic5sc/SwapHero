@@ -58,3 +58,12 @@ Seven-sheet workbook with backwards-compatible five-sheet loading. See docs/DIAL
 Keep dialogue portraits separate from battle art; preserve all six dialogue hooks,
 stable node picks, saved trigger/line progress and settlement after the last animation.
 The included narrator text is test content; approved story portraits remain separate.
+
+## Dedicated test entry
+Use `dist/tests.html` for existing feature entry points and the isolated dialogue
+lab; see docs/TEST-HUB.md. The lab uses only `swaphero.qa.dialogue.v1`; never
+replace the adventure save or editor drafts with a test session. TEST silhouettes
+are interface fixtures, not approved character assets. Game-only builds exclude
+the test hub; the unified Site and developer build include it.
+Every code delivery must repeat the clickable game URL and relevant test/editor
+URLs in its final reply, even when the addresses are unchanged.
