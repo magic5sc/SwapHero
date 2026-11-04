@@ -42,9 +42,15 @@ export function collectEvent(g,event){
   for(let si=skills.length-1;si>=0;si--){const binding=skills[si],definition=binding.definition;
    for(let ri=definition.rules.length-1;ri>=0;ri--){const rule=definition.rules[ri];
     if(rule.event!==event.type)continue;
+    if(rule.exchangeOnly&&!event.exchange)continue;
     if(rule.subject==='self'&&event.unit!==id)continue;
     if(rule.subject==='other_ally'&&(event.side!==side||event.unit===id))continue;
-    g.stack.push({source:id,side,skillId:definition.skill_id,name:definition.name,level:binding.level,position,skillIndex:si,ruleIndex:ri,effects:rule.effects.map(e=>({...structuredClone(e),value:e.amount===null?null:definition.levels[binding.level][e.amount],targets:targets(g,id,event,e)}))});
+    const key=definition.skill_id+':'+ri;
+    if(rule.every){const counters=g.units[id].triggerCounts??={};counters[key]=(counters[key]||0)+1;if(counters[key]%rule.every)continue;}
+    const pending=rule.delayOwnTurns!==undefined;
+    const queue=pending?(g.pendingEffects??=[]):g.stack;
+    if(pending)g.log.push(`${g.units[id].name} · ${definition.name}：蓄力，将在保留行动机会后生效`);
+    queue.push({...(pending?{due:(g.sideTurns?.[side]||0)+rule.delayOwnTurns+1}:{}),source:id,side,skillId:definition.skill_id,name:definition.name,level:binding.level,position,skillIndex:si,ruleIndex:ri,effects:rule.effects.map(e=>({...structuredClone(e),value:e.amount===null?null:definition.levels[binding.level][e.amount],targets:targets(g,id,event,e)}))});
    }
   }
  }
@@ -62,7 +68,9 @@ export function collectPhase(g,type){
 }
 export function applyDamage(g,sourceId,targetId,amount,type='skill'){
  const where=locate(g,targetId);if(!where||!alive(g,targetId))return 0;
- const u=g.units[targetId],actual=Math.min(u.hp,damageAmount(u,amount,type));u.hp-=actual;
+ const u=g.units[targetId];let damage=damageAmount(u,amount,type);
+ const absorbed=type==='health_loss'?0:Math.min(u.shield||0,damage);if(absorbed){u.shield-=absorbed;damage-=absorbed;g.log.push(`${u.name} 护盾吸收 ${absorbed} 伤害`);}
+ const actual=Math.min(u.hp,damage);u.hp-=actual;
  if(actual>0)collectEvent(g,{type:'damage_taken',unit:targetId,side:where.side,position:where.position,source:sourceId,amount:actual,damageType:type});
  updateState(g);return actual;
 }
@@ -71,7 +79,8 @@ function execute(g,job,e){
   const u=g.units[id];
   if(e.op==='heal'){const actual=Math.min(e.value,u.maxHp-u.hp);u.hp+=actual;g.log.push(`${job.name}：${u.name} 恢复 ${actual} 生命`);if(actual>0)collectEvent(g,{type:'healed',unit:id,side:where.side,position:where.position,source:job.source,amount:actual});}
   else if(e.op==='deal_damage'){const actual=applyDamage(g,job.source,id,e.value,'skill');g.log.push(`${job.name}：${u.name} 受到 ${actual} 技能伤害`);}
-  else if(e.op==='modify_attack'){u.baseAttack??=u.attack;u.modifiers??=[];u.modifiers.push({source:job.source,skillId:job.skillId,amount:e.value,duration:e.duration});updateAttack(u);g.log.push(`${job.name}：${u.name} 攻击 ${e.value>=0?'+':''}${e.value}`);}
+  else if(e.op==='modify_attack'){u.baseAttack??=u.attack;u.modifiers??=[];if(e.refresh)u.modifiers=u.modifiers.filter(m=>m.source!==job.source||m.skillId!==job.skillId);u.modifiers.push({source:job.source,skillId:job.skillId,amount:e.value,duration:e.duration,...(e.duration==='owner_turns'?{remaining:e.turns}: {})});updateAttack(u);g.log.push(`${job.name}：${u.name} 攻击 ${e.value>=0?'+':''}${e.value}`);}
+  else if(e.op==='set_shield'){u.shield=e.value;g.log.push(`${job.name}：${u.name} 护盾刷新至 ${e.value}`);}
   else if(e.op==='swap_positions'){const source=locate(g,job.source);if(!source||source.side!==where.side||source.position>3||where.position>3||!alive(g,job.source))continue;const slots=g.sides[source.side].slots;[slots[source.position-1],slots[where.position-1]]=[slots[where.position-1],slots[source.position-1]];g.log.push(`${job.name}：${source.position} 与 ${where.position} 号位交换`);}
   updateState(g);
  }
@@ -91,4 +100,26 @@ export function drainStack(g){
  }
  settleOutcome(g);
  if(g.winner)g.stack=[];
+}
+
+// Serializable timers are advanced by the rules, never by animation.
+export function finishOwnerTurn(g,side){
+ for(const id of g.sides[side].slots.filter(Boolean)){
+  const u=g.units[id];for(const m of u.modifiers||[])if(m.duration==='owner_turns')m.remaining--;
+  u.modifiers=(u.modifiers||[]).filter(m=>m.duration!=='owner_turns'||m.remaining>0);updateAttack(u);
+ }
+}
+export function beginOwnerTurn(g,side){
+ g.sideTurns??={player:0,ai:0};g.sideTurns[side]++;
+ const due=(g.pendingEffects||[]).filter(j=>j.side===side&&j.due<=g.sideTurns[side]);
+ g.pendingEffects=(g.pendingEffects||[]).filter(j=>!due.includes(j));
+ for(const job of due)if(alive(g,job.source)&&locate(g,job.source)?.position<=3)g.stack.push(job);
+ drainStack(g);
+}
+export function unitStatus(g,u){
+ const tags=[];if(u.shield>0)tags.push('护盾 '+u.shield);
+ for(const m of u.modifiers||[])if(m.duration==='owner_turns')tags.push('加攻剩 '+m.remaining+' 己方回合');
+ for(const b of u.skills||[])for(const [i,r] of b.definition.rules.entries())if(r.every)tags.push('受伤计数 '+((u.triggerCounts?.[b.definition.skill_id+':'+i]||0)%r.every)+'/'+r.every);
+ for(const j of g.pendingEffects||[])if(j.source===u.id)tags.push('蓄力：保留 '+Math.max(0,j.due-(g.sideTurns?.[j.side]||0)-1)+' 次己方回合后攻击＋'+j.effects.map(e=>e.value).join('/'));
+ return tags.join(' · ');
 }

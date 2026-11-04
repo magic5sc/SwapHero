@@ -1,6 +1,6 @@
 import { normalizeVictoryCondition, combatTarget } from './match-rules.mjs';
 import { canAttack, createUnit } from './content.mjs';
-import { collectEvent, collectEvents, collectPhase, drainStack, applyDamage, expireModifiers, otherSide } from './effects.mjs';
+import { beginOwnerTurn, finishOwnerTurn, collectEvent, collectEvents, collectPhase, drainStack, applyDamage, expireModifiers, otherSide } from './effects.mjs';
 import { deploySwap, swapBench, reinforce, exchange, mustReinforce } from './formation.mjs';
 
 export function createGame(catalog=null,team=null,options={}) {
@@ -20,7 +20,7 @@ export function createGame(catalog=null,team=null,options={}) {
 }
 function requireTurn(g, side) { if (g.phase !== 'action' || g.turn !== side || g.winner || g.error || g.stack?.length) throw Error('当前不能操作'); }
 export function deploy(g, a, b) { if (g.phase !== 'deployment') throw Error('不在布阵阶段'); g.sides.player.slots = deploySwap(g.sides.player.slots, a, b); }
-export function start(g) { if (g.phase !== 'deployment') throw Error('已经开始'); g.phase = 'action'; g.turn = 'player'; g.actionPoints = 2; }
+export function start(g) { if (g.phase !== 'deployment') throw Error('已经开始'); g.phase = 'action'; g.turn = 'player'; g.actionPoints = 2; beginOwnerTurn(g,'player'); }
 export function rearrange(g, side, a, b) { requireTurn(g, side); g.sides[side].slots = swapBench(g.sides[side].slots, a, b); }
 export function move(g, side, from, to) {
   requireTurn(g, side);
@@ -28,7 +28,7 @@ export function move(g, side, from, to) {
   const r = s.slots[to - 1] === null ? reinforce(s.slots, g.actionPoints, from, to) : exchange(s.slots, g.actionPoints, from, to);
   s.slots = r.slots; g.actionPoints = r.actionPoints; g.units[r.cannotAttackThisTurn].disabled = true;
   g.log.push(`${side === 'player' ? '玩家' : '对手'}：${from} → ${to}`);
-  for(const event of r.events){if(event.type==='exit')expireModifiers(g,'on_field',event.unit);collectEvent(g,{type:event.type==='enter'?'unit_enter':'unit_leave',unit:event.unit,side,position:event.position});}
+  for(const event of r.events){if(event.type==='exit')expireModifiers(g,'on_field',event.unit);collectEvent(g,{type:event.type==='enter'?'unit_enter':'unit_leave',unit:event.unit,side,position:event.position,exchange:r.events.some(e=>e.type==='exit')});}
   drainStack(g);
 }
 export function resolveLane(g, side, lane, attackerId) {
@@ -56,12 +56,12 @@ export function endTurn(g, side, onAttack = null) {
   if(!g.winner&&!g.error){g.attackStep='damage';for (const {lane,id} of attacks) { const before = onAttack ? structuredClone(g) : null;const target=combatTarget(g,side,lane);const attacked=resolveLane(g, side, lane, id);if(g.mode==='pve')drainStack(g);if (attacked&&onAttack) onAttack({side, lane, targetId:target?.id??null, targetLane:target?.position??null, before, after: structuredClone(g)}); if (g.winner||g.error) break; }drainStack(g);}
   if(!g.winner&&!g.error){g.attackStep='end';collectPhase(g,'attack_end');drainStack(g);}
   if(!g.winner&&!g.error){collectPhase(g,'turn_end');drainStack(g);}
-  expireModifiers(g,'turn');
+  expireModifiers(g,'turn');finishOwnerTurn(g,side);
   for (const id of g.sides[side].slots.filter(Boolean)) g.units[id].disabled = false;
   delete g.attackStep;
   if (g.winner) {g.stack=[];g.phase = 'finished'; return;}
   if(g.error)return;
-  g.turn = otherSide(side); g.phase = 'action'; g.actionPoints = 2;
+  g.turn = otherSide(side); g.phase = 'action'; g.actionPoints = 2;beginOwnerTurn(g,g.turn);
 }
 export function playAI(g, onAttack = null) {
   requireTurn(g, 'ai');

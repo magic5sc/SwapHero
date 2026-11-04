@@ -1,5 +1,6 @@
 // Shared by the release compiler and the developer workbook editor.
 import {validatePack} from './pve.mjs';
+import {validateCatalog} from './content.mjs';
 import {dialogueAsset} from './dialogue.mjs';
 export const columns={
  Skill:'SkillID 名称 说明 技能栏 生效区域 触发时机 触发主体 效果 目标 目标区域 持续时间 常驻能力 等级1 等级2 等级3 品质 精英限定',
@@ -37,15 +38,21 @@ function rows(tables,sheet){
 function num(r,k,min=0){const n=Number(r[k]);r.check(r[k]!==''&&Number.isSafeInteger(n)&&n>=min,k,'需要不小于 '+min+' 的整数');return n;}
 function bool(r,k){const v=String(r[k]).toLowerCase();r.check(['true','false','1','0'].includes(v),k,'请填 TRUE 或 FALSE');return ['true','1'].includes(v);}
 function asset(r,k){const path=r[k];r.check(!path||/^assets\/(?:[\w-]+\/)*[\w-]+\.(png|webp|jpg|svg)$/.test(path),k,'填写 assets 下的图片路径');return path;}
-export function compileTables(tables,config,{assetExists=()=>true}={}){
+export function compileTables(tables,config,{assetExists=()=>true,levelOnly=false}={}){
+ if(levelOnly)tables={...tables,Node:[columns.Node.split(' ')],Chapter:[columns.Chapter.split(' ')]};
  tables=normalizeTables(tables);
  const skillRows=rows(tables,'Skill'),charRows=rows(tables,'Character');
  const skills=skillRows.map(r=>{
   r.check(r.名称,'名称','需要技能名称');r.check(['common','rare','epic','legendary'].includes(r.品质),'品质','未知品质');
   const effect={op:r.效果,target:r.目标,zone:r.目标区域,duration:r.持续时间||null,amount:'amount'};
   if(effect.op==='deal_damage')effect.damage_type='skill';
+  const rule={event:r.触发时机,subject:r.触发主体,effects:[effect]};
+  for(const [col,key,min] of [['每N次触发','every',1],['延后己方回合','delayOwnTurns',0]])if(r[col]!==undefined&&r[col]!=='')rule[key]=num(r,col,min);
+  if(r.仅交换入场!==undefined&&r.仅交换入场!=='')rule.exchangeOnly=bool(r,'仅交换入场');
+  if(r.持续己方回合!==undefined&&r.持续己方回合!==''){effect.duration='owner_turns';effect.turns=num(r,'持续己方回合',1);}
+  if(r.刷新不叠加!==undefined&&r.刷新不叠加!=='')effect.refresh=bool(r,'刷新不叠加');
   r.check(r.常驻能力||r.效果,'效果','需要效果或常驻能力');
-  return {skill_id:r.SkillID,name:r.名称,description:r.说明,slot:r.技能栏,quality:r.品质,gold_only:bool(r,'精英限定'),status:'specified',blockers:[],active_zone:r.生效区域,stacking:'single_instance',unload_policy:'remove_passive_and_listeners',passive:r.常驻能力||null,levels:Object.fromEntries([1,2,3].map(i=>[i,{amount:num(r,'等级'+i,-9999)}])),rules:r.效果?[{event:r.触发时机,subject:r.触发主体,effects:[effect]}]:[]};
+  return {skill_id:r.SkillID,name:r.名称,description:r.说明,slot:r.技能栏,quality:r.品质,gold_only:bool(r,'精英限定'),status:'specified',blockers:[],active_zone:r.生效区域,stacking:'single_instance',unload_policy:'remove_passive_and_listeners',passive:r.常驻能力||null,levels:Object.fromEntries([1,2,3].map(i=>[i,{amount:num(r,'等级'+i,-9999)}])),rules:r.效果?[rule]:[]};
  });
  const bySkill=new Map(skills.map(s=>[s.skill_id,s]));
  const cards=charRows.map(r=>{
@@ -75,7 +82,9 @@ export function compileTables(tables,config,{assetExists=()=>true}={}){
  const levels=rows(tables,'Level').map(r=>{
   const slots=positions.map(k=>{r.check(!r[k]||cards.some(c=>c.card_id===r[k]),k,'未知角色 '+r[k]);return r[k]||null;});
   r.check(slots.some(Boolean),'前左','至少需要一个敌人');r.check(['elimination','score_5'].includes(r.胜利规则),'胜利规则','未知胜利规则');
-  return {id:r.LevelID,name:r.名称,slots,victoryCondition:r.胜利规则,background:asset(r,'场景背景'),title:r.界面标题,beforeDialogue:ref(r,'战前对话ID'),victoryDialogue:ref(r,'胜利对话ID'),defeatDialogue:ref(r,'失败对话ID')};
+  const playerSlots=positions.map(k=>{const key='我方'+k;r.check(!r[key]||cards.some(c=>c.card_id===r[key]),key,'未知角色 '+r[key]);return r[key]||null;});
+  if(levelOnly)r.check(playerSlots.slice(0,3).some(Boolean),'我方前中','独立关卡至少需要一名我方前排');
+  return {id:r.LevelID,name:r.名称,slots,...(playerSlots.some(Boolean)?{playerSlots}:{}),victoryCondition:r.胜利规则,background:asset(r,'场景背景'),title:r.界面标题,beforeDialogue:ref(r,'战前对话ID'),victoryDialogue:ref(r,'胜利对话ID'),defeatDialogue:ref(r,'失败对话ID')};
  });
  const nodes=rows(tables,'Node').map(r=>{
   r.check(levels.some(l=>l.id===r.LevelID),'LevelID','未知关卡 '+r.LevelID);
@@ -94,7 +103,7 @@ export function compileTables(tables,config,{assetExists=()=>true}={}){
  });
  const heroes=cards.filter(c=>c.role==='hero');if(heroes.length!==1)throw Error('Character [类型] 必须有一名 hero');
  const pack={schema_version:1,version:'pve-dialogue-v1',cards,skills,hero:heroes[0].card_id,recruits:cards.filter(c=>c.role==='ally').map(c=>c.card_id),chapters,levels,nodes,dialogues,config};
- try{validatePack(pack);}catch(error){
+ try{if(levelOnly){const errors=validateCatalog(pack);if(errors.length)throw Error(errors.join('；'));}else validatePack(pack);}catch(error){
   const issue=error.message.split('；')[0];
   for(const [sheet,rows,key] of [['Skill',skillRows,'SkillID'],['Character',charRows,'CharacterID']]){
    const row=rows.find(r=>issue.startsWith(r[key])||issue.startsWith(r.名称));

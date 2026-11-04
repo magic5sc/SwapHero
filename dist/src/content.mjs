@@ -1,8 +1,8 @@
 import {artIssues,resolveArt} from './art-assets.mjs';
 // Content definitions are data; no executable expressions or card-name branches.
-const PASSIVES = new Set(['agile','armor','combat_damage_immunity']);
+const PASSIVES = new Set(['agile','armor','combat_damage_immunity','damage_armor']);
 const EVENTS = new Set(['unit_enter','unit_leave','attack_declared','before_damage','damage_taken','unit_defeated','healed','attack_end','turn_end']);
-const OPS = new Set(['heal','deal_damage','modify_attack','swap_positions']);
+const OPS = new Set(['heal','deal_damage','modify_attack','swap_positions','set_shield']);
 const TARGETS = new Set(['self','opposing_unit','all_enemies','other_allies','lower_ally','rear_ally','rear_enemy']);
 const fail = message => { throw Error(message); };
 const object = x => x && typeof x === 'object' && !Array.isArray(x);
@@ -25,15 +25,16 @@ export function validateCatalog(data) {
     check(s.stacking==='single_instance'&&s.unload_policy==='remove_passive_and_listeners',`${s.skill_id}叠加或卸载策略不支持`);
     check(s.passive===null||PASSIVES.has(s.passive),`${s.skill_id}未知常驻能力`);
     check(Array.isArray(s.rules),`${s.skill_id}缺规则数组`);
-    if(s.passive==='armor')for(const p of Object.values(s.levels||{}))check(integer(p.amount,0),`${s.skill_id}护甲必须为非负整数`);
+    if(['armor','damage_armor'].includes(s.passive))for(const p of Object.values(s.levels||{}))check(integer(p.amount,0),`${s.skill_id}护甲必须为非负整数`);
     for(const rule of Array.isArray(s.rules)?s.rules:[]) {
-      if(!object(rule)){errors.push('规则必须是对象');continue;}check(Object.keys(rule).every(k=>['event','subject','effects'].includes(k)),`${s.skill_id}含未支持的规则字段`);
-      check(EVENTS.has(rule.event),`${s.skill_id}未知事件`);check(['self','other_ally'].includes(rule.subject),`${s.skill_id}未知主体`);if(['attack_end','turn_end'].includes(rule.event))check(rule.subject==='self',`${s.skill_id}阶段事件只支持self主体`);
+      if(!object(rule)){errors.push('规则必须是对象');continue;}check(Object.keys(rule).every(k=>['event','subject','effects','every','delayOwnTurns','exchangeOnly'].includes(k)),`${s.skill_id}含未支持的规则字段`);
+      check(rule.every===undefined||integer(rule.every,1),`${s.skill_id}触发次数无效`);check(rule.delayOwnTurns===undefined||integer(rule.delayOwnTurns,0),`${s.skill_id}延迟回合无效`);check(rule.exchangeOnly===undefined||typeof rule.exchangeOnly==='boolean',`${s.skill_id}交换条件无效`);check(!rule.exchangeOnly||rule.event==='unit_enter',`${s.skill_id}交换条件仅用于入场`);check(EVENTS.has(rule.event),`${s.skill_id}未知事件`);check(['self','other_ally'].includes(rule.subject),`${s.skill_id}未知主体`);if(['attack_end','turn_end'].includes(rule.event))check(rule.subject==='self',`${s.skill_id}阶段事件只支持self主体`);
       check(Array.isArray(rule.effects)&&rule.effects.length>0,`${s.skill_id}缺效果`);
       for(const e of Array.isArray(rule.effects)?rule.effects:[]) {
-        if(!object(e)){errors.push('效果必须是对象');continue;}check(Object.keys(e).every(k=>['op','target','amount','duration','zone','damage_type','field_position'].includes(k)),`${s.skill_id}含未支持的效果字段`);
+        if(!object(e)){errors.push('效果必须是对象');continue;}check(Object.keys(e).every(k=>['op','target','amount','duration','zone','damage_type','field_position','turns','refresh'].includes(k)),`${s.skill_id}含未支持的效果字段`);
         check(OPS.has(e.op),`${s.skill_id}未知效果`);check(e.target===null||TARGETS.has(e.target),`${s.skill_id}未知目标`);
-        check(e.duration===null||['battle','turn','on_field'].includes(e.duration),`${s.skill_id}未知持续时间`);check(e.zone===null||['battlefield','any','bench'].includes(e.zone),`${s.skill_id}未知区域`);
+        check(e.duration===null||['battle','turn','on_field','owner_turns'].includes(e.duration),`${s.skill_id}未知持续时间`);check(e.zone===null||['battlefield','any','bench'].includes(e.zone),`${s.skill_id}未知区域`);
+        check(e.duration!=='owner_turns'||integer(e.turns,1),`${s.skill_id}持续回合无效`);check(e.refresh===undefined||typeof e.refresh==='boolean',`${s.skill_id}刷新配置无效`);
         if(['rear_ally','rear_enemy'].includes(e.target)) {
           check(e.zone==='bench',`${s.skill_id}后方目标必须选择仅备战区`);
           check(e.field_position===undefined||e.field_position===null||[1,2,3].includes(e.field_position),`${s.skill_id}战线必须为1、2、3或自身所在战线`);
@@ -67,11 +68,13 @@ export function createUnit(data,cardId,instanceId) {
   return {id:instanceId,cardId,art:resolveArt(data,c),name:c.name,attack:c.attack,baseAttack:c.attack,modifiers:[],hp:c.health,maxHp:c.health,disabled:false,contentVersion:data.version,slots:structuredClone(c.slots),skills:c.skills.map(r=>({slotId:r.slot_id,level:r.level,definition:structuredClone(data.skills.find(s=>s.skill_id===r.skill_id))}))};
 }
 // Derived passives leave no cached bonuses behind when a skill is removed.
-export function passiveValue(unit,keyword){return (unit.skills||[]).reduce((n,s)=>n+(s.definition.passive===keyword?(keyword==='armor'?s.definition.levels[s.level].amount:1):0),0);}
+export function passiveValue(unit,keyword){return (unit.skills||[]).reduce((n,s)=>n+(s.definition.passive===keyword?(['armor','damage_armor'].includes(keyword)?s.definition.levels[s.level].amount:1):0),0);}
 export function canAttack(unit){return unit.hp>0&&(!unit.disabled||passiveValue(unit,'agile')>0);}
 export function damageAmount(target,amount,type='combat'){
   if(!Number.isFinite(amount)||amount<0||!['combat','skill','health_loss'].includes(type))fail('非法伤害');
-  return type==='combat'?(passiveValue(target,'combat_damage_immunity')?0:Math.max(0,amount-passiveValue(target,'armor'))):amount;
+  if(type==='health_loss')return amount;
+  if(type==='combat'&&passiveValue(target,'combat_damage_immunity'))return 0;
+  return Math.max(0,amount-passiveValue(target,'damage_armor')-(type==='combat'?passiveValue(target,'armor'):0));
 }
 export function replaceSkill(unit,slotId,definition,level,{phase,stackEmpty}={}){
   if(!['outside_battle','deployment'].includes(phase)||stackEmpty!==true)fail('当前不能替换技能');

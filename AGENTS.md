@@ -53,6 +53,12 @@ Keep live character references, animation rigs, cards and save data separate fro
 ## PvE Excel source
 For each release run `node scripts/compile-pve.mjs` before tests/build or Sites packaging. Commit the source workbook and generated data together. The workbook and schema guide are linked in docs/PVE-WORKBOOK.md.
 
+## Standalone teaching level
+Run `node scripts/compile-tutorial.mjs` for `dist/config/Tutorial.xlsx` as well.
+It uses only Skill/Character/Level, with no chapter/node dependency. Keep its
+test entry `tutorial.html` and imports isolated from adventure/editor saves.
+See docs/TUTORIAL-LEVEL.md for generic columns and the seven-turn acceptance path.
+
 ## Dialogue system
 Seven-sheet workbook with backwards-compatible five-sheet loading. See docs/DIALOGUE.md.
 Keep dialogue portraits separate from battle art; preserve all six dialogue hooks,
