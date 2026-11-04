@@ -1,5 +1,10 @@
 # Teaching level: table-driven configuration
 
+2026-11-05: mirrored local attack order and frozen enemy plans are shared with
+the main game; see [turn rules](TURN-PLAN.md). The standard seven-round path is
+retained. `scenario=enemy-plan` is a separate disposable interface fixture, not
+a new workbook level or replacement of `tutorial_01`.
+
 Source: `dist/config/Tutorial.xlsx`. Skill/Buff definitions are split across five sheets; Character and Level complete the workbook.
 SwapHero.xlsx is also migrated; existing Character, Level, Chapter, Node and dialogue values are retained. This content
 is an isolated test, not a replacement of the adventure's first encounter.

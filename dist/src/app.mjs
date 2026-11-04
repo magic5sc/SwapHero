@@ -1,11 +1,12 @@
 import {describeSkill} from './skill-text.mjs';
 import {unitStatus} from './effects.mjs';
 import {mountLeather,isTableTransition} from './tabletop.mjs';
-import { victoryLabel, attackLabel } from './match-rules.mjs';
+import { victoryLabel, attackLabel,displayPositions,opposingPosition } from './match-rules.mjs';
+import {preparationBadges} from './enemy-plan.mjs';
 import { loadPublishedCatalog } from './release-loader.mjs';
 import { canAttack } from './content.mjs';
 import { artForUnit, makeSprite, makeAttackEffect, hydrateArt } from './art.mjs';
-import { createGame, deploy, start, rearrange, move, endTurn, playAI } from './battle.mjs';
+import { createGame, deploy, start, rearrange, move, endTurn, playAI,upgradeBattle } from './battle.mjs';
 import { mustReinforce } from './formation.mjs';
 let adventureHooks=null;mountLeather(document.getElementById('battle-screen'));
 const selectedGoal=()=>document.getElementById('victory-condition')?.value||'score_5';
@@ -42,10 +43,27 @@ document.addEventListener('pointerdown',e=>{if(!e.target.closest('.card'))hideCa
 for(const event of ['pointerup','pointercancel'])document.addEventListener(event,()=>{clearTimeout(press?.timer);press=null;});
 document.addEventListener('contextmenu',e=>{if(e.target.closest('.card'))e.preventDefault();});
 window.addEventListener('resize',hideCardInfo);window.addEventListener('scroll',hideCardInfo,true);
+window.addEventListener('resize',()=>requestAnimationFrame(drawEnemyPlan));
+const planStyle=document.createElement('link');planStyle.rel='stylesheet';planStyle.href='turn-plan.css';document.head.append(planStyle);
+let planDraw=0;
+function drawEnemyPlan(){
+ const board=el('lanes')?.closest('.arena-scene');if(!board)return;
+ board.querySelector('.enemy-plan-lines')?.remove();
+ const view=visual||g;if(playing||view.mode!=='pve'||view.turn!=='player'||view.phase!=='action'||view.winner)return;
+ const ops=view.enemyPlan?.operations.filter(op=>op.type==='exchange')||[];if(!ops.length)return;
+ const bounds=board.getBoundingClientRect();const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.classList.add('enemy-plan-lines');svg.setAttribute('viewBox',`0 0 ${bounds.width} ${bounds.height}`);svg.setAttribute('role','img');
+ const labels=[];for(const op of ops){
+  const a=board.querySelector(`[data-side="ai"][data-slot="${op.from}"]`),b=board.querySelector(`[data-side="ai"][data-slot="${op.to}"]`);if(!a||!b)continue;
+  const ar=a.getBoundingClientRect(),br=b.getBoundingClientRect();const path=document.createElementNS(svg.namespaceURI,'path');
+  path.setAttribute('d',`M ${ar.left+ar.width/2-bounds.left} ${ar.bottom-bounds.top-8} L ${br.left+br.width/2-bounds.left} ${br.top-bounds.top+8}`);svg.append(path);
+  labels.push(`${view.units[op.incoming]?.name||'后备'}换入，${view.units[op.outgoing]?.name||'前排'}换出`);
+ }svg.setAttribute('aria-label','敌方下回合计划：'+labels.join('；'));board.append(svg);
+}
 function card(side, p) {
   const view = visual || g; const id = view.sides[side].slots[p-1], u = view.units[id], isPlayer = side === 'player';
   const b = document.createElement(isPlayer ? 'button' : 'div');
   b.className = `card ${side} ${side==='ai'?'enemy':''} ${u ? '' : 'empty'} ${isPlayer && selected === p ? 'selected' : ''}`;
+  b.dataset.side=side;b.dataset.slot=p;
   if(isPlayer) { b.type='button'; b.dataset.position=p; b.disabled=(g.phase==='finished'||g.phase==='error')||playing; b.onclick=e=>e.preventDefault(); b.onpointerdown=e=>{beginInspect(e,id,b);beginDrag(e,p,b);};  if(animationPositions.includes(p)) b.classList.add('swap-arrival'); }
   if(effect?.stage==='attack' && effect.targetLane===p && effect.side!==side)b.classList.add('attack-target'); if(u && u.hp===0) b.classList.add('pending-defeat'); if(effect?.lane===p && effect.side===side && effect.stage==='attack') b.classList.add('perform-attack'); if(effect?.targetLane===p && effect.side!==side && effect.hit){b.classList.add('perform-hit');add(b,'span','damage-float',`−${effect.damage}`);} const pos=add(b,'div','card-top'); add(pos,'span','pos',p<=3?String(p):`${p-3}后`); if(u?.disabled&&!canAttack(u))add(pos,'span','disabled-label','无法攻击');
   if(!u){add(b,'div','empty-mark','＋');add(b,'div','empty-label','空位置');b.setAttribute('aria-label',`${side==='player'?'我方':'对手'} ${p<=3?p+'号战场格':(p-3)+'号战线后方备战格'}，空位`);return b;}
@@ -57,6 +75,10 @@ function card(side, p) {
   if(skillPulses.has(id)){const delta=skillPulses.get(id);b.classList.add('skill-pulse');add(b,'span','damage-float',delta>0?'+'+delta:String(delta));}
   if(effect?.stage==='impact' && effect.hit && effect.targetLane===p && effect.side!==side && effect.attackEffect)b.append(makeAttackEffect(effect.attackEffect));
   b.dataset.unitId=id; const sprite=makeSprite('unit-sprite',artForUnit(u));sprite.dataset.instance=id;b.append(sprite);
+  if(side==='ai'&&view.mode==='pve'&&view.turn==='player'&&view.phase==='action'&&!playing){
+   for(const badge of preparationBadges(view,id,p)){const mark=add(b,'span','preparation-badge','⚠ '+badge.label+(badge.stacks>1?' ×'+badge.stacks:''));mark.title=badge.label;}
+   for(const op of view.enemyPlan?.operations||[])if(op.type==='exchange'&&(id===op.incoming||id===op.outgoing))add(b,'span','exchange-intent',id===op.incoming?'⇄ 待换入':'⇄ 待换出');
+  }
   add(b,'div','card-name',u.name); add(b,'div','card-sub',(u.skills||[]).map(s=>s.definition.name).join(' · ')||'无技能');
   const stats=add(b,'div','stats');add(stats,'span','attack',`⚔ ${u.attack}`);add(stats,'span','health',`♥ ${u.hp} / ${u.maxHp}`);
   const status=unitStatus(view,u);if(status)add(b,'div','card-sub',status);
@@ -82,8 +104,9 @@ function show() {
   const required=g.phase==='action'&&g.turn==='player'&&mustReinforce(g.sides.player.slots,g.actionPoints);
   el('hint').textContent=g.winner?'本场对战结束，可重新开始。':g.phase==='deployment'?'拖拽我方卡牌调整位置，完成后点击完成布阵。':required?'场上无人，请拖拽1名后备到前排空位。':'可保留后备，或拖拽到前排补位/替换；后备之间也可拖拽互换。悬停或长按查看详情。';
   el('feedback').textContent=g.error||feedback;
-  const lanes=el('lanes');lanes.replaceChildren();for(const [side,label] of [['ai','对手战场'],['player','我方战场']]){const field=add(lanes,'div','field');add(field,'div','field-title',label);const row=add(field,'div','field-row');for(const p of [1,2,3])row.append(card(side,p));}
-  for(const side of ['ai','player']){const container=el(side==='ai'?'enemy-bench':'player-bench');container.replaceChildren();for(let p=4;p<=6;p++)container.append(card(side,p));el(side==='ai'?'enemy-count':'reserve-count').textContent=`${g.sides[side].slots.slice(3).filter(Boolean).length} / 3`;}
+  const lanes=el('lanes');lanes.replaceChildren();lanes.closest('.arena-scene').classList.add('plan-board');for(const [side,label] of [['ai','对手战场'],['player','我方战场']]){const field=add(lanes,'div','field');add(field,'div','field-title',label+(side==='ai'?' · ← 攻击顺序':' · 攻击顺序 →'));const row=add(field,'div','field-row');for(const p of displayPositions(side))row.append(card(side,p));}
+  for(const side of ['ai','player']){const container=el(side==='ai'?'enemy-bench':'player-bench');container.replaceChildren();for(const p of displayPositions(side))container.append(card(side,p+3));el(side==='ai'?'enemy-count':'reserve-count').textContent=`${g.sides[side].slots.slice(3).filter(Boolean).length} / 3`;}
+  cancelAnimationFrame(planDraw);planDraw=requestAnimationFrame(drawEnemyPlan);
   el('start').hidden=g.phase!=='deployment'||playing;el('end').hidden=playing||g.phase!=='action'||g.turn!=='player';el('end').disabled=required;el('cancel').hidden=selected===null||playing;el('reset').disabled=playing;el('reset').hidden=!!adventureHooks;
   document.querySelector('.notice').textContent=rosterLabel?rosterLabel+' · 外观仅为占位，卡牌效果按配置执行。':useSkillLab?'技能试验队 · 顽石、冥守与4张机制测试卡；外观仅为占位。':'测试版本 · 使用无技能占位卡；角色外观不代表正式卡牌能力。';
   if(g.winner&&!playing&&!visual&&!document.querySelector('.result-overlay')&&!adventureHooks?.onVictory?.(g)){const overlay=add(document.body,'div','result-overlay');overlay.dataset.winner=g.winner;add(overlay,'strong','',g.winner==='player'?'胜 利':'败 北');const close=add(overlay,'button','primary','返回战场');close.textContent=adventureHooks?.exitLabel||(adventureHooks?(g.winner==='player'?'领取战斗结果':'冒险结算'):'返回战场');close.onclick=()=>{overlay.hidden=true;if(adventureHooks)adventureHooks.onExit(structuredClone(g));};}
@@ -91,13 +114,17 @@ function show() {
 }
 function run(fn){try{fn();feedback='';}catch(e){feedback=e.message;}show();}
 function performMove(a,p){const before=structuredClone(g);run(()=>{if(g.phase==='deployment')deploy(g,a,p);else if(a>=4&&p>=4)rearrange(g,'player',a,p);else move(g,'player',a,p);inspectedId=before.sides.player.slots[a-1];selected=null;animationPositions=[a,p];});skillPulses=new Map(Object.values(g.units).filter(u=>before.units[u.id]&&u.hp!==before.units[u.id].hp).map(u=>[u.id,u.hp-before.units[u.id].hp]));show();setTimeout(()=>{skillPulses.clear();if(!playing)show();},700);if(animationPositions.length)setTimeout(()=>{animationPositions=[];},500);}
-el('start').onclick=()=>run(()=>{selected=null;if(g.mode==='pve'&&!g.levelId){const enemies=g.sides.ai.slots.filter(Boolean),positions=[0,1,2].sort((a,b)=>Number(!!g.sides.player.slots[b])-Number(!!g.sides.player.slots[a]));g.sides.ai.slots=Array(6).fill(null);enemies.forEach((id,i)=>g.sides.ai.slots[i<3?positions[i]:i]=id);}start(g);});el('end').onclick=async()=>{
+el('start').onclick=()=>run(()=>{selected=null;if(g.mode==='pve'&&!g.levelId){const enemies=g.sides.ai.slots.filter(Boolean),positions=[0,1,2].sort((a,b)=>Number(!!g.sides.player.slots[b])-Number(!!g.sides.player.slots[a]));g.sides.ai.slots=Array(6).fill(null);enemies.forEach((id,i)=>g.sides.ai.slots[i<3?opposingPosition(positions[i]+1)-1:i]=id);}start(g);});el('end').onclick=async()=>{
   if(playing)return; selected=null;const frames=[];let sim=structuredClone(g);
   try { endTurn(sim,'player',e=>frames.push(e));  }
   catch(e){feedback=e.message;show();return;}
   playing=true; const wait=ms=>new Promise(r=>setTimeout(r,ms));
   for(const side of ['player','ai']) {
-    if(side==='ai' && sim.phase==='action' && sim.turn==='ai'){ visual=structuredClone(sim);effect=null;show();el('phase').textContent='对手换人阶段';await wait(650);playAI(sim,e=>frames.push(e));const first=frames.find(x=>x.side==='ai');visual=first?structuredClone(first.before):structuredClone(sim);show();el('phase').textContent='对手换人阶段';await wait(650); }
+    if(side==='ai' && sim.phase==='action' && sim.turn==='ai'){
+      visual=structuredClone(sim);effect=null;show();el('phase').textContent='对手回合 · 执行预告计划';await wait(400);
+      const moves=[];playAI(sim,e=>frames.push(e),m=>moves.push(m));
+      for(const m of moves){visual=m.before;show();el('phase').textContent='对手交换';await wait(250);visual=m.after;show();el('phase').textContent='对手交换';await wait(450);}
+    }
     const group=frames.filter(x=>x.side===side); let ghosts=[];
     for(const f of group){
       visual=structuredClone(f.before);for(const x of ghosts){visual.sides[x.side].slots[x.pos]=x.id;visual.units[x.id]=structuredClone(x.unit);}
@@ -159,7 +186,7 @@ el('enter-cards').onclick=async()=>{const button=el('enter-cards');if(playing)re
 // Development playtest calls this explicit API; normal game never reads editor storage.
 export function startConfiguredGame(snapshot){if(playing)throw Error('请等待表演结束');activeCatalog=structuredClone(snapshot.catalog);activeTeam=[...snapshot.team];useSkillLab=false;rosterLabel='开发端配置测试';g=createGame(activeCatalog,activeTeam,{victoryCondition:snapshot.victoryCondition||selectedGoal()});el('victory-condition').value=g.victoryCondition;g.log=[rosterLabel+' · '+activeCatalog.version];selected=null;inspectedId=null;feedback='正在测试独立配置快照；不会修改正式卡牌。';document.querySelector('.result-overlay')?.remove();el('home').hidden=true;el('battle-screen').hidden=false;show();}
 
-export function openAdventureBattle(battle,hooks){if(playing)throw Error('请等待战斗表演结束');adventureHooks=hooks;g=structuredClone(battle);const screen=el('battle-screen');
+export function openAdventureBattle(battle,hooks){if(playing)throw Error('请等待战斗表演结束');adventureHooks=hooks;g=upgradeBattle(structuredClone(battle));const screen=el('battle-screen');
  screen.style.setProperty('--level-texture',/^assets\/(?:[\w-]+\/)*[\w-]+\.(png|jpg|webp|svg)$/.test(g.background)?'url("'+g.background+'")':'url("assets/tabletop/leather.png")');
  screen.querySelector('h1').firstChild.textContent=g.title||'战术对决';
  rosterLabel=hooks.label||'PvE 单章 · 测试内容';selected=null;visual=null;effect=null;inspectedId=null;feedback='';document.querySelector('.result-overlay')?.remove();el('home').hidden=true;el('battle-screen').hidden=false;el('back-home').textContent='保存并返回地图';show();}

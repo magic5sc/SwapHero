@@ -1,5 +1,6 @@
 import {BUFF_EVENTS,buffActive,buffLayers,grantBuff,removeBuff,consumeShield,syncBuffs,expireBuffs,leaveBuffs} from './buffs.mjs';
 import {reserveBehind,SLOT_COUNT} from './formation.mjs';
+import {opposingPosition} from './match-rules.mjs';
 import {damageAmount} from './content.mjs';
 export const otherSide=side=>side==='player'?'ai':'player';
 export function locate(g,id){for(const side of ['player','ai']){const index=g.sides[side].slots.indexOf(id);if(index>=0)return {side,position:index+1};}return null;}
@@ -25,18 +26,18 @@ export function updateState(g){
 }
 function targets(g,ownerId,event,effect){
  const owner=locate(g,ownerId),anchor=owner?.position<=3?owner:(event.unit===ownerId?{side:event.side,position:event.position}:null);
- if(effect.target==='front_sides'){if(!anchor)return [];return [anchor.position-1,anchor.position+1].filter(p=>p>=1&&p<=3).map(p=>g.sides[otherSide(anchor.side)].slots[p-1]).filter(Boolean);}
+ if(effect.target==='front_sides'){if(!anchor)return [];const p=opposingPosition(anchor.position);return [p-1,p+1].filter(p=>p>=1&&p<=3).map(p=>g.sides[otherSide(anchor.side)].slots[p-1]).filter(Boolean);}
  if(effect.target==='all_allies')return (g.sides[owner?.side||event.side]?.slots||[]).filter((id,i)=>id&&(effect.zone==='any'||(effect.zone==='bench'?i>=3:i<3)));
  if(effect.target==='all_enemies')return (g.sides[otherSide(owner?.side||event.side)]?.slots||[]).filter((id,i)=>id&&(effect.zone==='any'||(effect.zone==='bench'?i>=3:i<3)));
  if(effect.target==='self')return [ownerId];
  if(effect.target==='other_allies')return (g.sides[owner?.side||event.side]?.slots||[]).filter((id,i)=>id&&id!==ownerId&&(effect.zone==='any'||(effect.zone==='bench'?i>=3:i<3)));
  if(!anchor||anchor.position>3)return [];
  if(['rear_ally','rear_enemy'].includes(effect.target)) {
-  const fieldPosition=effect.field_position??anchor.position;
+  const fieldPosition=effect.field_position??(effect.target==='rear_enemy'?opposingPosition(anchor.position):anchor.position);
   const side=effect.target==='rear_enemy'?otherSide(anchor.side):anchor.side;
   return [g.sides[side].slots[reserveBehind(fieldPosition)-1]].filter(Boolean);
  }
- if(effect.target==='opposing_unit')return [g.sides[otherSide(anchor.side)].slots[anchor.position-1]].filter(Boolean);
+ if(effect.target==='opposing_unit')return [g.sides[otherSide(anchor.side)].slots[opposingPosition(anchor.position)-1]].filter(Boolean);
  if(effect.target==='lower_ally')return [g.sides[anchor.side].slots[anchor.position%3]].filter(Boolean);
  return [];
 }

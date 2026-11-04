@@ -2,6 +2,8 @@ import {createUnit,validateCatalog} from './content.mjs';
 import {generateMap,seeded,shuffle} from './pve-map.mjs';
 import {validateFormation} from './formation.mjs';
 import {validateDialogues,validateDialogueProgress} from './dialogue.mjs';
+import {upgradeBattle} from './battle.mjs';
+import {validEnemyPlan} from './enemy-plan.mjs';
 const copy=x=>structuredClone(x);
 const fail=msg=>{throw Error(msg);};
 export const QUALITY={common:'普通',rare:'稀有',epic:'史诗',legendary:'传说'};
@@ -68,7 +70,7 @@ function encounter(r,type,previewLevel=null){
  const units={},sides={player:{slots:Array(6).fill(null),score:0},ai:{slots:Array(6).fill(null),score:0}};
  r.team.filter(u=>u.hp>0).forEach((u,i)=>{units[u.id]=snapshotUnit(u);sides.player.slots[[1,0,2,3,4,5][i]]=u.id;});
  ids.forEach((id,i)=>{if(!id)return;const uid=`enemy-${i+1}`;units[uid]=createUnit(r.pack,id,uid);sides.ai.slots[i]=uid;});
- return {mode:'pve',units,sides,levelId:level?.id||null,background:level?.background||'',title:level?.title||level?.name||'',victoryCondition:level?.victoryCondition||'elimination',phase:'deployment',turn:'player',actionPoints:0,winner:null,stack:[],trace:[],contentVersion:r.contentVersion,log:['PvE：消灭全部敌方单位；双方同时全灭玩家失败。'],nodeId:r.current};
+ return {ruleVersion:2,mode:'pve',units,sides,levelId:level?.id||null,background:level?.background||'',title:level?.title||level?.name||'',victoryCondition:level?.victoryCondition||'elimination',phase:'deployment',turn:'player',actionPoints:0,winner:null,stack:[],trace:[],contentVersion:r.contentVersion,log:['PvE：消灭全部敌方单位；双方同时全灭玩家失败。'],nodeId:r.current};
 }
 export function previewLevel(pack,id){
  const r=newRun(pack,'level-preview');
@@ -181,6 +183,9 @@ export function validateRun(r){
   if(r.status==='reward'&&(b.phase!=='finished'||b.winner!=='player'))fail('胜利战场存档无效');
   if(!b||b.mode!=='pve'||b.nodeId!==r.current||!['score_5','elimination'].includes(b.victoryCondition)||!['deployment','action','finished','error'].includes(b.phase)||!['player','ai'].includes(b.turn)||!Number.isInteger(b.actionPoints)||b.actionPoints<0||b.actionPoints>2||b.stack?.length)fail('战斗断点无效');
   const seen=new Set();for(const side of ['player','ai']){validateFormation(b.sides[side].slots);for(const id of b.sides[side].slots.filter(Boolean)){const u=b.units[id];if(!u||seen.has(id)||!Number.isFinite(u.hp)||u.hp<=0||u.hp>u.maxHp)fail('战斗单位无效');if(side==='player'&&!r.team.some(t=>t.id===id))fail('战斗队伍不匹配');seen.add(id);}}
+  if(b.ruleVersion!==undefined&&b.ruleVersion!==2)fail('战斗规则版本无效');
+  if(b.enemyPlan!==undefined&&!validEnemyPlan(b.enemyPlan))fail('敌方计划存档无效');
+  upgradeBattle(b);
  }
  validateDialogueProgress(r);return r;
 }

@@ -5,4 +5,5 @@ const mode=process.argv[2],out=process.argv[3];if(!['game','developer'].includes
 execFileSync(process.execPath,['scripts/compile-tutorial.mjs'],{stdio:'inherit'});
 const excluded=new Set(['tutorial.html','src/tutorial-test.mjs','src/level-test.mjs','data/tutorial.json','dialogue-editor.html','dialogue-editor.css','src/dialogue-studio.mjs','src/dialogue-studio-model.mjs','tests.html','test-hub.css','src/test-hub.mjs','src/test-hub-model.mjs','assets/dialogue/qa-left.svg','assets/dialogue/qa-right.svg','config-editor.html','config','vendor/xlsx','src/workbook.mjs','src/config-editor.mjs','editor.html','editor.css','playtest.html','src/editor.mjs','src/editor-model.mjs','src/editor-storage.mjs','src/source-zip.mjs','src/playtest.mjs','data/skill-lab.json']);
 execFileSync(process.execPath,['scripts/compile-pve.mjs'],{stdio:'inherit'});
+excluded.add('src/turn-plan-lab.mjs');
 fs.cpSync('dist',out,{recursive:true,filter:src=>mode==='developer'||!excluded.has(path.relative('dist',src).split(path.sep).join('/'))});console.log(mode+' artifact: '+out);

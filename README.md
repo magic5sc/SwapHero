@@ -1,5 +1,7 @@
 # SwapHero
 
+2026-11-05: [镜像回合与PvE行动预告](docs/TURN-PLAN.md)。双方各自视角1→2→3普攻，交换立即结算；玩家回合开始效果结清后冻结敌方计划，敌方回合按计划执行。测试台新增独立轮换预告场景。
+
 Buff authoring: [逐列配置手册、生命周期和完整示例](docs/BUFF-CONFIG.md)。Buff没有等级；BuffEffect使用EffectResult的固定“数值”，技能仍使用等级列。
 
 ## PvE expedition — 0.5.0

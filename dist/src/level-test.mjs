@@ -8,5 +8,5 @@ export function createLevelBattle(pack,levelId){
   if(layout?.length!==6)throw Error('关卡站位必须有六格');
   sides[side]={score:0,slots:layout.map((card,i)=>{if(!card)return null;const id=side+'-'+(i+1);units[id]=createUnit(pack,card,id);return id;})};
  }
- return {units,sides,mode:'pve',levelId,background:level.background,title:level.title||level.name,victoryCondition:level.victoryCondition,phase:'deployment',turn:'player',actionPoints:0,winner:null,stack:[],trace:[],log:['独立关卡测试 · '+levelId],contentVersion:pack.version};
+ return {ruleVersion:2,units,sides,mode:'pve',levelId,background:level.background,title:level.title||level.name,victoryCondition:level.victoryCondition,phase:'deployment',turn:'player',actionPoints:0,winner:null,stack:[],trace:[],log:['独立关卡测试 · '+levelId],contentVersion:pack.version};
 }

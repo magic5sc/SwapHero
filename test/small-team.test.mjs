@@ -8,7 +8,7 @@ test('both sides search all eight occupancy masks with fixed physical priorities
  for(const side of ['player','ai'])for(const lane of [1,2,3])for(let mask=0;mask<8;mask++){
   const g=fresh(),enemy=side==='player'?'ai':'player';
   g.sides[enemy].slots=[1,2,3].map(p=>mask&(1<<(p-1))?enemy+'-'+p:null).concat([enemy+'-4',enemy+'-5',enemy+'-6']);
-  const expected=({1:[1,2,3],2:[2,1,3],3:[3,2,1]}[lane]).find(p=>mask&(1<<(p-1)));
+  const expected=({1:[3,2,1],2:[2,3,1],3:[1,2,3]}[lane]).find(p=>mask&(1<<(p-1)));
   assert.equal(combatTarget(g,side,lane)?.position,expected);
   const hp=expected?g.units[enemy+'-'+expected].hp:null;
   resolveLane(g,side,lane,side+'-'+lane);
@@ -22,18 +22,18 @@ test('score mode never redirects even with occupied neighbours',()=>{
  assert.equal(g.units['ai-1'].hp,10);assert.equal(g.units['ai-3'].hp,14);
 });
 test('later attackers reselect after an earlier attacker kills their shared target',()=>{
- const g=fresh();g.sides.ai.slots[2]=null;g.units['ai-2'].hp=1;g.units['player-3'].attack=1;
+ const g=fresh();g.sides.ai.slots[2]=null;g.units['ai-2'].hp=1;g.units['player-1'].attack=1;
  const frames=[];endTurn(g,'player',f=>frames.push(f));
- assert.deepEqual(frames.map(f=>[f.lane,f.targetLane]),[[3,2],[2,1],[1,1]]);
+ assert.deepEqual(frames.map(f=>[f.lane,f.targetLane]),[[1,2],[2,1],[3,1]]);
  assert.equal(g.units['ai-1'].hp,7);
 });
 test('before damage is emitted for redirected target and damage reselects after its effect',()=>{
- const g=fresh();g.sides.player.slots=['player-1',null,null,'player-4',null,null];g.sides.ai.slots[0]=null;
+ const g=fresh();g.sides.player.slots=['player-1',null,null,'player-4',null,null];g.sides.ai.slots[2]=null;
  g.units['ai-2'].hp=1;
  g.units['ai-2'].skills=[{level:1,definition:{skill_id:'self_hit',name:'test',levels:{1:{amount:1}},rules:[{event:'before_damage',subject:'self',effects:[{op:'deal_damage',target:'self',amount:'amount',zone:'battlefield'}]}]}}];
  const frames=[];endTurn(g,'player',f=>frames.push(f));
  assert.ok(g.trace.some(e=>e.type==='before_damage'&&e.unit==='ai-2'&&e.position===2));
- assert.equal(frames[0].targetLane,3);assert.equal(frames[0].targetId,'ai-3');assert.equal(g.units['ai-3'].hp,13);
+ assert.equal(frames[0].targetLane,1);assert.equal(frames[0].targetId,'ai-1');assert.equal(g.units['ai-1'].hp,9);
 });
 test('an empty front does not expose reserves or award elimination score',()=>{
  const g=fresh();g.sides.ai.slots.splice(0,3,null,null,null);const frames=[];

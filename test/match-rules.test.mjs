@@ -38,7 +38,7 @@ test('last reserve death wins immediately by skill damage in either goal',()=>{
 });
 test('elimination combat kill wins and stops later attacks; empty front is not victory',()=>{
  const g=elimination();start(g);g.sides.ai.slots=[null,null,'ai-3',null,null,null];g.units['ai-3'].hp=1;
- const frames=[];endTurn(g,'player',x=>frames.push(x));assert.equal(g.winner,'player');assert.deepEqual(frames.map(x=>x.lane),[3]);
+ const frames=[];endTurn(g,'player',x=>frames.push(x));assert.equal(g.winner,'player');assert.deepEqual(frames.map(x=>x.lane),[1]);
  const h=elimination();h.sides.ai.slots.splice(0,3,null,null,null);updateState(h);assert.equal(h.winner,null);
 });
 test('invalid and combined goals are rejected, simultaneous defeat stays unresolved',()=>{

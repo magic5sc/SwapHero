@@ -1,5 +1,11 @@
 # Dedicated browser test entry
 
+Enemy-plan fixture: `tutorial.html?level=tutorial_01&scenario=enemy-plan`.
+This disposable battle adds a TEST reserve and wounds its enemy front unit;
+start deployment to see a real dashed exchange plan, then End Turn to execute it.
+It does not write adventure/editor saves or modify either workbook. The regular
+teaching entry still tests charge/ready overhead markers and the seven-round path.
+
 Open `tests.html` on the existing Site. It groups the existing duel/skill lab,
 card editor and configured playtest, particle previews (slash and fireball),
 seven-sheet workshop, published card library, and full PvE route. The card editor

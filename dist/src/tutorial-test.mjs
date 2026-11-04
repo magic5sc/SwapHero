@@ -1,11 +1,13 @@
 import {openAdventureBattle} from './app.mjs';
 import {createLevelBattle} from './level-test.mjs';
+import {createTurnPlanFixture} from './turn-plan-lab.mjs';
 import {compileTables} from './workbook.mjs';
 const $=id=>document.getElementById(id);
 let pack;
 const status=text=>$('tutorial-status').textContent=text;
 function launch(){try{
- const battle=createLevelBattle(pack,$('level-id').value);
+ const fixture=new URLSearchParams(location.search).get('scenario')==='enemy-plan';
+ const battle=fixture?createTurnPlanFixture(pack,$('level-id').value):createLevelBattle(pack,$('level-id').value);
  openAdventureBattle(battle,{label:'教学关测试',exitLabel:'返回教学测试',onChange:()=>{},onVictory:()=>false,onExit:()=>{location.href='tutorial.html?level='+encodeURIComponent($('level-id').value);}});
  $('back-home').textContent='返回教学测试';
 }catch(e){status(e.message);}}

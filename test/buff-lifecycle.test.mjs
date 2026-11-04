@@ -65,7 +65,7 @@ test('old table with unequal Buff level values requires explicit fixed value, ne
 });
 test('configuration manual poison CSV compiles and expires after two owner turns',()=>{
  const wb=XLSX.read(fs.readFileSync('dist/config/Tutorial.xlsx'),{type:'buffer'}),t=normalizeTables(Object.fromEntries(wb.SheetNames.map(n=>[n,XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,defval:''})])));
- const blocks=[...fs.readFileSync('docs/BUFF-CONFIG.md','utf8').matchAll(/```csv\n([\s\S]*?)\n```/g)].map(m=>m[1].split('\n').map(l=>l.split(',')));
+ const blocks=[...fs.readFileSync('docs/BUFF-CONFIG.md','utf8').replaceAll('\r\n','\n').matchAll(/```csv\n([\s\S]*?)\n```/g)].map(m=>m[1].split('\n').map(l=>l.split(',')));
  for(const [i,name] of ['Buff','BuffEffect','EffectResult'].entries()){assert.deepEqual(blocks[i][0],t[name][0]);for(const row of blocks[i].slice(1)){assert.equal(row.length,t[name][0].length);t[name].push(row);}}
  const p=compileTables(t,null,{levelOnly:true}),g=game(),b=p.buffs.demo_poison;operation(g,b);g.turn='player';
  for(let i=0;i<2;i++){collectPhase(g,'turn_start');drainStack(g);finishOwnerTurn(g,'player');drainStack(g);}

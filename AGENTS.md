@@ -19,9 +19,9 @@ Run relevant checks, currently `node --test test/*.test.mjs`. Report what was ac
 ## Project-specific rules and status
 
 - V1 is a browser-based local player-versus-AI battle; online multiplayer is later. Use the permitted low-attack, high-health, ability-free placeholder cards until card ambiguities are resolved.
-- Each side has three field positions and three corresponding reserve positions (1↔4, 2↔5, 3↔6); exchanges may cross lanes. The prototype presents enemy reserve, enemy field, player field and player reserve vertically. Current left-to-right numbering is not yet a confirmed spatial mapping.
+- Each side has three field positions and three corresponding reserve positions (1↔4, 2↔5, 3↔6); exchanges may cross lanes. Both sides number their own left-to-right positions 1→2→3. Player-screen enemy rows render 3,2,1 (reserve 6,5,4); opposing lanes are 1↔3, 2↔2, 3↔1.
 - Player acts first. When a side has no field unit, a reserve unit and action points, it must reinforce one unit before ending its turn. With any field unit present, further reinforcement is optional. Each reinforcement costs one point; leave remaining vacancies when points run out. Bench swaps cost no points and do not emit entry/exit triggers.
-- Units entering the field cannot attack that turn, except those with agility. Agility is implemented; verify current tests. Attacks resolve in position order 3→2→1; score_5 attacks only the opposing lane; elimination redirects by physical priority 1→2→3 / 2→1→3 / 3→2→1 at damage resolution, never to reserves.
+- Units entering the field cannot attack that turn, except those with agility. Attacks resolve in each side's local position order 1→2→3; score_5 attacks only the mirrored opposing lane. Elimination enemy-local search priorities for attackers 1/2/3 are 3→2→1 / 2→3→1 / 1→2→3 at damage resolution, never to reserves.
 - Match goals are configurable: five victory points or eliminating all enemy units, including reserves; the agreed all-units-defeated loss and no-progress draw must be handled according to the current confirmed Wiki rules. Automatic draw and complex effects are not complete.
 - Attack and hit presentation are sequential; a defeated card's disappearance is visually delayed until the attack presentation ends. Preserve the distinction between animation and rule resolution.
 - Current prototype has basic AI and a partial event/ability system. Prioritize verifying a complete placeholder match, action/animation lock, swapping and desktop/mobile input. Do not report unexecuted browser or device tests as passed.
@@ -53,7 +53,16 @@ Keep live character references, animation rigs, cards and save data separate fro
 ## PvE Excel source
 For each release run `node scripts/compile-pve.mjs` before tests/build or Sites packaging. Commit the source workbook and generated data together. The workbook and schema guide are linked in docs/PVE-WORKBOOK.md.
 
-## Standalone teaching level
+## Enemy plans and mirrored turns
+See docs/TURN-PLAN.md. Exchanges resolve immediately in the owner's action phase;
+manual end starts the owner's automatic attacks. In PvE, prepare and persist the
+enemy plan after player turn-start effects settle, before player control. Execute
+that frozen identity-and-slot-bound plan on the AI turn; skip invalid operations
+and continue legal later ones. Default mandatory reinforcement still applies.
+Never replan on the AI turn. ruleVersion=2 upgrades legacy enemy slot layouts once.
+The test hub's explicit enemy-plan scenario is disposable and never edits saves.
+
+## Standalone teaching level configuration
 Run `node scripts/compile-tutorial.mjs` for `dist/config/Tutorial.xlsx` as well.
 It uses Skill/SkillEffect/EffectResult/Buff/BuffEffect plus Character/Level, with no chapter/node dependency. Buffs carry their own event listeners; stack, magnitude, duration-refresh, cap and shield policies are separate. See docs/SKILL-SCHEMA.md for the current skill schema. Keep its
 test entry `tutorial.html` and imports isolated from adventure/editor saves.
