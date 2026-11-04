@@ -59,7 +59,7 @@ test('enemy rear target damages reserve only, no automatic front penetration',()
  assert.equal(g.units['ai-6'].hp,18);assert.equal(g.units['ai-3'].hp,14);
  const h=createGame();start(h);h.sides.ai.slots[0]=null;resolveLane(h,'player',1,'player-1');assert.equal(h.units['ai-4'].hp,16);
 });
-test('rear snapshots do not retarget new occupants; target entering field invalidates job',()=>{
+test('rear grid does not heal a unit that moved into the field',()=>{
  const g=createGame();bind(g);g.units['player-5'].hp=3;
  collectEvent(g,{type:'unit_enter',unit:'player-1',side:'player',position:1});
  [g.sides.player.slots[4],g.sides.player.slots[0]]=[g.sides.player.slots[0],g.sides.player.slots[4]];
@@ -67,7 +67,7 @@ test('rear snapshots do not retarget new occupants; target entering field invali
 });
 test('empty rear has no target and reserve listeners remain inactive',()=>{
  const g=createGame();bind(g);g.sides.player.slots[4]=null;
- collectEvent(g,{type:'unit_enter',unit:'player-1',side:'player',position:1});assert.deepEqual(g.stack[0].effects[0].targets,[]);drainStack(g);
+ collectEvent(g,{type:'unit_enter',unit:'player-1',side:'player',position:1});const health=Object.values(g.units).map(u=>u.hp);drainStack(g);assert.deepEqual(Object.values(g.units).map(u=>u.hp),health);
  [g.sides.player.slots[1],g.sides.player.slots[3]]=[g.sides.player.slots[3],g.sides.player.slots[1]];
  collectEvent(g,{type:'unit_enter',unit:'player-1',side:'player',position:1});assert.equal(g.stack.length,0);
 });

@@ -1,3 +1,4 @@
+import {describeSkill} from './skill-text.mjs';
 import {playDialogue,isDialoguePlaying} from './dialogue-player.mjs';
 import {playOpening,playNode,playBeforeBattle,settleBattle} from './dialogue-flow.mjs';
 import {mountParchment,mountLeather,switchTable,isTableTransition} from './tabletop.mjs';
@@ -57,7 +58,7 @@ function teamPanel(parent){
  const panel=el('section','pve-team',undefined,parent);el('h2','','远征队伍 '+run.team.length+' / 6',panel);
  el('p','muted','阵亡仍占队伍名额；节点间保留伤亡。',panel);
  const list=el('div','team-list',undefined,panel);
- for(const u of run.team){const box=el('article','pve-unit'+(u.hp===0?' fallen':''),undefined,list);box.append(makeSprite('pve-portrait',artForUnit(u)));el('h3','',u.name,box);el('small','',u.cardId===run.pack.hero?'主角 · 不可离队':u.hp===0?'已阵亡':'队友',box);el('p','',`⚔ ${u.baseAttack}　♥ ${u.hp} / ${u.maxHp}`,box);const hp=el('div','pve-health',undefined,box);hp.setAttribute('role','meter');hp.setAttribute('aria-label',u.name+'生命');hp.setAttribute('aria-valuemin','0');hp.setAttribute('aria-valuemax',String(u.maxHp));hp.setAttribute('aria-valuenow',String(u.hp));el('span','',undefined,hp).style.width=Math.max(0,Math.min(100,u.hp/u.maxHp*100))+'%';for(const s of u.skills)el('p','skill-tag',`${s.definition.name} Lv.${s.level} · ${s.definition.levels[s.level].amount}`,box);}
+ for(const u of run.team){const box=el('article','pve-unit'+(u.hp===0?' fallen':''),undefined,list);box.append(makeSprite('pve-portrait',artForUnit(u)));el('h3','',u.name,box);el('small','',u.cardId===run.pack.hero?'主角 · 不可离队':u.hp===0?'已阵亡':'队友',box);el('p','',`⚔ ${u.baseAttack}　♥ ${u.hp} / ${u.maxHp}`,box);const hp=el('div','pve-health',undefined,box);hp.setAttribute('role','meter');hp.setAttribute('aria-label',u.name+'生命');hp.setAttribute('aria-valuemin','0');hp.setAttribute('aria-valuemax',String(u.maxHp));hp.setAttribute('aria-valuenow',String(u.hp));el('span','',undefined,hp).style.width=Math.max(0,Math.min(100,u.hp/u.maxHp*100))+'%';for(const s of u.skills)el('p','skill-tag',`${s.definition.name} Lv.${s.level} · ${describeSkill(s.definition,s.level)}`,box);}
  if(run.departed.length){const d=el('details','',undefined,panel);el('summary','',`离队档案 · ${run.departed.length} 人`,d);for(const u of run.departed)el('p','',`${u.name} · ${u.hp}/${u.maxHp} · 保留技能和强化，本期不可换回`,d);}
 }
 function mapPanel(parent){
@@ -81,7 +82,7 @@ function mapPanel(parent){
  const legend=el('div','map-legend',undefined,section);for(const t of Object.keys(names)){const item=el('span','legend-item',undefined,legend);mapIcon(item,t);el('span','',names[t],item);}
  requestAnimationFrame(focusCurrent);
 }
-function rewardDescription(item){if(item.type==='character'){const c=run.pack.cards.find(c=>c.card_id===item.id);return `加入队伍 · 攻击 ${c.attack} / 生命 ${c.health}`;}if(item.type==='skill'){const s=run.pack.skills.find(s=>s.skill_id===item.id),u=rewardRecipient(run,item),old=u?.skills.find(b=>b.slotId===s.slot);const effect=s.rules[0]?.effects[0];if(!effect)return (s.description||s.name)+(old?'；替换并弃置「'+old.definition.name+'」':'');return `${u?.name} · ${{attack_declared:'攻击时',unit_enter:'入场时',unit_leave:'离场时'}[s.slot]} · ${{deal_damage:effect.target==='all_enemies'?'所有敌方场上单位技能伤害':'对位技能伤害',heal:'治疗自己',modify_attack:'本回合加攻'}[effect.op]} ${s.levels[1].amount}${old?'；替换并弃置「'+old.definition.name+'」':''}`;}const b=run.pack.config.buffs.find(b=>b.id===item.id);return `本周目永久强化：攻击 +${b.attack} / 最大生命 +${b.hp}（不回复生命）`;}
+function rewardDescription(item){if(item.type==='character'){const c=run.pack.cards.find(c=>c.card_id===item.id);return `加入队伍 · 攻击 ${c.attack} / 生命 ${c.health}`;}if(item.type==='skill'){const s=run.pack.skills.find(s=>s.skill_id===item.id),u=rewardRecipient(run,item),old=u?.skills.find(b=>b.slotId===s.slot);return `${u?.name||''} · ${describeSkill(s,1)}${old?'；替换并弃置「'+old.definition.name+'」':''}`;}const b=run.pack.config.buffs.find(b=>b.id===item.id);return `本周目永久强化：攻击 +${b.attack} / 最大生命 +${b.hp}（不回复生命）`;}
 function rewardCard(parent,item,onClaim,price,disabled=false){const card=el('article','reward-card quality-'+item.quality,undefined,parent);el('small','quality',QUALITY[item.quality]+' · '+{character:'角色',skill:'技能',buff:'数值强化'}[item.type],card);el('h3','',item.name,card);el('p','',rewardDescription(item),card);let target=null,replacement=null;
  if(item.type==='buff')target=select(card,run.team.map(u=>[u.id,u.name]));
  if(item.type==='character'&&run.team.length===6){el('p','muted','队伍已满：选择离队者，成长保留并满血复活。',card);replacement=select(card,[['','选择离队角色'],...run.team.filter(u=>u.cardId!==run.pack.hero).map(u=>[u.id,u.name])]);}
@@ -145,7 +146,7 @@ function services(parent){const type=run.room.type,c=run.pack.config;el('h3','',
  const target=select(parent,run.team.map(u=>[u.id,`${u.name} · ${u.hp}/${u.maxHp}`]));
  const controls=el('div','service-buttons',undefined,parent);
  for(const action of ['heal','revive'])if(type!=='event'||run.room.event==='spring')button(controls,(action==='heal'?'治疗':'复活')+` ${c.healAmount} 生命`+(type==='shop'?` · ${c[action+'Price']} 金币`:''),()=>service(run,action,target.value),'',type!=='shop'&&run.room.actions===0);
- if(type!=='event'||run.room.event==='training')for(const u of run.team)for(const s of u.skills){const change=upgradePreview(s);if(!change.after)continue;const row=el('div','upgrade-row',undefined,parent);el('p','',`${u.name} · ${s.definition.name} Lv.${s.level} → ${s.level+1}　效果数值 ${change.before.amount} → ${change.after.amount}`,row);button(row,type==='shop'?`升级 · ${c.upgradePrice} 金币`:'升级 · 1 行动',()=>service(run,'upgrade',u.id,s.slotId),'',type!=='shop'&&run.room.actions===0);}
+ if(type!=='event'||run.room.event==='training')for(const u of run.team)for(const s of u.skills){const change=upgradePreview(s);if(!change.after)continue;const row=el('div','upgrade-row',undefined,parent);el('p','',`${u.name} · ${s.definition.name} Lv.${s.level} → ${s.level+1}　${describeSkill(s.definition,s.level)} → ${describeSkill(s.definition,s.level+1)}`,row);button(row,type==='shop'?`升级 · ${c.upgradePrice} 金币`:'升级 · 1 行动',()=>service(run,'upgrade',u.id,s.slotId),'',type!=='shop'&&run.room.actions===0);}
 }
 function roomPanel(parent){const box=el('section','room-panel',undefined,parent),room=run.room;
  if(run.status==='battle'){el('h2','','战斗进行中',box);el('p','','当前战斗已保存，可以继续。若对局无法推进，可保存退出或自行放弃本次冒险。',box);button(box,'继续战斗',showBattle,'primary');return;}

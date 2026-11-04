@@ -12,7 +12,7 @@ export function validatePack(p){const e=validateCatalog(p);if(e.length)fail(e.jo
  if(!Array.isArray(c.buffs)||c.buffs.some(b=>!QUALITY[b.quality]||!Number.isInteger(b.attack)||b.attack<0||!Number.isInteger(b.hp)||b.hp<0))fail('强化配置无效');
  if(!Array.isArray(p.recruits)||p.recruits.some(id=>!p.cards.some(c=>c.card_id===id)))fail('招募配置无效');
  if(p.chapters.some(c=>!Number.isInteger(c.layers)||c.layers<7||c.layers>30||typeof c.available!=='boolean'))fail('章节配置无效');
- for(const s of p.skills)if((!p.levels&&!p.cards.some(c=>c.card_id===s.owner&&c.slots.some(slot=>slot.slot_id===s.slot)))||!QUALITY[s.quality]||![1,2,3].every(l=>s.levels[l]))fail('冒险技能配置无效');return p;}
+ for(const s of p.skills)if((!p.levels&&!p.cards.some(c=>c.card_id===s.owner&&c.slots.some(slot=>slot.slot_id===s.slot)))||!QUALITY[s.quality]||!s.levels[1]||Object.keys(s.levels).some(l=>![1,2,3].includes(Number(l))))fail('冒险技能配置无效');return p;}
 export function newRun(pack,seed=String(Date.now())){
  validatePack(pack);const hero=createUnit(pack,pack.hero,'hero');
  return {schemaVersion:1,contentVersion:pack.version,pack:copy(pack),seed:String(seed),chapter:0,status:'map',gold:pack.config.initialGold,team:[hero],departed:[],map:generateMap(seed,pack.chapters[0].layers),current:null,visited:[],room:null,battle:null,unknown:{combat:pack.config.unknownCombat,shop:pack.config.unknownShop},revision:0};

@@ -7,4 +7,4 @@ const pack=compileTables(tables,null,{levelOnly:true,assetExists:p=>fs.existsSyn
 for(const l of pack.levels)if(l.background&&!fs.existsSync('dist/'+l.background))throw Error('关卡场景不存在 '+l.background);
 const output=JSON.stringify(pack,null,2)+'\n',path='dist/data/tutorial.json';
 if(process.argv.includes('--check')){if(fs.readFileSync(path,'utf8').replace(/\r\n/g,'\n')!==output)throw Error('教学配置过期');}else fs.writeFileSync(path,output);
-console.log('教学三表校验通过：'+pack.skills.length+'技能，'+pack.cards.length+'角色，关卡 '+pack.levels.map(l=>l.id));
+console.log('教学配置校验通过：'+pack.skills.length+'技能，'+pack.cards.length+'角色，关卡 '+pack.levels.map(l=>l.id));

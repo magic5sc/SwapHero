@@ -1,3 +1,4 @@
+import {describeSkill} from './skill-text.mjs';
 import {unitStatus} from './effects.mjs';
 import {mountLeather,isTableTransition} from './tabletop.mjs';
 import { victoryLabel, attackLabel } from './match-rules.mjs';
@@ -15,7 +16,12 @@ let drag = null, suppressClick = false, playing = false, visual = null, effect =
 const el = id => document.getElementById(id);
 const add = (parent, tag, className, text) => { const node = document.createElement(tag); if (className) node.className = className; if (text !== undefined) node.textContent = text; parent.append(node); return node; };
 
-function renderDetail(detail,chosen){ detail.replaceChildren(); if(chosen){ detail.append(makeSprite('detail-sprite',artForUnit(chosen)));add(detail,'h3','',chosen.name);add(detail,'p','', '攻击 '+chosen.attack+' · 生命 '+chosen.hp+' / '+chosen.maxHp);add(detail,'small','',chosen.disabled&&!canAttack(chosen)?'本回合无法攻击':(chosen.skills?.length?'技能已装配 · 外观为占位':'无技能')); for(const binding of chosen.skills||[]){add(detail,'p','skill-description',binding.definition.name+'：'+(binding.definition.description||(binding.definition.passive==='armor'?'每次战斗伤害减少'+binding.definition.levels[binding.level].amount:binding.definition.passive==='agile'?'换入当回合可攻击':binding.definition.passive==='combat_damage_immunity'?'不受战斗伤害':binding.definition.rules.map(r=>(r.subject==='other_ally'?'其他己方单位':'自身')+({unit_enter:'进场时',unit_leave:'离场时',attack_declared:'宣布攻击时',before_damage:'将受伤时',damage_taken:'受到伤害时',unit_defeated:'阵亡时',healed:'获得治疗时',attack_end:'攻击阶段结束时',turn_end:'回合结束时'}[r.event]||r.event)+'，'+r.effects.map(e=>({self:'对自身',all_enemies:'对所有敌方场上单位',opposing_unit:'对对位敌人',other_allies:'对其他友方',lower_ally:'对下方友军',rear_ally:'对己方'+(e.field_position||'自身所在')+'战线后方备战单位',rear_enemy:'对敌方'+(e.field_position||'自身所在')+'战线后方备战单位'}[e.target]||'')+({heal:'恢复生命',deal_damage:'造成技能伤害',modify_attack:'攻击变化',swap_positions:'与下方友军换位'}[e.op]||e.op)+(e.amount?' '+binding.definition.levels[binding.level][e.amount]:'')+(e.duration==='battle'?'（本场永久）':'')+(e.target==='other_allies'?(e.zone==='any'?'（包含后备）':'（仅场上，不含后备）'):'')).join('，')).join('；'))));}}else {add(detail,'p','','选择我方单位查看信息');}}
+function renderDetail(detail,chosen){
+ detail.replaceChildren();if(!chosen){add(detail,'p','','选择我方单位查看信息');return;}
+ detail.append(makeSprite('detail-sprite',artForUnit(chosen)));add(detail,'h3','',chosen.name);add(detail,'p','', '攻击 '+chosen.attack+' · 生命 '+chosen.hp+' / '+chosen.maxHp);
+ add(detail,'small','',chosen.disabled&&!canAttack(chosen)?'本回合无法攻击':(chosen.skills?.length?'技能已装配 · 外观为占位':'无技能'));
+ for(const b of chosen.skills||[])add(detail,'p','skill-description',b.definition.name+'：'+describeSkill(b.definition,b.level));
+}
 let press=null;
 function hideCardInfo(){document.getElementById('card-popover')?.remove();}
 function showCardInfo(id,anchor){

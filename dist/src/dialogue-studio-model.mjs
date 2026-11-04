@@ -14,7 +14,9 @@ export function readWorkbook(bytes,config){
  const workbook=XLSX.read(bytes,{type:'array',cellStyles:true,cellNF:true});
  for(const name of ['Skill','Character','Level','Node','Chapter'])if(!workbook.Sheets[name])throw Error('缺少 '+name+' 工作表');
  if(!!workbook.Sheets.Dialogue!==!!workbook.Sheets.DialogueLine)throw Error('Dialogue 与 DialogueLine 必须同时存在');
- const tables=normalizeTables(Object.fromEntries(Object.keys(columns).filter(n=>workbook.Sheets[n]).map(n=>[n,XLSX.utils.sheet_to_json(workbook.Sheets[n],{header:1,defval:''})])));
+ const originalTables=Object.fromEntries(Object.keys(columns).filter(n=>workbook.Sheets[n]).map(n=>[n,XLSX.utils.sheet_to_json(workbook.Sheets[n],{header:1,defval:''})]));
+ const tables=normalizeTables(originalTables);
+ if(originalTables.Skill[0].includes('触发时机')){tables.Skill=originalTables.Skill;for(const n of ['SkillEffect','EffectResult','Buff'])delete tables[n];}
  compileTables(tables,config);
  return {workbook,tables,config:clone(config)};
 }

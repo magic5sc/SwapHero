@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "version": "pve-dialogue-v1",
+  "version": "skill-effects-v2",
   "cards": [
     {
       "card_id": "tutorial_hero",
@@ -105,6 +105,7 @@
       "skill_id": "tutorial_arrival",
       "name": "换阵奋战",
       "description": "交换上场攻击＋1，持续3个己方回合，含换入回合；刷新不叠加。",
+      "icon": "",
       "slot": "entry",
       "quality": "common",
       "gold_only": false,
@@ -116,38 +117,72 @@
       "passive": null,
       "levels": {
         "1": {
-          "amount": 1
+          "tutorial_arrival_trigger_0": 1
         },
         "2": {
-          "amount": 1
+          "tutorial_arrival_trigger_0": 1
         },
         "3": {
-          "amount": 1
+          "tutorial_arrival_trigger_0": 1
         }
       },
       "rules": [
         {
+          "id": "tutorial_arrival_trigger",
           "event": "unit_enter",
           "subject": "self",
+          "active_zone": "battlefield",
+          "turn": "any",
+          "entry": "exchange",
+          "damageType": "any",
+          "conditions": [],
           "effects": [
             {
-              "op": "modify_attack",
+              "op": "apply_buff",
               "target": "self",
               "zone": "battlefield",
-              "duration": "owner_turns",
-              "amount": "amount",
-              "turns": 3,
-              "refresh": true
+              "amount": "tutorial_arrival_trigger_0",
+              "duration": null,
+              "grid": true,
+              "buff": {
+                "id": "tutorial_arrival_buff",
+                "name": "换阵奋战",
+                "kind": "attack",
+                "active_zone": "any",
+                "stacking": "refresh",
+                "scope": "source_skill",
+                "max_stacks": 1,
+                "duration": "owner_turns",
+                "turns": 3,
+                "leave": "keep",
+                "icon": ""
+              },
+              "stacks": 1
             }
-          ],
-          "exchangeOnly": true
+          ]
         }
-      ]
+      ],
+      "buffs": {
+        "tutorial_arrival_buff": {
+          "id": "tutorial_arrival_buff",
+          "name": "换阵奋战",
+          "kind": "attack",
+          "active_zone": "any",
+          "stacking": "refresh",
+          "scope": "source_skill",
+          "max_stacks": 1,
+          "duration": "owner_turns",
+          "turns": 3,
+          "leave": "keep",
+          "icon": ""
+        }
+      }
     },
     {
       "skill_id": "tutorial_shield",
       "name": "举盾接防",
       "description": "交换上场时护盾刷新至2，不叠加。",
+      "icon": "",
       "slot": "entry",
       "quality": "common",
       "gold_only": false,
@@ -159,36 +194,72 @@
       "passive": null,
       "levels": {
         "1": {
-          "amount": 2
+          "tutorial_shield_trigger_0": 2
         },
         "2": {
-          "amount": 2
+          "tutorial_shield_trigger_0": 2
         },
         "3": {
-          "amount": 2
+          "tutorial_shield_trigger_0": 2
         }
       },
       "rules": [
         {
+          "id": "tutorial_shield_trigger",
           "event": "unit_enter",
           "subject": "self",
+          "active_zone": "battlefield",
+          "turn": "any",
+          "entry": "exchange",
+          "damageType": "any",
+          "conditions": [],
           "effects": [
             {
-              "op": "set_shield",
+              "op": "apply_buff",
               "target": "self",
               "zone": "battlefield",
+              "amount": "tutorial_shield_trigger_0",
               "duration": null,
-              "amount": "amount"
+              "grid": true,
+              "buff": {
+                "id": "tutorial_shield_buff",
+                "name": "举盾接防",
+                "kind": "shield",
+                "active_zone": "any",
+                "stacking": "refresh",
+                "scope": "source_skill",
+                "max_stacks": 1,
+                "duration": "battle",
+                "turns": null,
+                "leave": "keep",
+                "icon": ""
+              },
+              "stacks": 1
             }
-          ],
-          "exchangeOnly": true
+          ]
         }
-      ]
+      ],
+      "buffs": {
+        "tutorial_shield_buff": {
+          "id": "tutorial_shield_buff",
+          "name": "举盾接防",
+          "kind": "shield",
+          "active_zone": "any",
+          "stacking": "refresh",
+          "scope": "source_skill",
+          "max_stacks": 1,
+          "duration": "battle",
+          "turns": null,
+          "leave": "keep",
+          "icon": ""
+        }
+      }
     },
     {
       "skill_id": "tutorial_armor",
       "name": "护甲",
       "description": "常驻：受到伤害减少1，先减伤后消耗护盾。",
+      "icon": "",
       "slot": "armor",
       "quality": "common",
       "gold_only": false,
@@ -197,24 +268,75 @@
       "active_zone": "battlefield",
       "stacking": "single_instance",
       "unload_policy": "remove_passive_and_listeners",
-      "passive": "damage_armor",
+      "passive": null,
       "levels": {
         "1": {
-          "amount": 1
+          "tutorial_armor_passive_0": 1
         },
         "2": {
-          "amount": 1
+          "tutorial_armor_passive_0": 1
         },
         "3": {
-          "amount": 1
+          "tutorial_armor_passive_0": 1
         }
       },
-      "rules": []
+      "rules": [
+        {
+          "id": "tutorial_armor_passive",
+          "event": "passive",
+          "subject": "self",
+          "active_zone": "battlefield",
+          "turn": "any",
+          "entry": "any",
+          "damageType": "any",
+          "conditions": [],
+          "effects": [
+            {
+              "op": "apply_buff",
+              "target": "self",
+              "zone": "any",
+              "amount": "tutorial_armor_passive_0",
+              "duration": null,
+              "grid": true,
+              "buff": {
+                "id": "tutorial_armor_passive",
+                "name": "护甲",
+                "kind": "damage_armor",
+                "active_zone": "battlefield",
+                "stacking": "refresh",
+                "scope": "source_skill",
+                "max_stacks": 1,
+                "duration": "battle",
+                "turns": null,
+                "leave": "keep",
+                "icon": ""
+              },
+              "stacks": 1
+            }
+          ]
+        }
+      ],
+      "buffs": {
+        "tutorial_armor_passive": {
+          "id": "tutorial_armor_passive",
+          "name": "护甲",
+          "kind": "damage_armor",
+          "active_zone": "battlefield",
+          "stacking": "refresh",
+          "scope": "source_skill",
+          "max_stacks": 1,
+          "duration": "battle",
+          "turns": null,
+          "leave": "keep",
+          "icon": ""
+        }
+      }
     },
     {
       "skill_id": "tutorial_retaliation",
       "name": "教团反击",
       "description": "每受3次有效伤害蓄力，保留一次玩家行动机会后，自己的回合攻击＋3，回合末消失。",
+      "icon": "",
       "slot": "hurt",
       "quality": "common",
       "gold_only": false,
@@ -226,33 +348,226 @@
       "passive": null,
       "levels": {
         "1": {
-          "amount": 3
+          "tutorial_retaliation_charge_0": 0,
+          "tutorial_retaliation_prepare_0": 3,
+          "tutorial_retaliation_prepare_1": 0,
+          "tutorial_retaliation_release_0": 1,
+          "tutorial_retaliation_release_1": 3
         },
         "2": {
-          "amount": 3
+          "tutorial_retaliation_charge_0": 0,
+          "tutorial_retaliation_prepare_0": 3,
+          "tutorial_retaliation_prepare_1": 0,
+          "tutorial_retaliation_release_0": 1,
+          "tutorial_retaliation_release_1": 3
         },
         "3": {
-          "amount": 3
+          "tutorial_retaliation_charge_0": 0,
+          "tutorial_retaliation_prepare_0": 3,
+          "tutorial_retaliation_prepare_1": 0,
+          "tutorial_retaliation_release_0": 1,
+          "tutorial_retaliation_release_1": 3
         }
       },
       "rules": [
         {
+          "id": "tutorial_retaliation_charge",
           "event": "damage_taken",
           "subject": "self",
+          "active_zone": "battlefield",
+          "turn": "any",
+          "entry": "any",
+          "damageType": "any",
+          "conditions": [],
           "effects": [
             {
-              "op": "modify_attack",
+              "op": "apply_buff",
               "target": "self",
-              "zone": "battlefield",
-              "duration": "turn",
-              "amount": "amount",
-              "refresh": true
+              "zone": "any",
+              "amount": "tutorial_retaliation_charge_0",
+              "duration": null,
+              "grid": true,
+              "buff": {
+                "id": "tutorial_retaliation_charge",
+                "name": "蓄力",
+                "kind": "marker",
+                "active_zone": "any",
+                "stacking": "add",
+                "scope": "source_skill",
+                "max_stacks": 9999,
+                "duration": "battle",
+                "turns": null,
+                "leave": "keep",
+                "icon": ""
+              },
+              "stacks": 1
+            }
+          ]
+        },
+        {
+          "id": "tutorial_retaliation_prepare",
+          "event": "turn_end",
+          "subject": "self",
+          "active_zone": "battlefield",
+          "turn": "own",
+          "entry": "any",
+          "damageType": "any",
+          "conditions": [
+            {
+              "buff": "tutorial_retaliation_charge",
+              "compare": "gte",
+              "layers": 3
             }
           ],
-          "every": 3,
-          "delayOwnTurns": 1
+          "effects": [
+            {
+              "op": "remove_buff",
+              "target": "self",
+              "zone": "any",
+              "amount": "tutorial_retaliation_prepare_0",
+              "duration": null,
+              "grid": true,
+              "buff": {
+                "id": "tutorial_retaliation_charge",
+                "name": "蓄力",
+                "kind": "marker",
+                "active_zone": "any",
+                "stacking": "add",
+                "scope": "source_skill",
+                "max_stacks": 9999,
+                "duration": "battle",
+                "turns": null,
+                "leave": "keep",
+                "icon": ""
+              }
+            },
+            {
+              "op": "apply_buff",
+              "target": "self",
+              "zone": "any",
+              "amount": "tutorial_retaliation_prepare_1",
+              "duration": null,
+              "grid": true,
+              "buff": {
+                "id": "tutorial_retaliation_ready",
+                "name": "反击准备",
+                "kind": "marker",
+                "active_zone": "any",
+                "stacking": "add",
+                "scope": "source_skill",
+                "max_stacks": 9999,
+                "duration": "battle",
+                "turns": null,
+                "leave": "keep",
+                "icon": ""
+              },
+              "stacks": 1
+            }
+          ]
+        },
+        {
+          "id": "tutorial_retaliation_release",
+          "event": "turn_start",
+          "subject": "self",
+          "active_zone": "battlefield",
+          "turn": "own",
+          "entry": "any",
+          "damageType": "any",
+          "conditions": [
+            {
+              "buff": "tutorial_retaliation_ready",
+              "compare": "gte",
+              "layers": 1
+            }
+          ],
+          "effects": [
+            {
+              "op": "remove_buff",
+              "target": "self",
+              "zone": "any",
+              "amount": "tutorial_retaliation_release_0",
+              "duration": null,
+              "grid": true,
+              "buff": {
+                "id": "tutorial_retaliation_ready",
+                "name": "反击准备",
+                "kind": "marker",
+                "active_zone": "any",
+                "stacking": "add",
+                "scope": "source_skill",
+                "max_stacks": 9999,
+                "duration": "battle",
+                "turns": null,
+                "leave": "keep",
+                "icon": ""
+              }
+            },
+            {
+              "op": "apply_buff",
+              "target": "self",
+              "zone": "battlefield",
+              "amount": "tutorial_retaliation_release_1",
+              "duration": null,
+              "grid": true,
+              "buff": {
+                "id": "tutorial_retaliation_buff",
+                "name": "教团反击",
+                "kind": "attack",
+                "active_zone": "any",
+                "stacking": "refresh",
+                "scope": "source_skill",
+                "max_stacks": 1,
+                "duration": "turn",
+                "turns": null,
+                "leave": "keep",
+                "icon": ""
+              },
+              "stacks": 1
+            }
+          ]
         }
-      ]
+      ],
+      "buffs": {
+        "tutorial_retaliation_charge": {
+          "id": "tutorial_retaliation_charge",
+          "name": "蓄力",
+          "kind": "marker",
+          "active_zone": "any",
+          "stacking": "add",
+          "scope": "source_skill",
+          "max_stacks": 9999,
+          "duration": "battle",
+          "turns": null,
+          "leave": "keep",
+          "icon": ""
+        },
+        "tutorial_retaliation_ready": {
+          "id": "tutorial_retaliation_ready",
+          "name": "反击准备",
+          "kind": "marker",
+          "active_zone": "any",
+          "stacking": "add",
+          "scope": "source_skill",
+          "max_stacks": 9999,
+          "duration": "battle",
+          "turns": null,
+          "leave": "keep",
+          "icon": ""
+        },
+        "tutorial_retaliation_buff": {
+          "id": "tutorial_retaliation_buff",
+          "name": "教团反击",
+          "kind": "attack",
+          "active_zone": "any",
+          "stacking": "refresh",
+          "scope": "source_skill",
+          "max_stacks": 1,
+          "duration": "turn",
+          "turns": null,
+          "leave": "keep",
+          "icon": ""
+        }
+      }
     }
   ],
   "hero": "tutorial_hero",

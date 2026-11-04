@@ -1,25 +1,26 @@
 import {columns,positions,compileTables,normalizeTables} from './workbook.mjs';
 import {playDialogue} from './dialogue-player.mjs';
 const $=id=>document.getElementById(id);
-const names={Skill:'技能',Character:'角色',Level:'关卡',Node:'节点',Chapter:'章节',Dialogue:'对话',DialogueLine:'台词'};
-const help={Skill:'每行一个技能。等级列填写对应效果的数值。',Character:'多个 ID 用英文逗号分隔，初始技能写作 SkillID@等级。',Level:'从敌方视角配置时仍按屏幕左、中、右填写。上排为备战，下排为战场。',Node:'相同 NodeID 的行属于同一候选池。层数从 1 开始，留空表示不限。',Chapter:'普通、精英与 Boss 分别引用节点池。'};
+const names={Skill:'技能',SkillEffect:'技能效果',EffectResult:'结果操作',Buff:'Buff',Character:'角色',Level:'关卡',Node:'节点',Chapter:'章节',Dialogue:'对话',DialogueLine:'台词'};
+const help={Skill:'技能的名称、装配和品质。触发行为在技能效果表配置。',SkillEffect:'每行一个效果：所属技能、监听范围、时机、条件和结果组。',EffectResult:'同一结果组可有多行，按顺序执行。等级列是该操作的数值。',Buff:'持续状态：层数、叠加、持续时间和离场规则。',Character:'多个 ID 用英文逗号分隔，初始技能写作 SkillID@等级。',Level:'从敌方视角配置时仍按屏幕左、中、右填写。上排为备战，下排为战场。',Node:'相同 NodeID 的行属于同一候选池。层数从 1 开始，留空表示不限。',Chapter:'普通、精英与 Boss 分别引用节点池。'};
 help.Dialogue='每段一个唯一入口。预览不会修改远征存档。';help.DialogueLine='句序按数值排序，可用10、20、30插句。首句背景留空时为透明叠加。图片资源 ID 使用 assets/ 下已发布图片路径。';
 let sheet='Level',index=1,tables,workbook,config,dirty=false;
 const message=text=>{$('status').textContent=text;};
 function load(bytes){
  const next=XLSX.read(bytes,{type:'array'});
  const parsed={};
- for(const key of Object.keys(columns)){
-  if(!next.Sheets[key]){if(['Dialogue','DialogueLine'].includes(key))continue;throw Error('缺少 '+key+' 工作表');}
-  const rows=XLSX.utils.sheet_to_json(next.Sheets[key],{header:1,defval:''});
-  if(!columns[key].split(' ').every(c=>rows[0]?.includes(c)))throw Error(key+' 表头不完整');
-  parsed[key]=rows;
- }
+ for(const key of Object.keys(columns)){if(next.Sheets[key])parsed[key]=XLSX.utils.sheet_to_json(next.Sheets[key],{header:1,defval:''});}
+ for(const key of ['Skill','Character','Level','Node','Chapter'])if(!parsed[key])throw Error('缺少 '+key+' 工作表');
  if(!!next.Sheets.Dialogue!==!!next.Sheets.DialogueLine)throw Error('Dialogue 与 DialogueLine 必须同时存在');
  tables=normalizeTables(parsed);workbook=next;for(const name of Object.keys(columns))if(!workbook.SheetNames.includes(name))workbook.SheetNames.push(name);index=1;dirty=false;render();message('已载入工作簿');
 }
 function ids(name){return [...new Set(tables[name].slice(1).map(row=>row[tables[name][0].indexOf(columns[name].split(' ')[0])]).filter(Boolean))];}
 function options(key){
+ if(key==='SkillID'&&sheet==='SkillEffect')return ids('Skill');
+ if(key==='BuffID'&&sheet!=='Buff'||key==='条件BuffID')return ids('Buff');
+ if(key==='ResultGroupID'&&sheet==='SkillEffect')return ids('EffectResult');
+ const choices={监听区域:['battlefield','bench','any'],生效区域:['battlefield','bench','any'],触发时机:['passive','unit_enter','unit_leave','turn_start','turn_end','attack_declared','before_damage','damage_taken','healed','unit_defeated','attack_end'],触发主体:['self','other_ally'],回合归属:['own','opponent','any'],入场原因:['any','exchange','reinforce'],伤害类型:['any','combat','skill','health_loss'],比较:['gte','eq','lt'],操作:['apply_buff','remove_buff','heal','deal_damage','swap_positions'],目标:['self','opposing_unit','front_sides','lower_ally','rear_ally','rear_enemy','all_enemies','all_allies','other_allies'],目标区域:['battlefield','bench','any'],叠加方式:['add','refresh','max','independent'],合并范围:['buff','source_skill'],持续时间:['battle','turn','owner_turns'],离场处理:['keep','remove','pause']};
+ if(choices[key])return choices[key];if(sheet==='Buff'&&key==='类型')return ['marker','attack','shield','armor','damage_armor','agile','combat_damage_immunity'];
  if(key.endsWith('对话ID')||key==='DialogueID'&&sheet==='DialogueLine')return ids('Dialogue');
  if(key==='说话角色ID')return ids('Character');
  if(['默认对话立绘ID','立绘ID覆盖','背景图ID'].includes(key))return [...new Set(Object.values(tables).flatMap(rows=>rows.slice(1).flatMap(r=>r.filter(v=>typeof v==='string'&&v.startsWith('assets/')))))];
@@ -87,7 +88,7 @@ $('rows').onchange=e=>{index=Number(e.target.value);render();};
 function add(copy){const list=tables[sheet];list.push(copy&&list[index]?[...list[index]]:list[0].map(()=>''));index=list.length-1;dirty=true;render();}
 $('add').onclick=()=>add(false);$('copy').onclick=()=>add(true);
 $('remove').onclick=()=>{if(tables[sheet][index]&&confirm('删除当前记录？')){tables[sheet].splice(index,1);index=Math.max(1,index-1);dirty=true;render();}};
-$('validate').onclick=()=>{try{compileTables(tables,config);message('七表数据及引用校验通过');}catch(e){message(e.message);}};
+$('validate').onclick=()=>{try{compileTables(tables,config);message('工作簿数据及引用校验通过');}catch(e){message(e.message);}};
 $('export').onclick=()=>{try{
  compileTables(tables,config);
  for(const [name,rows] of Object.entries(tables)){
