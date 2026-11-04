@@ -16,12 +16,12 @@ test('dialogue edits round-trip through Excel while preserving untouched sheets,
  const out=XLSX.read(encodeWorkbook(doc),{type:'array',cellStyles:true,cellNF:true});assert.deepEqual(out.Sheets.Skill,before);assert.deepEqual(out.Sheets.OwnerNotes,extra);
  const restored=readWorkbook(encodeWorkbook(doc),config),updated=getDialogue(restored,d.id);assert.equal(updated.name,d.name);assert.equal(updated.notes,d.notes);assert.equal(updated.lines[0].notes,'略作停顿');assert.equal(updated.lines[0].text,'修改后的台词');
 });
-test('five-sheet workbooks gain dialogues with automatic IDs and line order without changing card content',()=>{
+test('workbooks without dialogue tabs gain automatic IDs and line order without changing card content',()=>{
  const wb=XLSX.read(bytes,{type:'buffer'});wb.SheetNames=wb.SheetNames.filter(n=>!['Dialogue','DialogueLine'].includes(n));delete wb.Sheets.Dialogue;delete wb.Sheets.DialogueLine;
  // Legacy tables have no dialogue references.
  for(const name of ['Chapter','Level','Node']){const rows=XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:''});const keep=rows[0].map((key,i)=>key.endsWith('对话ID')?-1:i).filter(i=>i>=0);wb.Sheets[name]=XLSX.utils.aoa_to_sheet(rows.map(r=>keep.map(i=>r[i]??'')));}
  const doc=readWorkbook(XLSX.write(wb,{type:'array',bookType:'xlsx'}),config),cards=compileTables(doc.tables,config).cards,id=createDialogue(doc),d=getDialogue(doc,id);d.lines[0].text='第一句';d.lines.push({text:'第二句',character:'',side:'right'});writeDialogue(doc,d);
- const restored=readWorkbook(encodeWorkbook(doc),config);assert.equal(restored.workbook.SheetNames.length,10);assert.deepEqual(getDialogue(restored,id).lines.map(l=>l.order),[10,20]);assert.deepEqual(compileTables(restored.tables,config).cards,cards);
+ const restored=readWorkbook(encodeWorkbook(doc),config);assert.deepEqual(new Set(restored.workbook.SheetNames),new Set([...wb.SheetNames,'Dialogue','DialogueLine']));assert.deepEqual(getDialogue(restored,id).lines.map(l=>l.order),[10,20]);assert.deepEqual(compileTables(restored.tables,config).cards,cards);
 });
 test('binding operations identify duplicate Node candidates by physical row and protect referenced dialogues',()=>{
  const doc=fresh(),first=listDialogues(doc)[0].id,id=createDialogue(doc),d=getDialogue(doc,id);d.lines[0].text='节点专属对白';writeDialogue(doc,d);

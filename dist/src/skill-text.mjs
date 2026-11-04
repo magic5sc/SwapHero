@@ -2,9 +2,9 @@ const zones={battlefield:'在战场时',bench:'在备战区时',any:''};
 const events={passive:'常驻',unit_enter:'入场时',unit_leave:'离场时',turn_start:'回合开始时',turn_end:'回合结束时',attack_declared:'发起攻击时',before_damage:'将受伤时',damage_taken:'受到有效伤害时',healed:'获得治疗时',unit_defeated:'被击溃时',attack_end:'攻击阶段结束时'};
 const targets={self:'自身',opposing_unit:'敌方正前方格',front_sides:'敌方前方左右邻格',lower_ally:'己方下一战场格',rear_ally:'己方本路备战格',rear_enemy:'敌方本路备战格',all_enemies:'敌方目标区域各格',all_allies:'己方目标区域各格',other_allies:'其他己方所在格'};
 const kinds={attack:'攻击',shield:'护盾',armor:'战斗减伤',damage_armor:'伤害减免',agile:'敏捷',combat_damage_immunity:'战斗伤害免疫'};
-export function describeSkill(s,level=1){
+export function describeSkill(s,level=1,seen=new Set()){
  if(!s.rules?.length){const value=s.levels?.[level]?.amount;return s.description||({armor:'战斗减伤 '+value,damage_armor:'伤害减免 '+value,agile:'换入当回合可攻击',combat_damage_immunity:'免疫战斗伤害'}[s.passive]||s.name);}
- return s.rules.map(r=>{
+ const description=s.rules.map(r=>{
   const prefix=[zones[r.active_zone]||'',r.turn==='own'?'己方':r.turn==='opponent'?'敌方':'',r.subject==='other_ally'?'其他友军':'',r.entry==='exchange'||r.exchangeOnly?'交换':'',events[r.event]||r.event].join('');
   const condition=(r.conditions||[]).map(c=>(s.buffs?.[c.buff]?.name||'状态')+({gte:'≥',eq:'=',lt:'<'}[c.compare])+c.layers+'层').join('且');
   const results=r.effects.map(e=>{
@@ -20,4 +20,10 @@ export function describeSkill(s,level=1){
   }).join('，随后');
   return prefix+(condition?'且'+condition:'')+'：'+results;
  }).join('；');
+ const attached=[];
+ for(const r of s.rules)for(const e of r.effects)if(e.op==='apply_buff'&&!seen.has(e.buff.id)){
+  const b=s.buffs?.[e.buff.id];if(!b?.rules?.length)continue;seen.add(b.id);
+  attached.push(`「${b.name}」持有期间：`+describeSkill({...b,buffs:s.buffs},level,seen));
+ }
+ return [description,...attached].join('；');
 }

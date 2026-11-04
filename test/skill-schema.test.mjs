@@ -17,15 +17,16 @@ const put=(t,n,i,k,v)=>t[n][i][t[n][0].indexOf(k)]=v;
 function game(t=tables()){const g=createLevelBattle(compile(t),'tutorial_01');start(g);return g;}
 const marker={id:'charge',name:'蓄力',kind:'marker',active_zone:'any',stacking:'add',scope:'source_skill',max_stacks:99,duration:'battle',turns:null,leave:'keep'};
 test('one skill owns multiple triggers and ordered results, independent level amounts',()=>{
- const t=tables(),p=compile(t),s=p.skills.find(s=>s.skill_id==='tutorial_retaliation');
+ const t=tables();for(const row of t.BuffEffect.slice(1)){const r=[...row];r[1]='tutorial_retaliation';r[2]=r[0].endsWith('_prepare')?2:3;t.SkillEffect.push(r);}t.BuffEffect=[t.BuffEffect[0]];
+ const p=compile(t),s=p.skills.find(s=>s.skill_id==='tutorial_retaliation');
  assert.equal(s.rules.length,3);assert.deepEqual(s.rules[2].effects.map(e=>e.op),['remove_buff','apply_buff']);
  const row=t.EffectResult.findIndex(r=>r[0]==='tutorial_retaliation_release'&&r[2]==='apply_buff');put(t,'EffectResult',row,'等级2',5);
  const changed=compile(t).skills.find(s=>s.skill_id==='tutorial_retaliation');
  assert.equal(changed.levels[2][changed.rules[2].effects[1].amount],5);assert.equal(changed.levels[2][changed.rules[2].effects[0].amount],1);
 });
 test('conditions snapshot once per event; six charge layers cause one release consuming three',()=>{
- const g=game(),u=g.units['ai-2'];u.skills[0].definition.rules=u.skills[0].definition.rules.filter(r=>r.event==='turn_end');
- const b=u.skills[0].definition.buffs.tutorial_retaliation_charge;grantBuff(u,b,{source:u.id,skillId:'tutorial_retaliation',value:0,stacks:6});
+ const g=game(),u=g.units['ai-2'],definitions=u.skills[0].definition.buffs;u.skills=[];
+ const b=definitions.tutorial_retaliation_charge;grantBuff(u,b,{source:u.id,skillId:'tutorial_retaliation',value:0,stacks:6,definitions});
  g.turn='ai';collectPhase(g,'turn_end');drainStack(g);
  assert.equal(buffLayers(u,b.id),3);assert.equal(buffLayers(u,'tutorial_retaliation_ready'),1);
 });
@@ -69,7 +70,7 @@ test('invalid ownership, group sequence, Buff references and unsupported timings
  for(const edit of [t=>put(t,'SkillEffect',1,'SkillID','missing'),t=>put(t,'SkillEffect',1,'ResultGroupID','missing'),t=>put(t,'EffectResult',1,'BuffID','missing'),t=>put(t,'SkillEffect',1,'触发时机','future_event'),t=>t.EffectResult.push([...t.EffectResult[1]]),t=>put(t,'SkillEffect',1,'条件层数',3)]){const t=tables();edit(t);assert.throws(()=>compile(t));}
 });
 test('legacy one-row skill format imports without mutating the supplied data',()=>{
- const t=tables();delete t.SkillEffect;delete t.EffectResult;delete t.Buff;
+ const t=tables();delete t.SkillEffect;delete t.EffectResult;delete t.Buff;delete t.BuffEffect;
  t.Skill=[['SkillID','名称','说明','技能栏','生效区域','触发时机','触发主体','效果','目标','目标区域','持续时间','常驻能力','等级1','等级2','等级3','品质','精英限定'],['legacy','旧技能','','unit_enter','battlefield','unit_enter','self','heal','self','any','','',1,2,3,'common',false]];
  const before=structuredClone(t),next=migrateSkillTables(t);assert.deepEqual(t,before);assert.equal(next.SkillEffect.length,2);assert.equal(next.EffectResult[1][7],1);assert.deepEqual(migrateSkillTables(next),next);
 });

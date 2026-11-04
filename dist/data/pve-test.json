@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "version": "skill-effects-v2",
+  "version": "buff-effects-v3",
   "cards": [
     {
       "card_id": "test_hero",
@@ -687,7 +687,11 @@
                 "duration": "turn",
                 "turns": null,
                 "leave": "keep",
-                "icon": ""
+                "icon": "",
+                "value_policy": "replace",
+                "duration_refresh": "refresh",
+                "overflow": "apply",
+                "shield_refresh": "reset"
               },
               "stacks": 1
             }
@@ -706,7 +710,17 @@
           "duration": "turn",
           "turns": null,
           "leave": "keep",
-          "icon": ""
+          "icon": "",
+          "value_policy": "replace",
+          "duration_refresh": "refresh",
+          "overflow": "apply",
+          "shield_refresh": "reset",
+          "levels": {
+            "1": {},
+            "2": {},
+            "3": {}
+          },
+          "rules": []
         }
       }
     },
@@ -913,7 +927,11 @@
                 "duration": "turn",
                 "turns": null,
                 "leave": "keep",
-                "icon": ""
+                "icon": "",
+                "value_policy": "replace",
+                "duration_refresh": "refresh",
+                "overflow": "apply",
+                "shield_refresh": "reset"
               },
               "stacks": 1
             }
@@ -932,7 +950,17 @@
           "duration": "turn",
           "turns": null,
           "leave": "keep",
-          "icon": ""
+          "icon": "",
+          "value_policy": "replace",
+          "duration_refresh": "refresh",
+          "overflow": "apply",
+          "shield_refresh": "reset",
+          "levels": {
+            "1": {},
+            "2": {},
+            "3": {}
+          },
+          "rules": []
         }
       }
     },
@@ -1139,7 +1167,11 @@
                 "duration": "turn",
                 "turns": null,
                 "leave": "keep",
-                "icon": ""
+                "icon": "",
+                "value_policy": "replace",
+                "duration_refresh": "refresh",
+                "overflow": "apply",
+                "shield_refresh": "reset"
               },
               "stacks": 1
             }
@@ -1158,7 +1190,17 @@
           "duration": "turn",
           "turns": null,
           "leave": "keep",
-          "icon": ""
+          "icon": "",
+          "value_policy": "replace",
+          "duration_refresh": "refresh",
+          "overflow": "apply",
+          "shield_refresh": "reset",
+          "levels": {
+            "1": {},
+            "2": {},
+            "3": {}
+          },
+          "rules": []
         }
       }
     },
@@ -1365,7 +1407,11 @@
                 "duration": "turn",
                 "turns": null,
                 "leave": "keep",
-                "icon": ""
+                "icon": "",
+                "value_policy": "replace",
+                "duration_refresh": "refresh",
+                "overflow": "apply",
+                "shield_refresh": "reset"
               },
               "stacks": 1
             }
@@ -1384,7 +1430,17 @@
           "duration": "turn",
           "turns": null,
           "leave": "keep",
-          "icon": ""
+          "icon": "",
+          "value_policy": "replace",
+          "duration_refresh": "refresh",
+          "overflow": "apply",
+          "shield_refresh": "reset",
+          "levels": {
+            "1": {},
+            "2": {},
+            "3": {}
+          },
+          "rules": []
         }
       }
     },
@@ -1591,7 +1647,11 @@
                 "duration": "turn",
                 "turns": null,
                 "leave": "keep",
-                "icon": ""
+                "icon": "",
+                "value_policy": "replace",
+                "duration_refresh": "refresh",
+                "overflow": "apply",
+                "shield_refresh": "reset"
               },
               "stacks": 1
             }
@@ -1610,7 +1670,17 @@
           "duration": "turn",
           "turns": null,
           "leave": "keep",
-          "icon": ""
+          "icon": "",
+          "value_policy": "replace",
+          "duration_refresh": "refresh",
+          "overflow": "apply",
+          "shield_refresh": "reset",
+          "levels": {
+            "1": {},
+            "2": {},
+            "3": {}
+          },
+          "rules": []
         }
       }
     },
@@ -1817,7 +1887,11 @@
                 "duration": "turn",
                 "turns": null,
                 "leave": "keep",
-                "icon": ""
+                "icon": "",
+                "value_policy": "replace",
+                "duration_refresh": "refresh",
+                "overflow": "apply",
+                "shield_refresh": "reset"
               },
               "stacks": 1
             }
@@ -1836,7 +1910,17 @@
           "duration": "turn",
           "turns": null,
           "leave": "keep",
-          "icon": ""
+          "icon": "",
+          "value_policy": "replace",
+          "duration_refresh": "refresh",
+          "overflow": "apply",
+          "shield_refresh": "reset",
+          "levels": {
+            "1": {},
+            "2": {},
+            "3": {}
+          },
+          "rules": []
         }
       }
     },
@@ -2043,7 +2127,11 @@
                 "duration": "turn",
                 "turns": null,
                 "leave": "keep",
-                "icon": ""
+                "icon": "",
+                "value_policy": "replace",
+                "duration_refresh": "refresh",
+                "overflow": "apply",
+                "shield_refresh": "reset"
               },
               "stacks": 1
             }
@@ -2062,7 +2150,17 @@
           "duration": "turn",
           "turns": null,
           "leave": "keep",
-          "icon": ""
+          "icon": "",
+          "value_policy": "replace",
+          "duration_refresh": "refresh",
+          "overflow": "apply",
+          "shield_refresh": "reset",
+          "levels": {
+            "1": {},
+            "2": {},
+            "3": {}
+          },
+          "rules": []
         }
       }
     },
@@ -2219,7 +2317,11 @@
                 "duration": "battle",
                 "turns": null,
                 "leave": "keep",
-                "icon": ""
+                "icon": "",
+                "value_policy": "replace",
+                "duration_refresh": "refresh",
+                "overflow": "apply",
+                "shield_refresh": "reset"
               },
               "stacks": 1
             }
@@ -2238,11 +2340,207 @@
           "duration": "battle",
           "turns": null,
           "leave": "keep",
-          "icon": ""
+          "icon": "",
+          "value_policy": "replace",
+          "duration_refresh": "refresh",
+          "overflow": "apply",
+          "shield_refresh": "reset",
+          "levels": {
+            "1": {},
+            "2": {},
+            "3": {}
+          },
+          "rules": []
         }
       }
     }
   ],
+  "buffs": {
+    "test_ally_1_focus_buff": {
+      "id": "test_ally_1_focus_buff",
+      "name": "蓄势",
+      "kind": "attack",
+      "active_zone": "any",
+      "stacking": "independent",
+      "scope": "source_skill",
+      "max_stacks": 1,
+      "duration": "turn",
+      "turns": null,
+      "leave": "keep",
+      "icon": "",
+      "value_policy": "replace",
+      "duration_refresh": "refresh",
+      "overflow": "apply",
+      "shield_refresh": "reset",
+      "levels": {
+        "1": {},
+        "2": {},
+        "3": {}
+      },
+      "rules": []
+    },
+    "test_ally_2_focus_buff": {
+      "id": "test_ally_2_focus_buff",
+      "name": "蓄势",
+      "kind": "attack",
+      "active_zone": "any",
+      "stacking": "independent",
+      "scope": "source_skill",
+      "max_stacks": 1,
+      "duration": "turn",
+      "turns": null,
+      "leave": "keep",
+      "icon": "",
+      "value_policy": "replace",
+      "duration_refresh": "refresh",
+      "overflow": "apply",
+      "shield_refresh": "reset",
+      "levels": {
+        "1": {},
+        "2": {},
+        "3": {}
+      },
+      "rules": []
+    },
+    "test_ally_3_focus_buff": {
+      "id": "test_ally_3_focus_buff",
+      "name": "蓄势",
+      "kind": "attack",
+      "active_zone": "any",
+      "stacking": "independent",
+      "scope": "source_skill",
+      "max_stacks": 1,
+      "duration": "turn",
+      "turns": null,
+      "leave": "keep",
+      "icon": "",
+      "value_policy": "replace",
+      "duration_refresh": "refresh",
+      "overflow": "apply",
+      "shield_refresh": "reset",
+      "levels": {
+        "1": {},
+        "2": {},
+        "3": {}
+      },
+      "rules": []
+    },
+    "test_ally_4_focus_buff": {
+      "id": "test_ally_4_focus_buff",
+      "name": "蓄势",
+      "kind": "attack",
+      "active_zone": "any",
+      "stacking": "independent",
+      "scope": "source_skill",
+      "max_stacks": 1,
+      "duration": "turn",
+      "turns": null,
+      "leave": "keep",
+      "icon": "",
+      "value_policy": "replace",
+      "duration_refresh": "refresh",
+      "overflow": "apply",
+      "shield_refresh": "reset",
+      "levels": {
+        "1": {},
+        "2": {},
+        "3": {}
+      },
+      "rules": []
+    },
+    "test_ally_5_focus_buff": {
+      "id": "test_ally_5_focus_buff",
+      "name": "蓄势",
+      "kind": "attack",
+      "active_zone": "any",
+      "stacking": "independent",
+      "scope": "source_skill",
+      "max_stacks": 1,
+      "duration": "turn",
+      "turns": null,
+      "leave": "keep",
+      "icon": "",
+      "value_policy": "replace",
+      "duration_refresh": "refresh",
+      "overflow": "apply",
+      "shield_refresh": "reset",
+      "levels": {
+        "1": {},
+        "2": {},
+        "3": {}
+      },
+      "rules": []
+    },
+    "test_ally_6_focus_buff": {
+      "id": "test_ally_6_focus_buff",
+      "name": "蓄势",
+      "kind": "attack",
+      "active_zone": "any",
+      "stacking": "independent",
+      "scope": "source_skill",
+      "max_stacks": 1,
+      "duration": "turn",
+      "turns": null,
+      "leave": "keep",
+      "icon": "",
+      "value_policy": "replace",
+      "duration_refresh": "refresh",
+      "overflow": "apply",
+      "shield_refresh": "reset",
+      "levels": {
+        "1": {},
+        "2": {},
+        "3": {}
+      },
+      "rules": []
+    },
+    "test_ally_7_focus_buff": {
+      "id": "test_ally_7_focus_buff",
+      "name": "蓄势",
+      "kind": "attack",
+      "active_zone": "any",
+      "stacking": "independent",
+      "scope": "source_skill",
+      "max_stacks": 1,
+      "duration": "turn",
+      "turns": null,
+      "leave": "keep",
+      "icon": "",
+      "value_policy": "replace",
+      "duration_refresh": "refresh",
+      "overflow": "apply",
+      "shield_refresh": "reset",
+      "levels": {
+        "1": {},
+        "2": {},
+        "3": {}
+      },
+      "rules": []
+    },
+    "shared_agility_passive": {
+      "id": "shared_agility_passive",
+      "name": "敏捷",
+      "kind": "agile",
+      "active_zone": "battlefield",
+      "stacking": "refresh",
+      "scope": "source_skill",
+      "max_stacks": 1,
+      "duration": "battle",
+      "turns": null,
+      "leave": "keep",
+      "icon": "",
+      "value_policy": "replace",
+      "duration_refresh": "refresh",
+      "overflow": "apply",
+      "shield_refresh": "reset",
+      "levels": {
+        "1": {},
+        "2": {},
+        "3": {}
+      },
+      "rules": []
+    }
+  },
   "hero": "test_hero",
   "recruits": [
     "test_ally_1",

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "version": "skill-effects-v2",
+  "version": "buff-effects-v3",
   "cards": [
     {
       "card_id": "tutorial_hero",
@@ -155,7 +155,11 @@
                 "duration": "owner_turns",
                 "turns": 3,
                 "leave": "keep",
-                "icon": ""
+                "icon": "",
+                "value_policy": "replace",
+                "duration_refresh": "refresh",
+                "overflow": "apply",
+                "shield_refresh": "reset"
               },
               "stacks": 1
             }
@@ -174,7 +178,17 @@
           "duration": "owner_turns",
           "turns": 3,
           "leave": "keep",
-          "icon": ""
+          "icon": "",
+          "value_policy": "replace",
+          "duration_refresh": "refresh",
+          "overflow": "apply",
+          "shield_refresh": "reset",
+          "levels": {
+            "1": {},
+            "2": {},
+            "3": {}
+          },
+          "rules": []
         }
       }
     },
@@ -232,7 +246,11 @@
                 "duration": "battle",
                 "turns": null,
                 "leave": "keep",
-                "icon": ""
+                "icon": "",
+                "value_policy": "replace",
+                "duration_refresh": "refresh",
+                "overflow": "apply",
+                "shield_refresh": "reset"
               },
               "stacks": 1
             }
@@ -251,7 +269,17 @@
           "duration": "battle",
           "turns": null,
           "leave": "keep",
-          "icon": ""
+          "icon": "",
+          "value_policy": "replace",
+          "duration_refresh": "refresh",
+          "overflow": "apply",
+          "shield_refresh": "reset",
+          "levels": {
+            "1": {},
+            "2": {},
+            "3": {}
+          },
+          "rules": []
         }
       }
     },
@@ -309,7 +337,11 @@
                 "duration": "battle",
                 "turns": null,
                 "leave": "keep",
-                "icon": ""
+                "icon": "",
+                "value_policy": "replace",
+                "duration_refresh": "refresh",
+                "overflow": "apply",
+                "shield_refresh": "reset"
               },
               "stacks": 1
             }
@@ -328,7 +360,17 @@
           "duration": "battle",
           "turns": null,
           "leave": "keep",
-          "icon": ""
+          "icon": "",
+          "value_policy": "replace",
+          "duration_refresh": "refresh",
+          "overflow": "apply",
+          "shield_refresh": "reset",
+          "levels": {
+            "1": {},
+            "2": {},
+            "3": {}
+          },
+          "rules": []
         }
       }
     },
@@ -348,25 +390,13 @@
       "passive": null,
       "levels": {
         "1": {
-          "tutorial_retaliation_charge_0": 0,
-          "tutorial_retaliation_prepare_0": 3,
-          "tutorial_retaliation_prepare_1": 0,
-          "tutorial_retaliation_release_0": 1,
-          "tutorial_retaliation_release_1": 3
+          "tutorial_retaliation_charge_0": 0
         },
         "2": {
-          "tutorial_retaliation_charge_0": 0,
-          "tutorial_retaliation_prepare_0": 3,
-          "tutorial_retaliation_prepare_1": 0,
-          "tutorial_retaliation_release_0": 1,
-          "tutorial_retaliation_release_1": 3
+          "tutorial_retaliation_charge_0": 0
         },
         "3": {
-          "tutorial_retaliation_charge_0": 0,
-          "tutorial_retaliation_prepare_0": 3,
-          "tutorial_retaliation_prepare_1": 0,
-          "tutorial_retaliation_release_0": 1,
-          "tutorial_retaliation_release_1": 3
+          "tutorial_retaliation_charge_0": 0
         }
       },
       "rules": [
@@ -398,12 +428,372 @@
                 "duration": "battle",
                 "turns": null,
                 "leave": "keep",
-                "icon": ""
+                "icon": "",
+                "value_policy": "replace",
+                "duration_refresh": "refresh",
+                "overflow": "apply",
+                "shield_refresh": "reset"
               },
               "stacks": 1
             }
           ]
+        }
+      ],
+      "buffs": {
+        "tutorial_retaliation_charge": {
+          "id": "tutorial_retaliation_charge",
+          "name": "蓄力",
+          "kind": "marker",
+          "active_zone": "any",
+          "stacking": "add",
+          "scope": "source_skill",
+          "max_stacks": 9999,
+          "duration": "battle",
+          "turns": null,
+          "leave": "keep",
+          "icon": "",
+          "value_policy": "replace",
+          "duration_refresh": "refresh",
+          "overflow": "apply",
+          "shield_refresh": "reset",
+          "levels": {
+            "1": {
+              "tutorial_retaliation_prepare_0": 3,
+              "tutorial_retaliation_prepare_1": 0
+            },
+            "2": {
+              "tutorial_retaliation_prepare_0": 3,
+              "tutorial_retaliation_prepare_1": 0
+            },
+            "3": {
+              "tutorial_retaliation_prepare_0": 3,
+              "tutorial_retaliation_prepare_1": 0
+            }
+          },
+          "rules": [
+            {
+              "id": "tutorial_retaliation_prepare",
+              "event": "turn_end",
+              "subject": "self",
+              "active_zone": "battlefield",
+              "turn": "own",
+              "entry": "any",
+              "damageType": "any",
+              "conditions": [
+                {
+                  "buff": "tutorial_retaliation_charge",
+                  "compare": "gte",
+                  "layers": 3
+                }
+              ],
+              "effects": [
+                {
+                  "op": "remove_buff",
+                  "target": "self",
+                  "zone": "any",
+                  "amount": "tutorial_retaliation_prepare_0",
+                  "duration": null,
+                  "grid": true,
+                  "buff": {
+                    "id": "tutorial_retaliation_charge",
+                    "name": "蓄力",
+                    "kind": "marker",
+                    "active_zone": "any",
+                    "stacking": "add",
+                    "scope": "source_skill",
+                    "max_stacks": 9999,
+                    "duration": "battle",
+                    "turns": null,
+                    "leave": "keep",
+                    "icon": "",
+                    "value_policy": "replace",
+                    "duration_refresh": "refresh",
+                    "overflow": "apply",
+                    "shield_refresh": "reset"
+                  }
+                },
+                {
+                  "op": "apply_buff",
+                  "target": "self",
+                  "zone": "any",
+                  "amount": "tutorial_retaliation_prepare_1",
+                  "duration": null,
+                  "grid": true,
+                  "buff": {
+                    "id": "tutorial_retaliation_ready",
+                    "name": "反击准备",
+                    "kind": "marker",
+                    "active_zone": "any",
+                    "stacking": "add",
+                    "scope": "source_skill",
+                    "max_stacks": 9999,
+                    "duration": "battle",
+                    "turns": null,
+                    "leave": "keep",
+                    "icon": "",
+                    "value_policy": "replace",
+                    "duration_refresh": "refresh",
+                    "overflow": "apply",
+                    "shield_refresh": "reset"
+                  },
+                  "stacks": 1
+                }
+              ]
+            }
+          ]
         },
+        "tutorial_retaliation_ready": {
+          "id": "tutorial_retaliation_ready",
+          "name": "反击准备",
+          "kind": "marker",
+          "active_zone": "any",
+          "stacking": "add",
+          "scope": "source_skill",
+          "max_stacks": 9999,
+          "duration": "battle",
+          "turns": null,
+          "leave": "keep",
+          "icon": "",
+          "value_policy": "replace",
+          "duration_refresh": "refresh",
+          "overflow": "apply",
+          "shield_refresh": "reset",
+          "levels": {
+            "1": {
+              "tutorial_retaliation_release_0": 1,
+              "tutorial_retaliation_release_1": 3
+            },
+            "2": {
+              "tutorial_retaliation_release_0": 1,
+              "tutorial_retaliation_release_1": 3
+            },
+            "3": {
+              "tutorial_retaliation_release_0": 1,
+              "tutorial_retaliation_release_1": 3
+            }
+          },
+          "rules": [
+            {
+              "id": "tutorial_retaliation_release",
+              "event": "turn_start",
+              "subject": "self",
+              "active_zone": "battlefield",
+              "turn": "own",
+              "entry": "any",
+              "damageType": "any",
+              "conditions": [
+                {
+                  "buff": "tutorial_retaliation_ready",
+                  "compare": "gte",
+                  "layers": 1
+                }
+              ],
+              "effects": [
+                {
+                  "op": "remove_buff",
+                  "target": "self",
+                  "zone": "any",
+                  "amount": "tutorial_retaliation_release_0",
+                  "duration": null,
+                  "grid": true,
+                  "buff": {
+                    "id": "tutorial_retaliation_ready",
+                    "name": "反击准备",
+                    "kind": "marker",
+                    "active_zone": "any",
+                    "stacking": "add",
+                    "scope": "source_skill",
+                    "max_stacks": 9999,
+                    "duration": "battle",
+                    "turns": null,
+                    "leave": "keep",
+                    "icon": "",
+                    "value_policy": "replace",
+                    "duration_refresh": "refresh",
+                    "overflow": "apply",
+                    "shield_refresh": "reset"
+                  }
+                },
+                {
+                  "op": "apply_buff",
+                  "target": "self",
+                  "zone": "battlefield",
+                  "amount": "tutorial_retaliation_release_1",
+                  "duration": null,
+                  "grid": true,
+                  "buff": {
+                    "id": "tutorial_retaliation_buff",
+                    "name": "教团反击",
+                    "kind": "attack",
+                    "active_zone": "any",
+                    "stacking": "refresh",
+                    "scope": "source_skill",
+                    "max_stacks": 1,
+                    "duration": "turn",
+                    "turns": null,
+                    "leave": "keep",
+                    "icon": "",
+                    "value_policy": "replace",
+                    "duration_refresh": "refresh",
+                    "overflow": "apply",
+                    "shield_refresh": "reset"
+                  },
+                  "stacks": 1
+                }
+              ]
+            }
+          ]
+        },
+        "tutorial_retaliation_buff": {
+          "id": "tutorial_retaliation_buff",
+          "name": "教团反击",
+          "kind": "attack",
+          "active_zone": "any",
+          "stacking": "refresh",
+          "scope": "source_skill",
+          "max_stacks": 1,
+          "duration": "turn",
+          "turns": null,
+          "leave": "keep",
+          "icon": "",
+          "value_policy": "replace",
+          "duration_refresh": "refresh",
+          "overflow": "apply",
+          "shield_refresh": "reset",
+          "levels": {
+            "1": {},
+            "2": {},
+            "3": {}
+          },
+          "rules": []
+        }
+      }
+    }
+  ],
+  "buffs": {
+    "tutorial_arrival_buff": {
+      "id": "tutorial_arrival_buff",
+      "name": "换阵奋战",
+      "kind": "attack",
+      "active_zone": "any",
+      "stacking": "refresh",
+      "scope": "source_skill",
+      "max_stacks": 1,
+      "duration": "owner_turns",
+      "turns": 3,
+      "leave": "keep",
+      "icon": "",
+      "value_policy": "replace",
+      "duration_refresh": "refresh",
+      "overflow": "apply",
+      "shield_refresh": "reset",
+      "levels": {
+        "1": {},
+        "2": {},
+        "3": {}
+      },
+      "rules": []
+    },
+    "tutorial_shield_buff": {
+      "id": "tutorial_shield_buff",
+      "name": "举盾接防",
+      "kind": "shield",
+      "active_zone": "any",
+      "stacking": "refresh",
+      "scope": "source_skill",
+      "max_stacks": 1,
+      "duration": "battle",
+      "turns": null,
+      "leave": "keep",
+      "icon": "",
+      "value_policy": "replace",
+      "duration_refresh": "refresh",
+      "overflow": "apply",
+      "shield_refresh": "reset",
+      "levels": {
+        "1": {},
+        "2": {},
+        "3": {}
+      },
+      "rules": []
+    },
+    "tutorial_armor_passive": {
+      "id": "tutorial_armor_passive",
+      "name": "护甲",
+      "kind": "damage_armor",
+      "active_zone": "battlefield",
+      "stacking": "refresh",
+      "scope": "source_skill",
+      "max_stacks": 1,
+      "duration": "battle",
+      "turns": null,
+      "leave": "keep",
+      "icon": "",
+      "value_policy": "replace",
+      "duration_refresh": "refresh",
+      "overflow": "apply",
+      "shield_refresh": "reset",
+      "levels": {
+        "1": {},
+        "2": {},
+        "3": {}
+      },
+      "rules": []
+    },
+    "tutorial_retaliation_buff": {
+      "id": "tutorial_retaliation_buff",
+      "name": "教团反击",
+      "kind": "attack",
+      "active_zone": "any",
+      "stacking": "refresh",
+      "scope": "source_skill",
+      "max_stacks": 1,
+      "duration": "turn",
+      "turns": null,
+      "leave": "keep",
+      "icon": "",
+      "value_policy": "replace",
+      "duration_refresh": "refresh",
+      "overflow": "apply",
+      "shield_refresh": "reset",
+      "levels": {
+        "1": {},
+        "2": {},
+        "3": {}
+      },
+      "rules": []
+    },
+    "tutorial_retaliation_charge": {
+      "id": "tutorial_retaliation_charge",
+      "name": "蓄力",
+      "kind": "marker",
+      "active_zone": "any",
+      "stacking": "add",
+      "scope": "source_skill",
+      "max_stacks": 9999,
+      "duration": "battle",
+      "turns": null,
+      "leave": "keep",
+      "icon": "",
+      "value_policy": "replace",
+      "duration_refresh": "refresh",
+      "overflow": "apply",
+      "shield_refresh": "reset",
+      "levels": {
+        "1": {
+          "tutorial_retaliation_prepare_0": 3,
+          "tutorial_retaliation_prepare_1": 0
+        },
+        "2": {
+          "tutorial_retaliation_prepare_0": 3,
+          "tutorial_retaliation_prepare_1": 0
+        },
+        "3": {
+          "tutorial_retaliation_prepare_0": 3,
+          "tutorial_retaliation_prepare_1": 0
+        }
+      },
+      "rules": [
         {
           "id": "tutorial_retaliation_prepare",
           "event": "turn_end",
@@ -438,7 +828,11 @@
                 "duration": "battle",
                 "turns": null,
                 "leave": "keep",
-                "icon": ""
+                "icon": "",
+                "value_policy": "replace",
+                "duration_refresh": "refresh",
+                "overflow": "apply",
+                "shield_refresh": "reset"
               }
             },
             {
@@ -459,12 +853,49 @@
                 "duration": "battle",
                 "turns": null,
                 "leave": "keep",
-                "icon": ""
+                "icon": "",
+                "value_policy": "replace",
+                "duration_refresh": "refresh",
+                "overflow": "apply",
+                "shield_refresh": "reset"
               },
               "stacks": 1
             }
           ]
+        }
+      ]
+    },
+    "tutorial_retaliation_ready": {
+      "id": "tutorial_retaliation_ready",
+      "name": "反击准备",
+      "kind": "marker",
+      "active_zone": "any",
+      "stacking": "add",
+      "scope": "source_skill",
+      "max_stacks": 9999,
+      "duration": "battle",
+      "turns": null,
+      "leave": "keep",
+      "icon": "",
+      "value_policy": "replace",
+      "duration_refresh": "refresh",
+      "overflow": "apply",
+      "shield_refresh": "reset",
+      "levels": {
+        "1": {
+          "tutorial_retaliation_release_0": 1,
+          "tutorial_retaliation_release_1": 3
         },
+        "2": {
+          "tutorial_retaliation_release_0": 1,
+          "tutorial_retaliation_release_1": 3
+        },
+        "3": {
+          "tutorial_retaliation_release_0": 1,
+          "tutorial_retaliation_release_1": 3
+        }
+      },
+      "rules": [
         {
           "id": "tutorial_retaliation_release",
           "event": "turn_start",
@@ -499,7 +930,11 @@
                 "duration": "battle",
                 "turns": null,
                 "leave": "keep",
-                "icon": ""
+                "icon": "",
+                "value_policy": "replace",
+                "duration_refresh": "refresh",
+                "overflow": "apply",
+                "shield_refresh": "reset"
               }
             },
             {
@@ -520,56 +955,19 @@
                 "duration": "turn",
                 "turns": null,
                 "leave": "keep",
-                "icon": ""
+                "icon": "",
+                "value_policy": "replace",
+                "duration_refresh": "refresh",
+                "overflow": "apply",
+                "shield_refresh": "reset"
               },
               "stacks": 1
             }
           ]
         }
-      ],
-      "buffs": {
-        "tutorial_retaliation_charge": {
-          "id": "tutorial_retaliation_charge",
-          "name": "蓄力",
-          "kind": "marker",
-          "active_zone": "any",
-          "stacking": "add",
-          "scope": "source_skill",
-          "max_stacks": 9999,
-          "duration": "battle",
-          "turns": null,
-          "leave": "keep",
-          "icon": ""
-        },
-        "tutorial_retaliation_ready": {
-          "id": "tutorial_retaliation_ready",
-          "name": "反击准备",
-          "kind": "marker",
-          "active_zone": "any",
-          "stacking": "add",
-          "scope": "source_skill",
-          "max_stacks": 9999,
-          "duration": "battle",
-          "turns": null,
-          "leave": "keep",
-          "icon": ""
-        },
-        "tutorial_retaliation_buff": {
-          "id": "tutorial_retaliation_buff",
-          "name": "教团反击",
-          "kind": "attack",
-          "active_zone": "any",
-          "stacking": "refresh",
-          "scope": "source_skill",
-          "max_stacks": 1,
-          "duration": "turn",
-          "turns": null,
-          "leave": "keep",
-          "icon": ""
-        }
-      }
+      ]
     }
-  ],
+  },
   "hero": "tutorial_hero",
   "recruits": [
     "tutorial_guard"

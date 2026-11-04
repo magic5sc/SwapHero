@@ -30,7 +30,7 @@ export function move(g, side, from, to) {
   s.slots = r.slots; g.actionPoints = r.actionPoints; g.units[r.cannotAttackThisTurn].disabled = true;
   g.log.push(`${side === 'player' ? '玩家' : '对手'}：${from} → ${to}`);
   refreshPositions(g);
-  for(const event of r.events){if(event.type==='exit'){expireModifiers(g,'on_field',event.unit);onLeave(g,event.unit);}collectEvent(g,{type:event.type==='enter'?'unit_enter':'unit_leave',unit:event.unit,side,position:event.position,exchange:r.events.some(e=>e.type==='exit')});}
+  for(const event of r.events){collectEvent(g,{type:event.type==='enter'?'unit_enter':'unit_leave',unit:event.unit,side,position:event.position,exchange:r.events.some(e=>e.type==='exit')});if(event.type==='exit'){expireModifiers(g,'on_field',event.unit);onLeave(g,event.unit);}}
   drainStack(g);
 }
 export function resolveLane(g, side, lane, attackerId) {

@@ -1,6 +1,6 @@
 # Teaching level: table-driven configuration
 
-Source: `dist/config/Tutorial.xlsx`. Skill definitions are split across four sheets; Character and Level complete the workbook.
+Source: `dist/config/Tutorial.xlsx`. Skill/Buff definitions are split across five sheets; Character and Level complete the workbook.
 SwapHero.xlsx is also migrated; existing Character, Level, Chapter, Node and dialogue values are retained. This content
 is an isolated test, not a replacement of the adventure's first encounter.
 
@@ -13,11 +13,12 @@ No adventure/editor save is read or written. Refresh starts a fresh test.
 ## Skill effects and Buffs
 
 See [skill schema](SKILL-SCHEMA.md). The source now has Skill, SkillEffect,
-EffectResult, Buff, Character and Level. Chapter/Node remain unnecessary.
+EffectResult, Buff, BuffEffect, Character and Level. Chapter/Node remain unnecessary.
 Every skill owns multiple effects; each effect has a trigger, conditions and an
 ordered result group. Result operations grant/remove Buffs, heal, damage or move.
-The soldier accumulates charge on damage, converts three charge to a ready Buff
-at its turn end, then consumes ready to grant attack at its next turn start.
+The soldier's skill accumulates charge on damage. Charge's BuffEffect converts
+three layers to a ready Buff at its turn end; ready's BuffEffect consumes ready
+to grant attack at its next turn start. The behavior travels with each Buff.
 No newly configured skill uses a hidden counter or delayed execution queue.
 Player initial positions still live in Level's 我方六格 columns.
 

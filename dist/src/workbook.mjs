@@ -1,5 +1,5 @@
 // Shared by the release compiler and the developer workbook editor.
-import {skillColumns,migrateSkillTables,compileSkillTables} from './skill-tables.mjs';
+import {skillColumns,migrateSkillTables,normalizeBuffTables,compileSkillTables} from './skill-tables.mjs';
 import {validatePack} from './pve.mjs';
 import {validateCatalog} from './content.mjs';
 import {dialogueAsset} from './dialogue.mjs';
@@ -14,7 +14,7 @@ export const columns={
 };
 export const extensions={Character:['默认对话立绘ID'],Level:['战前对话ID','胜利对话ID','失败对话ID'],Node:['节点遭遇对话ID'],Chapter:['章节开场对话ID','章节结束对话ID']};
 export function normalizeTables(tables){
- const out=structuredClone(migrateSkillTables(tables));
+ const out=normalizeBuffTables(migrateSkillTables(tables));
  for(const data of Object.values(out)){if(!data?.[0])continue;while(data[0].length&&data[0].at(-1)===''&&data.slice(1).every(r=>r[data[0].length-1]===''||r[data[0].length-1]==null))data[0].pop();for(let i=1;i<data.length;i++)data[i]=data[i].slice(0,data[0].length);}
  for(const name of ['Dialogue','DialogueLine'])out[name]??=[columns[name].split(' ')];
  for(const [name,keys] of Object.entries(extensions))for(const key of keys)if(!out[name]?.[0]?.includes(key))out[name]?.[0]?.push(key);
@@ -43,7 +43,7 @@ function asset(r,k){const path=r[k];r.check(!path||/^assets\/(?:[\w-]+\/)*[\w-]+
 export function compileTables(tables,config,{assetExists=()=>true,levelOnly=false}={}){
  if(levelOnly)tables={...tables,Node:[columns.Node.split(' ')],Chapter:[columns.Chapter.split(' ')]};
  tables=normalizeTables(tables);
- const {skills,skillRows}=compileSkillTables({rows,num,bool,tables});
+ const {skills,skillRows,buffs}=compileSkillTables({rows,num,bool,tables});
  const charRows=rows(tables,'Character');
  const bySkill=new Map(skills.map(s=>[s.skill_id,s]));
  const cards=charRows.map(r=>{
@@ -93,7 +93,7 @@ export function compileTables(tables,config,{assetExists=()=>true,levelOnly=fals
   return {id:r.ChapterID,name:r.名称,layers,available,background:asset(r,'地图背景'),pools,openingDialogue:ref(r,'章节开场对话ID'),endingDialogue:ref(r,'章节结束对话ID')};
  });
  const heroes=cards.filter(c=>c.role==='hero');if(heroes.length!==1)throw Error('Character [类型] 必须有一名 hero');
- const pack={schema_version:1,version:'skill-effects-v2',cards,skills,hero:heroes[0].card_id,recruits:cards.filter(c=>c.role==='ally').map(c=>c.card_id),chapters,levels,nodes,dialogues,config};
+ const pack={schema_version:1,version:'buff-effects-v3',cards,skills,buffs,hero:heroes[0].card_id,recruits:cards.filter(c=>c.role==='ally').map(c=>c.card_id),chapters,levels,nodes,dialogues,config};
  try{if(levelOnly){const errors=validateCatalog(pack);if(errors.length)throw Error(errors.join('；'));}else validatePack(pack);}catch(error){
   const issue=error.message.split('；')[0];
   for(const [sheet,rows,key] of [['Skill',skillRows,'SkillID'],['Character',charRows,'CharacterID']]){

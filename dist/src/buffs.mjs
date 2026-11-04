@@ -6,15 +6,25 @@ export function syncBuffs(u){
  u.baseAttack??=u.attack;u.attack=Math.max(0,u.baseAttack+(u.modifiers||[]).reduce((n,m)=>n+m.amount,0)+buffValue(u,'attack'));
  if(u.buffs?.some(b=>b.definition.kind==='shield')||u.buffShield!==undefined){u.buffShield=(u.buffs||[]).filter(b=>b.definition.kind==='shield'&&buffActive(b,u.position??1)).reduce((n,b)=>n+b.remainingShield,0);}
 }
-export function grantBuff(u,definition,{source,skillId,value,stacks=1}){
+export function grantBuff(u,definition,{source,skillId,value,stacks=1,level=1,definitions={}}){
  u.buffs??=[];const scope=definition.scope;
  let b=definition.stacking==='independent'?null:u.buffs.find(b=>b.id===definition.id&&(scope==='buff'||b.source===source&&b.skillId===skillId));
- if(!b){b={id:definition.id,definition:structuredClone(definition),source,skillId,value,stacks:0};u.buffs.push(b);}
- if(definition.stacking==='max'){b.value=Math.max(b.value,value);b.stacks=Math.max(b.stacks,stacks);}else{b.value=value;b.stacks=definition.stacking==='add'?b.stacks+stacks:stacks;}
+ const fresh=!b;
+ if(b&&b.stacks>=definition.max_stacks&&definition.overflow==='reject')return false;
+ if(!b){u.buffSerial=(u.buffSerial||0)+1;b={instanceId:u.buffSerial,id:definition.id,definition:structuredClone(definition),source,skillId,value,stacks:0,level,definitions:structuredClone(definitions)};u.buffs.push(b);}
+ const oldStacks=b.stacks,oldShield=b.remainingShield||0;
+ const policy=definition.value_policy||(definition.stacking==='max'?'max':'replace');
+ if(!fresh)b.value=policy==='keep'?b.value:policy==='max'?Math.max(b.value,value):policy==='min'?Math.min(b.value,value):value;
+ b.stacks=definition.stacking==='max'?Math.max(b.stacks,stacks):definition.stacking==='add'?b.stacks+stacks:stacks;
  b.stacks=Math.min(definition.max_stacks,b.stacks);
- if(definition.duration==='owner_turns')b.remaining=definition.turns;
- if(definition.kind==='shield')b.remainingShield=b.value*b.stacks;
+ if(definition.duration==='owner_turns'&&(fresh||definition.duration_refresh!=='keep'))b.remaining=definition.turns;
+ if(definition.kind==='shield'){
+  const capacity=b.value*b.stacks,policy=definition.shield_refresh||'reset';
+  const gained=definition.stacking==='add'?b.stacks-oldStacks:Math.min(stacks,definition.max_stacks);
+  b.remainingShield=fresh||policy==='reset'?capacity:Math.min(capacity,oldShield+(policy==='add'?Math.max(0,value*gained):0));
+ }
  syncBuffs(u);
+ return true;
 }
 export function removeBuff(u,id,layers){
  let left=layers;for(const b of u.buffs||[])if(b.id===id&&left>0){const n=Math.min(b.stacks,left);b.stacks-=n;left-=n;if(b.definition.kind==='shield')b.remainingShield=Math.min(b.remainingShield,b.value*b.stacks);}

@@ -13,7 +13,7 @@ const pack=()=>compileTables(tables(),null,{levelOnly:true});
 const game=()=>{const g=createLevelBattle(pack(),'tutorial_01');start(g);return g;};
 const round=g=>{endTurn(g,'player');if(!g.winner)playAI(g);};
 test('skill-effects source reaches level ID without chapters, nodes, or hardcoded roster',()=>{
- assert.deepEqual(new Set(wb.SheetNames),new Set(['Skill','SkillEffect','EffectResult','Buff','Character','Level']));assert.deepEqual(pack(),JSON.parse(fs.readFileSync('dist/data/tutorial.json')));
+ assert.deepEqual(new Set(wb.SheetNames),new Set(['Skill','SkillEffect','EffectResult','Buff','BuffEffect','Character','Level']));assert.deepEqual(pack(),JSON.parse(fs.readFileSync('dist/data/tutorial.json')));
  const t=tables(),row=t.Character[1];row[t.Character[0].indexOf('攻击')]=4;
  assert.equal(createLevelBattle(compileTables(t,null,{levelOnly:true}),'tutorial_01').units['player-2'].attack,4);
  assert.throws(()=>createLevelBattle(pack(),'missing'),/找不到关卡/);

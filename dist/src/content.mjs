@@ -9,6 +9,7 @@ const fail = message => { throw Error(message); };
 const object = x => x && typeof x === 'object' && !Array.isArray(x);
 const integer = (x,min) => Number.isInteger(x) && x >= min;
 const idPattern = /^[a-z][a-z0-9_]*$/;
+function validBuff(b){return object(b)&&typeof b.id==='string'&&idPattern.test(b.id)&&typeof b.name==='string'&&b.name.length>0&&['marker','attack','shield','armor','damage_armor','agile','combat_damage_immunity'].includes(b.kind)&&['battlefield','bench','any'].includes(b.active_zone)&&['add','refresh','max','independent'].includes(b.stacking)&&['buff','source_skill'].includes(b.scope)&&integer(b.max_stacks,1)&&['battle','turn','owner_turns'].includes(b.duration)&&['keep','remove','pause'].includes(b.leave)&&(b.duration!=='owner_turns'||integer(b.turns,1))&&(b.value_policy===undefined||['replace','keep','max','min'].includes(b.value_policy))&&(b.duration_refresh===undefined||['refresh','keep'].includes(b.duration_refresh))&&(b.overflow===undefined||['apply','reject'].includes(b.overflow))&&(b.shield_refresh===undefined||['reset','add','keep'].includes(b.shield_refresh));}
 export function validateCatalog(data) {
   const errors=[];
   const check=(ok,message)=>{if(!ok)errors.push(message);};
@@ -19,7 +20,17 @@ export function validateCatalog(data) {
     const seen=new Set();
     for(const item of list){ if(!object(item)){errors.push('记录必须是对象');continue;} check(typeof item[key]==='string'&&idPattern.test(item[key]),`非法${key}`);check(!seen.has(item[key]),`重复ID ${item[key]}`);seen.add(item[key]);check(typeof item.name==='string'&&item.name.length>0,`${item[key]}缺名称`);check(['draft','specified'].includes(item.status),`${item[key]}状态非法`);check(Array.isArray(item.blockers)&&item.blockers.every(x=>typeof x==='string'),`${item[key]}缺blockers`); }
   }
-  for(const s of data.skills.filter(object)) {
+  const listeners=[...data.skills.filter(object)];
+  for(const registry of [data.buffs,...listeners.map(s=>s.buffs)].filter(Boolean)){
+    check(object(registry),'Buff定义集合必须是对象');
+    for(const [id,b] of Object.entries(registry)){
+      check(validBuff(b)&&b.id===id,`${id} Buff定义非法`);
+      if(!object(b)||b.rules===undefined)continue;
+      check(Array.isArray(b.rules)&&b.rules.every(r=>r?.event!=='passive'),`${id} Buff效果不支持passive`);
+      listeners.push({skill_id:id,name:b.name,levels:b.levels,rules:b.rules,buffs:registry,status:'specified',active_zone:'battlefield',stacking:'single_instance',unload_policy:'remove_passive_and_listeners',passive:null});
+    }
+  }
+  for(const s of listeners) {
     check(object(s.levels)&&Object.keys(s.levels).length>0,`${s.skill_id}缺等级`);
     for(const [level,params] of Object.entries(s.levels||{})){check(/^[1-9]\d*$/.test(level)&&object(params),`${s.skill_id}等级格式非法`);for(const value of Object.values(object(params)?params:{}))check(Number.isFinite(value),`${s.skill_id}参数必须为有限数值`);}
     check(s.active_zone==='battlefield',`${s.skill_id}作用区域不支持`);
@@ -38,7 +49,7 @@ export function validateCatalog(data) {
       check(Array.isArray(rule.effects)&&rule.effects.length>0,`${s.skill_id}缺效果`);
       for(const e of Array.isArray(rule.effects)?rule.effects:[]) {
         if(!object(e)){errors.push('效果必须是对象');continue;}check(Object.keys(e).every(k=>['op','target','amount','duration','zone','damage_type','field_position','turns','refresh','grid','buff','stacks'].includes(k)),`${s.skill_id}含未支持的效果字段`);
-        if(['apply_buff','remove_buff'].includes(e.op)){check(object(e.buff)&&typeof e.buff.id==='string'&&['marker','attack','shield','armor','damage_armor','agile','combat_damage_immunity'].includes(e.buff.kind)&&['battlefield','bench','any'].includes(e.buff.active_zone)&&['add','refresh','max','independent'].includes(e.buff.stacking)&&['buff','source_skill'].includes(e.buff.scope)&&integer(e.buff.max_stacks,1)&&['battle','turn','owner_turns'].includes(e.buff.duration)&&['keep','remove','pause'].includes(e.buff.leave)&&(e.buff.duration!=='owner_turns'||integer(e.buff.turns,1)),`${s.skill_id}Buff定义非法`);if(e.op==='apply_buff')check(integer(e.stacks,1),`${s.skill_id}Buff层数非法`);}
+        if(['apply_buff','remove_buff'].includes(e.op)){check(validBuff(e.buff),`${s.skill_id}Buff定义非法`);if(e.op==='apply_buff')check(integer(e.stacks,1),`${s.skill_id}Buff层数非法`);}
         check(OPS.has(e.op),`${s.skill_id}未知效果`);check(e.target===null||TARGETS.has(e.target),`${s.skill_id}未知目标`);
         check(e.duration===null||['battle','turn','on_field','owner_turns'].includes(e.duration),`${s.skill_id}未知持续时间`);check(e.zone===null||['battlefield','any','bench'].includes(e.zone),`${s.skill_id}未知区域`);
         check(e.duration!=='owner_turns'||integer(e.turns,1),`${s.skill_id}持续回合无效`);check(e.refresh===undefined||typeof e.refresh==='boolean',`${s.skill_id}刷新配置无效`);

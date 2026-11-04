@@ -1,4 +1,4 @@
-import {buffLayers,grantBuff,removeBuff,consumeShield,syncBuffs,expireBuffs,leaveBuffs} from './buffs.mjs';
+import {buffActive,buffLayers,grantBuff,removeBuff,consumeShield,syncBuffs,expireBuffs,leaveBuffs} from './buffs.mjs';
 import {reserveBehind,SLOT_COUNT} from './formation.mjs';
 import {damageAmount} from './content.mjs';
 export const otherSide=side=>side==='player'?'ai':'player';
@@ -43,7 +43,9 @@ export function collectEvent(g,event){
   const field=position<=3,ownExit=event.type==='unit_leave'&&event.unit===id;
 
   if(!alive(g,id)&&!(['damage_taken','unit_defeated'].includes(event.type)&&event.unit===id))continue;
-  const skills=g.units[id].skills||[];
+  // Skills first, then Buff instances in acquisition order. One listener per
+  // merged instance, not per stack; independent instances each get a listener.
+  const skills=[...(g.units[id].skills||[]),...(g.units[id].buffs||[]).filter(b=>b.definition.rules?.length&&buffActive(b,ownExit?event.position:position)).map(b=>({level:b.level||1,buff:b,definition:{skill_id:b.skillId,name:b.definition.name,levels:b.definition.levels,rules:b.definition.rules,buffs:b.definitions||{}}}))];
   for(let si=skills.length-1;si>=0;si--){const binding=skills[si],definition=binding.definition;
    for(let ri=definition.rules.length-1;ri>=0;ri--){const rule=definition.rules[ri];
     if(rule.event!==event.type)continue;
@@ -61,7 +63,7 @@ export function collectEvent(g,event){
     const pending=rule.delayOwnTurns!==undefined;
     const queue=pending?(g.pendingEffects??=[]):g.stack;
     if(pending)g.log.push(`${g.units[id].name} · ${definition.name}：蓄力，将在保留行动机会后生效`);
-    queue.push({...(pending?{due:(g.sideTurns?.[side]||0)+rule.delayOwnTurns+1}:{}),source:id,side,skillId:definition.skill_id,name:definition.name,event:structuredClone(event),level:binding.level,position,skillIndex:si,ruleIndex:ri,effects:rule.effects.map(e=>({...structuredClone(e),value:e.amount===null?null:definition.levels[binding.level][e.amount],grid:true}))});
+    queue.push({...(pending?{due:(g.sideTurns?.[side]||0)+rule.delayOwnTurns+1}:{}),source:id,instigator:binding.buff?.source||id,buffId:binding.buff?.id,buffInstanceId:binding.buff?.instanceId,buffs:structuredClone(definition.buffs||{}),side,skillId:definition.skill_id,name:definition.name,event:structuredClone(event),level:binding.level,position,skillIndex:si,ruleIndex:ri,effects:rule.effects.map(e=>({...structuredClone(e),value:e.amount===null?null:definition.levels[binding.level][e.amount],grid:true}))});
    }
   }
  }
@@ -90,10 +92,10 @@ function execute(g,job,e){
  const chosen=e.grid?targets(g,job.source,job.event||{unit:job.source,side:job.side,position:job.position},e):e.targets;
  for(const id of chosen){if(g.winner||g.error)break;const where=locate(g,id);if(!where||!alive(g,id)||(e.zone==='battlefield'&&where.position>3)||(e.zone==='bench'&&where.position<=3))continue;
   const u=g.units[id];
-  if(e.op==='apply_buff'){grantBuff(u,e.buff,{source:job.source,skillId:job.skillId,value:e.value,stacks:e.stacks});g.log.push(`${u.name} 获得 ${e.buff.name} ${e.stacks}层`);}
+  if(e.op==='apply_buff'){const definition=job.buffs?.[e.buff.id]||e.buff;const applied=grantBuff(u,definition,{source:job.instigator||job.source,skillId:job.skillId,value:e.value,stacks:e.stacks,level:job.level,definitions:job.buffs||{}});g.log.push(applied?`${u.name} 获得 ${definition.name} ${e.stacks}层`:`${u.name} 的 ${definition.name} 已满层，本次施加被拒绝`);}
   else if(e.op==='remove_buff'){removeBuff(u,e.buff.id,e.value);g.log.push(`${u.name} 移除 ${e.buff.name} ${e.value}层`);}
-  else if(e.op==='heal'){const actual=Math.min(e.value,u.maxHp-u.hp);u.hp+=actual;g.log.push(`${job.name}：${u.name} 恢复 ${actual} 生命`);if(actual>0)collectEvent(g,{type:'healed',unit:id,side:where.side,position:where.position,source:job.source,amount:actual});}
-  else if(e.op==='deal_damage'){const actual=applyDamage(g,job.source,id,e.value,'skill');g.log.push(`${job.name}：${u.name} 受到 ${actual} 技能伤害`);}
+  else if(e.op==='heal'){const actual=Math.min(e.value,u.maxHp-u.hp);u.hp+=actual;g.log.push(`${job.name}：${u.name} 恢复 ${actual} 生命`);if(actual>0)collectEvent(g,{type:'healed',unit:id,side:where.side,position:where.position,source:job.instigator||job.source,amount:actual});}
+  else if(e.op==='deal_damage'){const actual=applyDamage(g,job.instigator||job.source,id,e.value,'skill');g.log.push(`${job.name}：${u.name} 受到 ${actual} 技能伤害`);}
   else if(e.op==='modify_attack'){u.baseAttack??=u.attack;u.modifiers??=[];if(e.refresh)u.modifiers=u.modifiers.filter(m=>m.source!==job.source||m.skillId!==job.skillId);u.modifiers.push({source:job.source,skillId:job.skillId,amount:e.value,duration:e.duration,...(e.duration==='owner_turns'?{remaining:e.turns}: {})});updateAttack(u);g.log.push(`${job.name}：${u.name} 攻击 ${e.value>=0?'+':''}${e.value}`);}
   else if(e.op==='set_shield'){u.shield=e.value;g.log.push(`${job.name}：${u.name} 护盾刷新至 ${e.value}`);}
   else if(e.op==='swap_positions'){const source=locate(g,job.source);if(!source||source.side!==where.side||source.position>3||where.position>3||!alive(g,job.source))continue;const slots=g.sides[source.side].slots;[slots[source.position-1],slots[where.position-1]]=[slots[where.position-1],slots[source.position-1]];g.log.push(`${job.name}：${source.position} 与 ${where.position} 号位交换`);}
@@ -110,7 +112,7 @@ export function drainStack(g){
  g.stack??=[];let resolved=0;
  while(g.stack.length&&!g.winner&&!g.error){
   if(++resolved>256){g.error='技能触发链超过256项，疑似循环；已暂停，请重新开始并检查配置';g.phase='error';g.log.push(g.error);break;}
-  const job=g.stack.pop();g.trace??=[];g.trace.push({type:'resolve',source:job.source,skillId:job.skillId});g.log.push(`✦ ${g.units[job.source]?.name||job.source} · ${job.name}`);
+  const job=g.stack.pop();g.trace??=[];g.trace.push({type:'resolve',source:job.source,skillId:job.skillId,...(job.buffId?{buffId:job.buffId,buffInstanceId:job.buffInstanceId,instigator:job.instigator}:{})});g.log.push(`✦ ${g.units[job.source]?.name||job.source} · ${job.name}`);
   for(const e of job.effects){execute(g,job,e);if(g.winner||g.error)break;}
  }
  settleOutcome(g);

@@ -55,7 +55,7 @@ For each release run `node scripts/compile-pve.mjs` before tests/build or Sites 
 
 ## Standalone teaching level
 Run `node scripts/compile-tutorial.mjs` for `dist/config/Tutorial.xlsx` as well.
-It uses Skill/SkillEffect/EffectResult/Buff plus Character/Level, with no chapter/node dependency. See docs/SKILL-SCHEMA.md for the current skill schema. Keep its
+It uses Skill/SkillEffect/EffectResult/Buff/BuffEffect plus Character/Level, with no chapter/node dependency. Buffs carry their own event listeners; stack, magnitude, duration-refresh, cap and shield policies are separate. See docs/SKILL-SCHEMA.md for the current skill schema. Keep its
 test entry `tutorial.html` and imports isolated from adventure/editor saves.
 See docs/TUTORIAL-LEVEL.md for generic columns and the seven-turn acceptance path.
 
