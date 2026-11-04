@@ -1,8 +1,8 @@
-import {buffValue} from './buffs.mjs';
+import {BUFF_EVENTS,buffValue} from './buffs.mjs';
 import {artIssues,resolveArt} from './art-assets.mjs';
 // Content definitions are data; no executable expressions or card-name branches.
 const PASSIVES = new Set(['agile','armor','combat_damage_immunity','damage_armor']);
-const EVENTS = new Set(['passive','turn_start','unit_enter','unit_leave','attack_declared','before_damage','damage_taken','unit_defeated','healed','attack_end','turn_end']);
+const EVENTS = new Set(['passive','turn_start','unit_enter','unit_leave','attack_declared','before_damage','damage_taken','unit_defeated','healed','attack_end','turn_end',...BUFF_EVENTS]);
 const OPS = new Set(['heal','deal_damage','modify_attack','swap_positions','set_shield','apply_buff','remove_buff']);
 const TARGETS = new Set(['self','opposing_unit','all_enemies','other_allies','lower_ally','rear_ally','rear_enemy','front_sides','all_allies']);
 const fail = message => { throw Error(message); };
@@ -27,7 +27,7 @@ export function validateCatalog(data) {
       check(validBuff(b)&&b.id===id,`${id} Buff定义非法`);
       if(!object(b)||b.rules===undefined)continue;
       check(Array.isArray(b.rules)&&b.rules.every(r=>r?.event!=='passive'),`${id} Buff效果不支持passive`);
-      listeners.push({skill_id:id,name:b.name,levels:b.levels,rules:b.rules,buffs:registry,status:'specified',active_zone:'battlefield',stacking:'single_instance',unload_policy:'remove_passive_and_listeners',passive:null});
+      listeners.push({isBuff:true,skill_id:id,name:b.name,levels:b.values?{1:b.values}:b.levels,rules:b.rules,buffs:registry,status:'specified',active_zone:'battlefield',stacking:'single_instance',unload_policy:'remove_passive_and_listeners',passive:null});
     }
   }
   for(const s of listeners) {
@@ -39,7 +39,9 @@ export function validateCatalog(data) {
     check(Array.isArray(s.rules),`${s.skill_id}缺规则数组`);
     if(['armor','damage_armor'].includes(s.passive))for(const p of Object.values(s.levels||{}))check(integer(p.amount,0),`${s.skill_id}护甲必须为非负整数`);
     for(const rule of Array.isArray(s.rules)?s.rules:[]) {
-      if(!object(rule)){errors.push('规则必须是对象');continue;}check(Object.keys(rule).every(k=>['event','subject','effects','every','delayOwnTurns','exchangeOnly','id','active_zone','turn','entry','damageType','conditions'].includes(k)),`${s.skill_id}含未支持的规则字段`);
+      if(!object(rule)){errors.push('规则必须是对象');continue;}check(Object.keys(rule).every(k=>['event','subject','effects','every','delayOwnTurns','exchangeOnly','id','active_zone','turn','entry','damageType','conditions','removalReason'].includes(k)),`${s.skill_id}含未支持的规则字段`);
+      if(BUFF_EVENTS.includes(rule.event))check(s.isBuff&&rule.subject==='self'&&[undefined,'any'].includes(rule.turn)&&[undefined,'any'].includes(rule.entry)&&[undefined,'any'].includes(rule.damageType),`${s.skill_id}生命周期只能由自身Buff监听`);
+      if(rule.removalReason!==undefined)check(s.isBuff&&['any','expired','dispelled','leave'].includes(rule.removalReason)&&(rule.removalReason==='any'||rule.event==='buff_removed'),`${s.skill_id}移除原因非法`);
       check(rule.every===undefined||integer(rule.every,1),`${s.skill_id}触发次数无效`);check(rule.delayOwnTurns===undefined||integer(rule.delayOwnTurns,0),`${s.skill_id}延迟回合无效`);check(rule.exchangeOnly===undefined||typeof rule.exchangeOnly==='boolean',`${s.skill_id}交换条件无效`);check(!rule.exchangeOnly||rule.event==='unit_enter',`${s.skill_id}交换条件仅用于入场`);check(EVENTS.has(rule.event),`${s.skill_id}未知事件`);check(['self','other_ally'].includes(rule.subject),`${s.skill_id}未知主体`);if(['passive','turn_start','attack_end','turn_end'].includes(rule.event))check(rule.subject==='self',`${s.skill_id}阶段事件只支持self主体`);
       if(rule.active_zone!==undefined)check(['battlefield','bench','any'].includes(rule.active_zone),`${s.skill_id}监听区域非法`);
       if(rule.turn!==undefined)check(['own','opponent','any'].includes(rule.turn),`${s.skill_id}回合归属非法`);

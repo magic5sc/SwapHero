@@ -19,8 +19,8 @@ const add=(t,n,r)=>t[n].push(t[n][0].map(k=>r[k]??''));
 function poisonTables(){
  const t=tables();
  add(t,'Buff',{BuffID:'poison',名称:'中毒',类型:'marker',生效区域:'any',叠加方式:'add',合并范围:'source_skill',最大层数:3,持续时间:'owner_turns',持续回合:3,离场处理:'keep',数值合并:'keep',时长刷新:'keep',满层处理:'reject',护盾补充:'keep'});
- add(t,'BuffEffect',{EffectID:'poison_tick',BuffID:'poison',顺序:1,监听区域:'any',触发时机:'turn_start',触发主体:'self',回合归属:'own',入场原因:'any',伤害类型:'any',ResultGroupID:'poison_tick'});
- add(t,'EffectResult',{ResultGroupID:'poison_tick',顺序:1,操作:'deal_damage',目标:'self',目标区域:'any',等级1:1,等级2:2,等级3:3});
+ add(t,'BuffEffect',{EffectID:'poison_tick',BuffID:'poison',顺序:1,监听区域:'any',触发时机:'turn_start',触发主体:'self',回合归属:'own',入场原因:'any',伤害类型:'any',ResultGroupID:'poison_tick',移除原因:'any'});
+ add(t,'EffectResult',{ResultGroupID:'poison_tick',顺序:1,操作:'deal_damage',目标:'self',目标区域:'any',数值:1});
  // The hero grants a state to another unit; that unit needs no skill listener.
  add(t,'SkillEffect',{EffectID:'poison_cast',SkillID:'tutorial_arrival',顺序:2,监听区域:'battlefield',触发时机:'healed',触发主体:'self',回合归属:'any',入场原因:'any',伤害类型:'any',ResultGroupID:'poison_cast'});
  add(t,'EffectResult',{ResultGroupID:'poison_cast',顺序:1,操作:'apply_buff',目标:'opposing_unit',目标区域:'battlefield',BuffID:'poison',层数:1,等级1:0,等级2:0,等级3:0});
@@ -51,10 +51,10 @@ test('independent applications retain separate values, timers and stable instanc
  const copy=JSON.parse(JSON.stringify(u));removeBuff(copy,'poison',1);apply(copy,b);assert.equal(new Set(copy.buffs.map(b=>b.instanceId)).size,2);
 });
 test('Buff ticks on skill-free target after original caster leaves and save reloads',()=>{
- let g=poisoned(undefined,2);const target='ai-2';assert.equal(g.units[target].buffs[0].level,2);
+ let g=poisoned(undefined,2);const target='ai-2';assert.equal(g.units[target].buffs[0].level,undefined);assert.equal(g.units[target].buffs[0].definition.levels,undefined);
  g.units['player-2'].skills=[];g.sides.player.slots[1]=null;g.sides.player.slots[3]='player-2';refreshPositions(g);g=JSON.parse(JSON.stringify(g));
  g.turn='player';collectPhase(g,'turn_start');drainStack(g);assert.equal(g.units[target].hp,7);
- g.turn='ai';collectPhase(g,'turn_start');drainStack(g);assert.equal(g.units[target].hp,5);
+ g.turn='ai';collectPhase(g,'turn_start');drainStack(g);assert.equal(g.units[target].hp,6);
  assert.equal(g.trace.findLast(e=>e.type==='damage_taken').source,'player-2');assert.ok(g.trace.some(e=>e.buffId==='poison'));
 });
 test('merged stacks trigger once, independent instances trigger separately',()=>{
@@ -102,5 +102,5 @@ test('newly granted Buff waits for the next phase batch; looping reactions pause
  const h=poisoned(),u=h.units['ai-2'];u.maxHp=100;u.hp=99;u.buffs[0].definition.rules=[
   {event:'damage_taken',subject:'self',active_zone:'any',effects:[{op:'heal',target:'self',zone:'any',amount:'n',duration:null,grid:true}]},
   {event:'healed',subject:'self',active_zone:'any',effects:[{op:'deal_damage',target:'self',zone:'any',amount:'n',duration:null,damage_type:'skill',grid:true}]}
- ];u.buffs[0].definition.levels={1:{n:1}};applyDamage(h,'player-2',u.id,1);drainStack(h);assert.match(h.error,/256/);assert.equal(h.phase,'error');
+ ];u.buffs[0].definition.values={n:1};applyDamage(h,'player-2',u.id,1);drainStack(h);assert.match(h.error,/256/);assert.equal(h.phase,'error');
 });

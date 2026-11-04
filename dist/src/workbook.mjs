@@ -93,7 +93,7 @@ export function compileTables(tables,config,{assetExists=()=>true,levelOnly=fals
   return {id:r.ChapterID,name:r.名称,layers,available,background:asset(r,'地图背景'),pools,openingDialogue:ref(r,'章节开场对话ID'),endingDialogue:ref(r,'章节结束对话ID')};
  });
  const heroes=cards.filter(c=>c.role==='hero');if(heroes.length!==1)throw Error('Character [类型] 必须有一名 hero');
- const pack={schema_version:1,version:'buff-effects-v3',cards,skills,buffs,hero:heroes[0].card_id,recruits:cards.filter(c=>c.role==='ally').map(c=>c.card_id),chapters,levels,nodes,dialogues,config};
+ const pack={schema_version:1,version:'buff-lifecycle-v4',cards,skills,buffs,hero:heroes[0].card_id,recruits:cards.filter(c=>c.role==='ally').map(c=>c.card_id),chapters,levels,nodes,dialogues,config};
  try{if(levelOnly){const errors=validateCatalog(pack);if(errors.length)throw Error(errors.join('；'));}else validatePack(pack);}catch(error){
   const issue=error.message.split('；')[0];
   for(const [sheet,rows,key] of [['Skill',skillRows,'SkillID'],['Character',charRows,'CharacterID']]){

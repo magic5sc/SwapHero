@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "version": "buff-effects-v3",
+  "version": "buff-lifecycle-v4",
   "cards": [
     {
       "card_id": "tutorial_hero",
@@ -183,11 +183,7 @@
           "duration_refresh": "refresh",
           "overflow": "apply",
           "shield_refresh": "reset",
-          "levels": {
-            "1": {},
-            "2": {},
-            "3": {}
-          },
+          "values": {},
           "rules": []
         }
       }
@@ -274,11 +270,7 @@
           "duration_refresh": "refresh",
           "overflow": "apply",
           "shield_refresh": "reset",
-          "levels": {
-            "1": {},
-            "2": {},
-            "3": {}
-          },
+          "values": {},
           "rules": []
         }
       }
@@ -365,11 +357,7 @@
           "duration_refresh": "refresh",
           "overflow": "apply",
           "shield_refresh": "reset",
-          "levels": {
-            "1": {},
-            "2": {},
-            "3": {}
-          },
+          "values": {},
           "rules": []
         }
       }
@@ -456,19 +444,9 @@
           "duration_refresh": "refresh",
           "overflow": "apply",
           "shield_refresh": "reset",
-          "levels": {
-            "1": {
-              "tutorial_retaliation_prepare_0": 3,
-              "tutorial_retaliation_prepare_1": 0
-            },
-            "2": {
-              "tutorial_retaliation_prepare_0": 3,
-              "tutorial_retaliation_prepare_1": 0
-            },
-            "3": {
-              "tutorial_retaliation_prepare_0": 3,
-              "tutorial_retaliation_prepare_1": 0
-            }
+          "values": {
+            "tutorial_retaliation_prepare_0": 3,
+            "tutorial_retaliation_prepare_1": 0
           },
           "rules": [
             {
@@ -538,7 +516,8 @@
                   },
                   "stacks": 1
                 }
-              ]
+              ],
+              "removalReason": "any"
             }
           ]
         },
@@ -558,19 +537,9 @@
           "duration_refresh": "refresh",
           "overflow": "apply",
           "shield_refresh": "reset",
-          "levels": {
-            "1": {
-              "tutorial_retaliation_release_0": 1,
-              "tutorial_retaliation_release_1": 3
-            },
-            "2": {
-              "tutorial_retaliation_release_0": 1,
-              "tutorial_retaliation_release_1": 3
-            },
-            "3": {
-              "tutorial_retaliation_release_0": 1,
-              "tutorial_retaliation_release_1": 3
-            }
+          "values": {
+            "tutorial_retaliation_release_0": 1,
+            "tutorial_retaliation_release_1": 3
           },
           "rules": [
             {
@@ -640,7 +609,8 @@
                   },
                   "stacks": 1
                 }
-              ]
+              ],
+              "removalReason": "any"
             }
           ]
         },
@@ -660,11 +630,7 @@
           "duration_refresh": "refresh",
           "overflow": "apply",
           "shield_refresh": "reset",
-          "levels": {
-            "1": {},
-            "2": {},
-            "3": {}
-          },
+          "values": {},
           "rules": []
         }
       }
@@ -687,11 +653,7 @@
       "duration_refresh": "refresh",
       "overflow": "apply",
       "shield_refresh": "reset",
-      "levels": {
-        "1": {},
-        "2": {},
-        "3": {}
-      },
+      "values": {},
       "rules": []
     },
     "tutorial_shield_buff": {
@@ -710,11 +672,7 @@
       "duration_refresh": "refresh",
       "overflow": "apply",
       "shield_refresh": "reset",
-      "levels": {
-        "1": {},
-        "2": {},
-        "3": {}
-      },
+      "values": {},
       "rules": []
     },
     "tutorial_armor_passive": {
@@ -733,11 +691,7 @@
       "duration_refresh": "refresh",
       "overflow": "apply",
       "shield_refresh": "reset",
-      "levels": {
-        "1": {},
-        "2": {},
-        "3": {}
-      },
+      "values": {},
       "rules": []
     },
     "tutorial_retaliation_buff": {
@@ -756,11 +710,7 @@
       "duration_refresh": "refresh",
       "overflow": "apply",
       "shield_refresh": "reset",
-      "levels": {
-        "1": {},
-        "2": {},
-        "3": {}
-      },
+      "values": {},
       "rules": []
     },
     "tutorial_retaliation_charge": {
@@ -779,19 +729,9 @@
       "duration_refresh": "refresh",
       "overflow": "apply",
       "shield_refresh": "reset",
-      "levels": {
-        "1": {
-          "tutorial_retaliation_prepare_0": 3,
-          "tutorial_retaliation_prepare_1": 0
-        },
-        "2": {
-          "tutorial_retaliation_prepare_0": 3,
-          "tutorial_retaliation_prepare_1": 0
-        },
-        "3": {
-          "tutorial_retaliation_prepare_0": 3,
-          "tutorial_retaliation_prepare_1": 0
-        }
+      "values": {
+        "tutorial_retaliation_prepare_0": 3,
+        "tutorial_retaliation_prepare_1": 0
       },
       "rules": [
         {
@@ -861,7 +801,8 @@
               },
               "stacks": 1
             }
-          ]
+          ],
+          "removalReason": "any"
         }
       ]
     },
@@ -881,19 +822,9 @@
       "duration_refresh": "refresh",
       "overflow": "apply",
       "shield_refresh": "reset",
-      "levels": {
-        "1": {
-          "tutorial_retaliation_release_0": 1,
-          "tutorial_retaliation_release_1": 3
-        },
-        "2": {
-          "tutorial_retaliation_release_0": 1,
-          "tutorial_retaliation_release_1": 3
-        },
-        "3": {
-          "tutorial_retaliation_release_0": 1,
-          "tutorial_retaliation_release_1": 3
-        }
+      "values": {
+        "tutorial_retaliation_release_0": 1,
+        "tutorial_retaliation_release_1": 3
       },
       "rules": [
         {
@@ -963,7 +894,8 @@
               },
               "stacks": 1
             }
-          ]
+          ],
+          "removalReason": "any"
         }
       ]
     }

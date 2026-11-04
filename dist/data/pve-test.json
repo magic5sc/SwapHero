@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "version": "buff-effects-v3",
+  "version": "buff-lifecycle-v4",
   "cards": [
     {
       "card_id": "test_hero",
@@ -715,11 +715,7 @@
           "duration_refresh": "refresh",
           "overflow": "apply",
           "shield_refresh": "reset",
-          "levels": {
-            "1": {},
-            "2": {},
-            "3": {}
-          },
+          "values": {},
           "rules": []
         }
       }
@@ -955,11 +951,7 @@
           "duration_refresh": "refresh",
           "overflow": "apply",
           "shield_refresh": "reset",
-          "levels": {
-            "1": {},
-            "2": {},
-            "3": {}
-          },
+          "values": {},
           "rules": []
         }
       }
@@ -1195,11 +1187,7 @@
           "duration_refresh": "refresh",
           "overflow": "apply",
           "shield_refresh": "reset",
-          "levels": {
-            "1": {},
-            "2": {},
-            "3": {}
-          },
+          "values": {},
           "rules": []
         }
       }
@@ -1435,11 +1423,7 @@
           "duration_refresh": "refresh",
           "overflow": "apply",
           "shield_refresh": "reset",
-          "levels": {
-            "1": {},
-            "2": {},
-            "3": {}
-          },
+          "values": {},
           "rules": []
         }
       }
@@ -1675,11 +1659,7 @@
           "duration_refresh": "refresh",
           "overflow": "apply",
           "shield_refresh": "reset",
-          "levels": {
-            "1": {},
-            "2": {},
-            "3": {}
-          },
+          "values": {},
           "rules": []
         }
       }
@@ -1915,11 +1895,7 @@
           "duration_refresh": "refresh",
           "overflow": "apply",
           "shield_refresh": "reset",
-          "levels": {
-            "1": {},
-            "2": {},
-            "3": {}
-          },
+          "values": {},
           "rules": []
         }
       }
@@ -2155,11 +2131,7 @@
           "duration_refresh": "refresh",
           "overflow": "apply",
           "shield_refresh": "reset",
-          "levels": {
-            "1": {},
-            "2": {},
-            "3": {}
-          },
+          "values": {},
           "rules": []
         }
       }
@@ -2345,11 +2317,7 @@
           "duration_refresh": "refresh",
           "overflow": "apply",
           "shield_refresh": "reset",
-          "levels": {
-            "1": {},
-            "2": {},
-            "3": {}
-          },
+          "values": {},
           "rules": []
         }
       }
@@ -2372,11 +2340,7 @@
       "duration_refresh": "refresh",
       "overflow": "apply",
       "shield_refresh": "reset",
-      "levels": {
-        "1": {},
-        "2": {},
-        "3": {}
-      },
+      "values": {},
       "rules": []
     },
     "test_ally_2_focus_buff": {
@@ -2395,11 +2359,7 @@
       "duration_refresh": "refresh",
       "overflow": "apply",
       "shield_refresh": "reset",
-      "levels": {
-        "1": {},
-        "2": {},
-        "3": {}
-      },
+      "values": {},
       "rules": []
     },
     "test_ally_3_focus_buff": {
@@ -2418,11 +2378,7 @@
       "duration_refresh": "refresh",
       "overflow": "apply",
       "shield_refresh": "reset",
-      "levels": {
-        "1": {},
-        "2": {},
-        "3": {}
-      },
+      "values": {},
       "rules": []
     },
     "test_ally_4_focus_buff": {
@@ -2441,11 +2397,7 @@
       "duration_refresh": "refresh",
       "overflow": "apply",
       "shield_refresh": "reset",
-      "levels": {
-        "1": {},
-        "2": {},
-        "3": {}
-      },
+      "values": {},
       "rules": []
     },
     "test_ally_5_focus_buff": {
@@ -2464,11 +2416,7 @@
       "duration_refresh": "refresh",
       "overflow": "apply",
       "shield_refresh": "reset",
-      "levels": {
-        "1": {},
-        "2": {},
-        "3": {}
-      },
+      "values": {},
       "rules": []
     },
     "test_ally_6_focus_buff": {
@@ -2487,11 +2435,7 @@
       "duration_refresh": "refresh",
       "overflow": "apply",
       "shield_refresh": "reset",
-      "levels": {
-        "1": {},
-        "2": {},
-        "3": {}
-      },
+      "values": {},
       "rules": []
     },
     "test_ally_7_focus_buff": {
@@ -2510,11 +2454,7 @@
       "duration_refresh": "refresh",
       "overflow": "apply",
       "shield_refresh": "reset",
-      "levels": {
-        "1": {},
-        "2": {},
-        "3": {}
-      },
+      "values": {},
       "rules": []
     },
     "shared_agility_passive": {
@@ -2533,11 +2473,7 @@
       "duration_refresh": "refresh",
       "overflow": "apply",
       "shield_refresh": "reset",
-      "levels": {
-        "1": {},
-        "2": {},
-        "3": {}
-      },
+      "values": {},
       "rules": []
     }
   },

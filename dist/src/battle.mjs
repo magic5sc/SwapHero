@@ -58,7 +58,7 @@ export function endTurn(g, side, onAttack = null) {
   if(!g.winner&&!g.error){g.attackStep='damage';for (const {lane,id} of attacks) { const before = onAttack ? structuredClone(g) : null;const target=combatTarget(g,side,lane);const attacked=resolveLane(g, side, lane, id);if(g.mode==='pve')drainStack(g);if (attacked&&onAttack) onAttack({side, lane, targetId:target?.id??null, targetLane:target?.position??null, before, after: structuredClone(g)}); if (g.winner||g.error) break; }drainStack(g);}
   if(!g.winner&&!g.error){g.attackStep='end';collectPhase(g,'attack_end');drainStack(g);}
   if(!g.winner&&!g.error){collectPhase(g,'turn_end');drainStack(g);}
-  expireModifiers(g,'turn');finishBuffTurn(g);finishOwnerTurn(g,side);
+  expireModifiers(g,'turn');finishBuffTurn(g);finishOwnerTurn(g,side);drainStack(g);
   for (const id of g.sides[side].slots.filter(Boolean)) g.units[id].disabled = false;
   delete g.attackStep;
   if (g.winner) {g.stack=[];g.phase = 'finished'; return;}

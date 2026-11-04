@@ -1,5 +1,7 @@
 # SwapHero
 
+Buff authoring: [逐列配置手册、生命周期和完整示例](docs/BUFF-CONFIG.md)。Buff没有等级；BuffEffect使用EffectResult的固定“数值”，技能仍使用等级列。
+
 ## PvE expedition — 0.5.0
 
 `dist/index.html` is now the PvE single-chapter flow; `dist/duel.html` retains single matches. Start alone, choose a seeded path, recruit and grow a team, manage persistent wounds, and defeat the chapter Boss. Export/import adventure saves for manual cross-device continuation. Only chapter 1 is playable; chapters 2/3, artifacts and meta progression are not implemented. The isolated content pack is explicitly test balance. See [implementation and test assumptions](docs/PVE-0.5.0.md).

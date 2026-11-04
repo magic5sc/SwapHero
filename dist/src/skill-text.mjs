@@ -1,5 +1,6 @@
 const zones={battlefield:'在战场时',bench:'在备战区时',any:''};
 const events={passive:'常驻',unit_enter:'入场时',unit_leave:'离场时',turn_start:'回合开始时',turn_end:'回合结束时',attack_declared:'发起攻击时',before_damage:'将受伤时',damage_taken:'受到有效伤害时',healed:'获得治疗时',unit_defeated:'被击溃时',attack_end:'攻击阶段结束时'};
+Object.assign(events,{buff_added:'首次获得此Buff时',buff_reapplied:'再次施加此Buff成功时',buff_stack_changed:'此Buff层数变化时',buff_overflow:'此Buff满层后再次施加时',buff_expired:'此Buff自然到期时',buff_removed:'此Buff移除时',buff_shield_depleted:'此Buff护盾被伤害耗尽时'});
 const targets={self:'自身',opposing_unit:'敌方正前方格',front_sides:'敌方前方左右邻格',lower_ally:'己方下一战场格',rear_ally:'己方本路备战格',rear_enemy:'敌方本路备战格',all_enemies:'敌方目标区域各格',all_allies:'己方目标区域各格',other_allies:'其他己方所在格'};
 const kinds={attack:'攻击',shield:'护盾',armor:'战斗减伤',damage_armor:'伤害减免',agile:'敏捷',combat_damage_immunity:'战斗伤害免疫'};
 export function describeSkill(s,level=1,seen=new Set()){
@@ -8,7 +9,7 @@ export function describeSkill(s,level=1,seen=new Set()){
   const prefix=[zones[r.active_zone]||'',r.turn==='own'?'己方':r.turn==='opponent'?'敌方':'',r.subject==='other_ally'?'其他友军':'',r.entry==='exchange'||r.exchangeOnly?'交换':'',events[r.event]||r.event].join('');
   const condition=(r.conditions||[]).map(c=>(s.buffs?.[c.buff]?.name||'状态')+({gte:'≥',eq:'=',lt:'<'}[c.compare])+c.layers+'层').join('且');
   const results=r.effects.map(e=>{
-   const v=s.levels?.[level]?.[e.amount]??0,t=targets[e.target]||'目标';
+   const v=s.values?.[e.amount]??s.levels?.[level]?.[e.amount]??0,t=targets[e.target]||'目标';
    if(e.op==='apply_buff'){const b=e.buff,amount=b.kind==='marker'?`${e.stacks}层`:['agile','combat_damage_immunity'].includes(b.kind)?'':`${kinds[b.kind]||b.name}${v>=0?'+':''}${v}`;const duration=b.duration==='owner_turns'?`，持续${b.turns}个己方回合`:b.duration==='turn'?'，本回合结束移除':'';return `${t}获得「${b.name}」${amount}${duration}`;}
    if(e.op==='remove_buff')return `${t}移除${v}层「${e.buff.name}」`;
    if(e.op==='heal')return `${t}恢复${v}生命`;
@@ -18,7 +19,8 @@ export function describeSkill(s,level=1,seen=new Set()){
    if(e.op==='set_shield')return `${t}护盾刷新至${v}`;
    return s.description||s.name;
   }).join('，随后');
-  return prefix+(condition?'且'+condition:'')+'：'+results;
+  const reason={expired:'自然到期',dispelled:'结果操作移除',leave:'离场删除'}[r.removalReason];
+  return prefix+(reason?'（'+reason+'）':'')+(condition?'且'+condition:'')+'：'+results;
  }).join('；');
  const attached=[];
  for(const r of s.rules)for(const e of r.effects)if(e.op==='apply_buff'&&!seen.has(e.buff.id)){

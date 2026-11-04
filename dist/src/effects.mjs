@@ -1,4 +1,4 @@
-import {buffActive,buffLayers,grantBuff,removeBuff,consumeShield,syncBuffs,expireBuffs,leaveBuffs} from './buffs.mjs';
+import {BUFF_EVENTS,buffActive,buffLayers,grantBuff,removeBuff,consumeShield,syncBuffs,expireBuffs,leaveBuffs} from './buffs.mjs';
 import {reserveBehind,SLOT_COUNT} from './formation.mjs';
 import {damageAmount} from './content.mjs';
 export const otherSide=side=>side==='player'?'ai':'player';
@@ -6,7 +6,14 @@ export function locate(g,id){for(const side of ['player','ai']){const index=g.si
 const alive=(g,id)=>!!g.units[id]&&g.units[id].hp>0;
 export function updateAttack(unit){syncBuffs(unit);}
 export function refreshPositions(g){for(const side of ['player','ai'])g.sides[side].slots.forEach((id,i)=>{if(id){g.units[id].position=i+1;syncBuffs(g.units[id]);}});}
-export function onLeave(g,id){leaveBuffs(g.units[id]);}
+// Collect lifecycle notifications after one atomic state change. No callback is
+// stored in a save. Reverse insertion preserves notification order on the stack.
+function mutateBuff(g,u,change){
+ const events=[];const value=change((type,b,extra)=>events.push({type,b,extra}));
+ const where=locate(g,u.id);if(where)for(const {type,b,extra} of events.reverse())collectEvent(g,{type,unit:u.id,...where,buffId:b.id,buffInstanceId:b.instanceId,...extra},{buff:b});
+ return value;
+}
+export function onLeave(g,id){mutateBuff(g,g.units[id],notify=>leaveBuffs(g.units[id],{notify}));}
 export function expireModifiers(g,duration,unitId=null){for(const u of Object.values(g.units)){if(unitId&&u.id!==unitId)continue;if(u.modifiers){u.modifiers=u.modifiers.filter(m=>m.duration!==duration);updateAttack(u);}}}
 export function updateState(g){
  for(const side of ['player','ai'])for(let i=0;i<SLOT_COUNT;i++){const id=g.sides[side].slots[i];if(id&&!alive(g,id)){if(g.mode==='pve')collectEvent(g,{type:'unit_defeated',unit:id,side,position:i+1});g.sides[side].slots[i]=null;g.log.push(`${g.units[id].name} 被击溃`);}}
@@ -35,17 +42,20 @@ function targets(g,ownerId,event,effect){
 }
 // Capture event context and level when triggered; each result reads current grid occupants.
 // Push non-active side 6→1, active side 6→1; reverse skill/rule list order.
-export function collectEvent(g,event){
+export function collectEvent(g,event,{buff:changedBuff}={}){
+ if(BUFF_EVENTS.includes(event.type)&&!changedBuff)return;
  g.stack??=[];g.trace??=[];g.trace.push({type:'event',...event});
  const order=[otherSide(g.turn),g.turn];
  for(const side of order)for(let position=SLOT_COUNT;position>=1;position--){
   const id=g.sides[side].slots[position-1];if(!id)continue;
+  if(changedBuff&&event.unit!==id)continue;
   const field=position<=3,ownExit=event.type==='unit_leave'&&event.unit===id;
 
   if(!alive(g,id)&&!(['damage_taken','unit_defeated'].includes(event.type)&&event.unit===id))continue;
   // Skills first, then Buff instances in acquisition order. One listener per
   // merged instance, not per stack; independent instances each get a listener.
-  const skills=[...(g.units[id].skills||[]),...(g.units[id].buffs||[]).filter(b=>b.definition.rules?.length&&buffActive(b,ownExit?event.position:position)).map(b=>({level:b.level||1,buff:b,definition:{skill_id:b.skillId,name:b.definition.name,levels:b.definition.levels,rules:b.definition.rules,buffs:b.definitions||{}}}))];
+  const asBinding=b=>({buff:b,definition:{skill_id:b.skillId,name:b.definition.name,values:b.definition.values||b.definition.levels?.[b.level||1]||{},rules:b.definition.rules,buffs:b.definitions||{}}});
+  const skills=changedBuff?(changedBuff.definition.rules?.length?[asBinding(changedBuff)]:[]):[...(g.units[id].skills||[]),...(g.units[id].buffs||[]).filter(b=>b.definition.rules?.length&&buffActive(b,ownExit?event.position:position)).map(asBinding)];
   for(let si=skills.length-1;si>=0;si--){const binding=skills[si],definition=binding.definition;
    for(let ri=definition.rules.length-1;ri>=0;ri--){const rule=definition.rules[ri];
     if(rule.event!==event.type)continue;
@@ -54,7 +64,8 @@ export function collectEvent(g,event){
     if(rule.turn&&rule.turn!=='any'&&((event.activeSide||g.turn)===side)!==(rule.turn==='own'))continue;
     if(rule.entry&&rule.entry!=='any'&&(event.exchange?'exchange':'reinforce')!==rule.entry)continue;
     if(rule.damageType&&rule.damageType!=='any'&&event.damageType!==rule.damageType)continue;
-    if((rule.conditions||[]).some(c=>{const n=buffLayers(g.units[id],c.buff);return !(c.compare==='gte'?n>=c.layers:c.compare==='eq'?n===c.layers:n<c.layers);}))continue;
+    if(rule.removalReason&&rule.removalReason!=='any'&&event.reason!==rule.removalReason)continue;
+    if((rule.conditions||[]).some(c=>{const n=changedBuff&&c.buff===changedBuff.id?changedBuff.stacks:buffLayers(g.units[id],c.buff);return !(c.compare==='gte'?n>=c.layers:c.compare==='eq'?n===c.layers:n<c.layers);}))continue;
     if(rule.exchangeOnly&&!event.exchange)continue;
     if(rule.subject==='self'&&event.unit!==id)continue;
     if(rule.subject==='other_ally'&&(event.side!==side||event.unit===id))continue;
@@ -63,7 +74,8 @@ export function collectEvent(g,event){
     const pending=rule.delayOwnTurns!==undefined;
     const queue=pending?(g.pendingEffects??=[]):g.stack;
     if(pending)g.log.push(`${g.units[id].name} · ${definition.name}：蓄力，将在保留行动机会后生效`);
-    queue.push({...(pending?{due:(g.sideTurns?.[side]||0)+rule.delayOwnTurns+1}:{}),source:id,instigator:binding.buff?.source||id,buffId:binding.buff?.id,buffInstanceId:binding.buff?.instanceId,buffs:structuredClone(definition.buffs||{}),side,skillId:definition.skill_id,name:definition.name,event:structuredClone(event),level:binding.level,position,skillIndex:si,ruleIndex:ri,effects:rule.effects.map(e=>({...structuredClone(e),value:e.amount===null?null:definition.levels[binding.level][e.amount],grid:true}))});
+    const values=definition.values||definition.levels[binding.level];
+    queue.push({...(pending?{due:(g.sideTurns?.[side]||0)+rule.delayOwnTurns+1}:{}),source:id,instigator:binding.buff?.source||id,buffId:binding.buff?.id,buffInstanceId:binding.buff?.instanceId,buffs:structuredClone(definition.buffs||{}),side,skillId:definition.skill_id,name:definition.name,event:structuredClone(event),level:binding.level,position,skillIndex:si,ruleIndex:ri,effects:rule.effects.map(e=>({...structuredClone(e),value:e.amount===null?null:values[e.amount],grid:true}))});
    }
   }
  }
@@ -82,7 +94,7 @@ export function collectPhase(g,type){
 export function applyDamage(g,sourceId,targetId,amount,type='skill'){
  const where=locate(g,targetId);if(!where||!alive(g,targetId))return 0;
  const u=g.units[targetId];let damage=damageAmount(u,amount,type);
- const absorbed=type==='health_loss'?0:consumeShield(u,damage);if(absorbed){damage-=absorbed;g.log.push(`${u.name} 护盾吸收 ${absorbed} 伤害`);}
+ const absorbed=type==='health_loss'?0:mutateBuff(g,u,notify=>consumeShield(u,damage,{notify}));if(absorbed){damage-=absorbed;g.log.push(`${u.name} 护盾吸收 ${absorbed} 伤害`);}
  const actual=Math.min(u.hp,damage);u.hp-=actual;
  if(actual>0)collectEvent(g,{type:'damage_taken',unit:targetId,side:where.side,position:where.position,source:sourceId,amount:actual,damageType:type});
  updateState(g);return actual;
@@ -92,8 +104,8 @@ function execute(g,job,e){
  const chosen=e.grid?targets(g,job.source,job.event||{unit:job.source,side:job.side,position:job.position},e):e.targets;
  for(const id of chosen){if(g.winner||g.error)break;const where=locate(g,id);if(!where||!alive(g,id)||(e.zone==='battlefield'&&where.position>3)||(e.zone==='bench'&&where.position<=3))continue;
   const u=g.units[id];
-  if(e.op==='apply_buff'){const definition=job.buffs?.[e.buff.id]||e.buff;const applied=grantBuff(u,definition,{source:job.instigator||job.source,skillId:job.skillId,value:e.value,stacks:e.stacks,level:job.level,definitions:job.buffs||{}});g.log.push(applied?`${u.name} 获得 ${definition.name} ${e.stacks}层`:`${u.name} 的 ${definition.name} 已满层，本次施加被拒绝`);}
-  else if(e.op==='remove_buff'){removeBuff(u,e.buff.id,e.value);g.log.push(`${u.name} 移除 ${e.buff.name} ${e.value}层`);}
+  if(e.op==='apply_buff'){const definition=job.buffs?.[e.buff.id]||e.buff;const applied=mutateBuff(g,u,notify=>grantBuff(u,definition,{source:job.instigator||job.source,skillId:job.skillId,value:e.value,stacks:e.stacks,definitions:job.buffs||{},notify}));g.log.push(applied?`${u.name} 获得 ${definition.name} ${e.stacks}层`:`${u.name} 的 ${definition.name} 已满层，本次施加被拒绝`);}
+  else if(e.op==='remove_buff'){mutateBuff(g,u,notify=>removeBuff(u,e.buff.id,e.value,{notify}));g.log.push(`${u.name} 移除 ${e.buff.name} ${e.value}层`);}
   else if(e.op==='heal'){const actual=Math.min(e.value,u.maxHp-u.hp);u.hp+=actual;g.log.push(`${job.name}：${u.name} 恢复 ${actual} 生命`);if(actual>0)collectEvent(g,{type:'healed',unit:id,side:where.side,position:where.position,source:job.instigator||job.source,amount:actual});}
   else if(e.op==='deal_damage'){const actual=applyDamage(g,job.instigator||job.source,id,e.value,'skill');g.log.push(`${job.name}：${u.name} 受到 ${actual} 技能伤害`);}
   else if(e.op==='modify_attack'){u.baseAttack??=u.attack;u.modifiers??=[];if(e.refresh)u.modifiers=u.modifiers.filter(m=>m.source!==job.source||m.skillId!==job.skillId);u.modifiers.push({source:job.source,skillId:job.skillId,amount:e.value,duration:e.duration,...(e.duration==='owner_turns'?{remaining:e.turns}: {})});updateAttack(u);g.log.push(`${job.name}：${u.name} 攻击 ${e.value>=0?'+':''}${e.value}`);}
@@ -122,7 +134,7 @@ export function drainStack(g){
 // Serializable timers are advanced by the rules, never by animation.
 export function finishOwnerTurn(g,side){
  for(const id of g.sides[side].slots.filter(Boolean)){
-  const u=g.units[id];expireBuffs(u,{ownerEnd:true});for(const m of u.modifiers||[])if(m.duration==='owner_turns')m.remaining--;
+  const u=g.units[id];mutateBuff(g,u,notify=>expireBuffs(u,{ownerEnd:true,notify}));for(const m of u.modifiers||[])if(m.duration==='owner_turns')m.remaining--;
   u.modifiers=(u.modifiers||[]).filter(m=>m.duration!=='owner_turns'||m.remaining>0);updateAttack(u);
  }
 }
@@ -143,4 +155,4 @@ export function unitStatus(g,u){
  return tags.join(' · ');
 }
 
-export function finishBuffTurn(g){for(const u of Object.values(g.units))expireBuffs(u,{turnEnd:true});}
+export function finishBuffTurn(g){for(const u of Object.values(g.units))mutateBuff(g,u,notify=>expireBuffs(u,{turnEnd:true,notify}));}

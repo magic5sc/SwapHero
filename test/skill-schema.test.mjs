@@ -17,7 +17,7 @@ const put=(t,n,i,k,v)=>t[n][i][t[n][0].indexOf(k)]=v;
 function game(t=tables()){const g=createLevelBattle(compile(t),'tutorial_01');start(g);return g;}
 const marker={id:'charge',name:'蓄力',kind:'marker',active_zone:'any',stacking:'add',scope:'source_skill',max_stacks:99,duration:'battle',turns:null,leave:'keep'};
 test('one skill owns multiple triggers and ordered results, independent level amounts',()=>{
- const t=tables();for(const row of t.BuffEffect.slice(1)){const r=[...row];r[1]='tutorial_retaliation';r[2]=r[0].endsWith('_prepare')?2:3;t.SkillEffect.push(r);}t.BuffEffect=[t.BuffEffect[0]];
+ const t=tables();for(const row of t.BuffEffect.slice(1)){const r=[...row];r[1]='tutorial_retaliation';r[2]=r[0].endsWith('_prepare')?2:3;t.SkillEffect.push(r);for(const result of t.EffectResult.slice(1).filter(x=>x[0]===row[12]))for(const lv of [1,2,3])result[t.EffectResult[0].indexOf('等级'+lv)]=result[t.EffectResult[0].indexOf('数值')];}t.BuffEffect=[t.BuffEffect[0]];
  const p=compile(t),s=p.skills.find(s=>s.skill_id==='tutorial_retaliation');
  assert.equal(s.rules.length,3);assert.deepEqual(s.rules[2].effects.map(e=>e.op),['remove_buff','apply_buff']);
  const row=t.EffectResult.findIndex(r=>r[0]==='tutorial_retaliation_release'&&r[2]==='apply_buff');put(t,'EffectResult',row,'等级2',5);

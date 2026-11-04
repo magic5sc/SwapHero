@@ -9,9 +9,9 @@
 | --- | --- |
 | Skill | 每行一个技能整体，包含名称、说明、技能栏和品质。 |
 | SkillEffect | 每行一个技能效果，关联SkillID，填写监听范围、触发时机、条件和结果组。 |
-| EffectResult | 每行一个结果操作，按组内顺序执行，数值独立按等级配置。 |
+| EffectResult | 每行一个结果操作，按组内顺序执行；技能读取等级列，Buff读取固定数值列。 |
 | Buff | 状态类型、层数、持续时间、离场处理；数值合并、时长刷新、满层处理、护盾补充分开配置。 |
-| BuffEffect | 每行一个Buff自带效果，关联BuffID；其余触发字段与SkillEffect相同，复用EffectResult。 |
+| BuffEffect | 每行一个Buff自带效果，关联BuffID；支持自身生命周期，移除原因可筛选自然到期/结果移除/离场删除，复用EffectResult。 |
 | Character | 每行一个角色模板，可使用相同技能ID。初始技能用 SkillID@等级，可学习技能、技能栏用英文逗号分隔。类型 hero / ally / enemy。 |
 | Level | 六列前左、前中、前右、备左、备中、备右对应玩家屏幕方向。空白保留空位。胜利规则 elimination / score_5；背景为发布资源下的 assets/ 相对路径；界面标题可留空。 |
 | Node | 每行一个候选，同一 NodeID 可以重复。起止层为从1开始的闭区间，空白不限。正整数权重只在当前池、当前层的有效行内比较。 |

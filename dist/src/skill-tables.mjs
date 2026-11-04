@@ -1,8 +1,9 @@
+import {BUFF_EVENTS} from './buffs.mjs';
 export const skillColumns={
  Skill:'SkillID 名称 说明 图标 技能栏 品质 精英限定 最大等级',
  SkillEffect:'EffectID SkillID 顺序 监听区域 触发时机 触发主体 回合归属 入场原因 伤害类型 条件BuffID 比较 条件层数 ResultGroupID',
- BuffEffect:'EffectID BuffID 顺序 监听区域 触发时机 触发主体 回合归属 入场原因 伤害类型 条件BuffID 比较 条件层数 ResultGroupID',
- EffectResult:'ResultGroupID 顺序 操作 目标 目标区域 BuffID 层数 等级1 等级2 等级3',
+ BuffEffect:'EffectID BuffID 顺序 监听区域 触发时机 触发主体 回合归属 入场原因 伤害类型 条件BuffID 比较 条件层数 ResultGroupID 移除原因',
+ EffectResult:'ResultGroupID 顺序 操作 目标 目标区域 BuffID 层数 等级1 等级2 等级3 数值',
  Buff:'BuffID 名称 类型 生效区域 叠加方式 合并范围 最大层数 持续时间 持续回合 离场处理 图标 数值合并 时长刷新 满层处理 护盾补充'
 };
 // Missing policy columns mean the original behavior; explicit blank cells are errors.
@@ -10,6 +11,16 @@ export function normalizeBuffTables(input){
  const out=structuredClone(input);out.BuffEffect??=[skillColumns.BuffEffect.split(' ')];
  const t=out.Buff;if(t)for(const [key,value] of Object.entries({数值合并:'replace',时长刷新:'refresh',满层处理:'apply',护盾补充:'reset'}))if(!t[0].includes(key)){
   const col=t[0].length;t[0].push(key);for(const r of t.slice(1))if(r.some(v=>v!==''&&v!=null))r[col]=key==='数值合并'&&r[t[0].indexOf('叠加方式')]==='max'?'max':value;
+ }
+ if(!out.BuffEffect[0].includes('移除原因')){const c=out.BuffEffect[0].length;out.BuffEffect[0].push('移除原因');for(const r of out.BuffEffect.slice(1))if(r.some(v=>v!==''&&v!=null))r[c]='any';}
+ const results=out.EffectResult;
+ if(results&&!results[0].includes('数值')){
+  const col=results[0].length;results[0].push('数值');const groups=new Set(objects(out.BuffEffect).map(r=>r.ResultGroupID));
+  for(const r of results.slice(1))if(groups.has(r[results[0].indexOf('ResultGroupID')])){
+   const values=[1,2,3].map(n=>r[results[0].indexOf('等级'+n)]);
+   if(!values.every(v=>v===values[0]))throw Error('旧Buff结果 '+r[0]+' 的等级数值不同，请在数值列明确填写固定值；Buff没有等级');
+   r[col]=values[0];
+  }
  }
  return out;
 }
@@ -59,17 +70,20 @@ export function compileSkillTables({rows,num,bool,tables}){
  const resultOrders=new Set();for(const r of rr){r.check(usedGroups.has(r.ResultGroupID),'ResultGroupID','结果组未被效果引用');const key=r.ResultGroupID+':'+num(r,'顺序',1);r.check(!resultOrders.has(key),'顺序','同组结果顺序重复');resultOrders.add(key);}
  const baseBuffs=structuredClone(buffs);
  function compileEffects(entries,max){
-  const s={levels:Object.fromEntries(Array.from({length:max},(_,i)=>[i+1,{}])),rules:[]};
+  const isBuff=max===null,s={...(isBuff?{values:{}}:{levels:Object.fromEntries(Array.from({length:max},(_,i)=>[i+1,{}]))}),rules:[]};
   for(const e of entries.sort((a,b)=>a.顺序-b.顺序)){
    enums(e,'监听区域',['battlefield','bench','any']);enums(e,'回合归属',['own','opponent','any']);enums(e,'入场原因',['exchange','reinforce','any']);enums(e,'伤害类型',['combat','skill','health_loss','any']);
    if(e.入场原因!=='any')e.check(e.触发时机==='unit_enter','入场原因','仅入场事件适用');if(e.伤害类型!=='any')e.check(e.触发时机==='damage_taken','伤害类型','仅受伤事件适用');
    const rule={id:e.EffectID,event:e.触发时机,subject:e.触发主体,active_zone:e.监听区域,turn:e.回合归属,entry:e.入场原因,damageType:e.伤害类型,conditions:[],effects:[]};
+   if(isBuff){enums(e,'移除原因',['any','expired','dispelled','leave']);rule.removalReason=e.移除原因;e.check(e.移除原因==='any'||e.触发时机==='buff_removed','移除原因','仅buff_removed可以筛选原因');}
+   e.check(!BUFF_EVENTS.includes(e.触发时机)||isBuff&&e.触发主体==='self'&&e.回合归属==='any'&&e.入场原因==='any'&&e.伤害类型==='any','触发时机','Buff生命周期仅在BuffEffect使用，主体self，其余事件筛选填any');
    if(e.条件BuffID){e.check(buffs[e.条件BuffID],'条件BuffID','未知Buff');enums(e,'比较',['gte','eq','lt']);rule.conditions.push({buff:e.条件BuffID,compare:e.比较,layers:num(e,'条件层数')});}else e.check(!e.比较&&e.条件层数==='','条件BuffID','填写条件层数前必须指定Buff');
    const group=rr.filter(x=>x.ResultGroupID===e.ResultGroupID).sort((a,b)=>a.顺序-b.顺序);e.check(group.length,'ResultGroupID','未知或空结果组');
    for(const [i,x] of group.entries()){
-    enums(x,'操作',['apply_buff','remove_buff','heal','deal_damage','swap_positions']);const key=e.EffectID+'_'+i;for(let lv=1;lv<=max;lv++)s.levels[lv][key]=num(x,'等级'+lv,x.操作==='modify_attack'||x.操作==='apply_buff'&&buffs[x.BuffID]?.kind==='attack'?-9999:0);
+    enums(x,'操作',['apply_buff','remove_buff','heal','deal_damage','swap_positions']);const key=e.EffectID+'_'+i,min=x.操作==='apply_buff'&&buffs[x.BuffID]?.kind==='attack'?-9999:0;
+    if(isBuff)s.values[key]=num(x,'数值',min);else for(let lv=1;lv<=max;lv++)s.levels[lv][key]=num(x,'等级'+lv,min);
     const result={op:x.操作,target:x.目标,zone:x.目标区域,amount:key,duration:null,grid:true};
-    if(['apply_buff','remove_buff'].includes(x.操作)){x.check(buffs[x.BuffID],'BuffID','未知Buff');result.buff=structuredClone(baseBuffs[x.BuffID]);if(x.操作==='apply_buff')result.stacks=num(x,'层数',1);}else x.check(!x.BuffID&&x.层数==='','BuffID','该操作不接受Buff或层数字段');
+    if(['apply_buff','remove_buff'].includes(x.操作)){x.check(buffs[x.BuffID],'BuffID','未知Buff');result.buff=structuredClone(baseBuffs[x.BuffID]);if(x.操作==='apply_buff')result.stacks=num(x,'层数',1);else x.check(x.层数==='','层数','移除层数填写在结果数值列，本列留空');}else x.check(!x.BuffID&&x.层数==='','BuffID','该操作不接受Buff或层数字段');
     if(x.操作==='deal_damage')result.damage_type='skill';rule.effects.push(result);
    }
    if(rule.event==='passive'){e.check(rule.subject==='self'&&rule.turn==='any'&&rule.entry==='any'&&rule.damageType==='any'&&rule.conditions.length===0&&rule.effects.every(x=>x.op==='apply_buff'&&['armor','damage_armor','agile','combat_damage_immunity'].includes(x.buff.kind)&&x.target==='self'&&x.buff.duration==='battle'&&x.buff.active_zone===rule.active_zone),'触发时机','常驻仅支持护甲、减伤、敏捷、战斗免疫');}
@@ -77,7 +91,7 @@ export function compileSkillTables({rows,num,bool,tables}){
   }
   return s;
  }
- for(const b of Object.values(buffs))Object.assign(b,compileEffects(ber.filter(e=>e.BuffID===b.id),3));
+ for(const b of Object.values(buffs))Object.assign(b,compileEffects(ber.filter(e=>e.BuffID===b.id),null));
  const skills=sr.map(r=>{
   r.check(r.名称,'名称','需要技能名称');enums(r,'品质',['common','rare','epic','legendary']);const max=num(r,'最大等级',1);r.check(max<=3,'最大等级','当前支持1至3级');
   const s={skill_id:r.SkillID,name:r.名称,description:r.说明,icon:r.图标||'',slot:r.技能栏,quality:r.品质,gold_only:bool(r,'精英限定'),status:'specified',blockers:[],active_zone:'battlefield',stacking:'single_instance',unload_policy:'remove_passive_and_listeners',passive:null,...compileEffects(er.filter(e=>e.SkillID===r.SkillID),max)};
