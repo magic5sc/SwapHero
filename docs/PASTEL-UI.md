@@ -11,6 +11,10 @@ desk background, per-level battlefield texture, parchment/map texture and scroll
 rods. The first iteration's full-background replacement was an overreach and has
 been removed; pale panels, buttons, tooltips and enlarged character boxes remain.
 
+All twelve battle/reserve slot backgrounds use 60% opacity. Hover/selected and
+drag destinations use 70% opacity so their highlights remain translucent too.
+Only background colors carry alpha; characters, Buff icons and stats stay opaque.
+
 Battle character display boxes occupy 70% of the smaller slot dimension, retain
 square proportions and scale with the viewport. Sequence art uses one shared
 idle/attack union crop per character to reduce transparent padding without frame
