@@ -46,9 +46,12 @@ The approved gold-rimmed, dark-red powerful-attack icon is stored at
 damage or grant positive attack at the next own turn start use this fallback icon
 when their conditions and listening zone match. The teaching level's retaliation
 ready state uses it; ordinary charge counters retain text. Existing valid `assets/`
-Skill/Buff icon paths take precedence. The renderer keeps a caption and accessible
-label, at 36px desktop / 32px narrow layout. Source Excel, skill values and battle
-rules are unchanged. The imported generated original is retained without resizing.
+Skill/Buff icon paths take precedence. The unified [Buff icon display](BUFF-DISPLAY.md)
+now replaces permanent captions: only icons and numeric stacks remain on the
+board, with names/effects shown on mouse hover, keyboard inspection or 500ms long
+press. Field icons are 32px desktop / 28px narrow; reserve icons are smaller.
+Source Excel, skill values and battle rules are unchanged. The imported generated
+original is retained without resizing.
 
 `ruleVersion:2` is assigned to new battles. `upgradeBattle` reverses old enemy
 field and reserve triples once to preserve visible positions and updates unit

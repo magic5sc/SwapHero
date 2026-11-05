@@ -1,10 +1,16 @@
 .plan-board{position:relative;isolation:isolate}
 .enemy-plan-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:8;overflow:visible}
 .enemy-plan-lines path{fill:none;stroke:#ffe29a;stroke-width:3;stroke-dasharray:8 6;filter:drop-shadow(0 1px 2px #261606)}
-.preparation-list{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:9;display:flex;justify-content:center;align-items:flex-start;gap:4px;max-width:100%}
-.preparation-badge{display:flex;flex-direction:column;align-items:center;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#40251b;color:#ffe29a;border:1px solid #e1b863;border-radius:5px;padding:3px 7px;font-size:11px;box-shadow:0 2px 5px #0008}
-.preparation-badge.has-icon{background:none;border:0;padding:0;box-shadow:none;overflow:visible}
-.preparation-icon{display:block;width:36px;height:36px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 1px 2px #000b)}
-.preparation-caption{display:block;max-width:110px;overflow:hidden;text-overflow:ellipsis;font-size:10px;line-height:14px;background:#321b16ed;border:1px solid #c99855;border-radius:3px;padding:0 4px}
-@media(max-width:650px){.preparation-icon{width:32px;height:32px}.preparation-caption{font-size:9px;line-height:12px;max-width:85px}}
+.buff-bar{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:9;display:flex;gap:3px;max-width:calc(100% - 8px);padding:2px 3px 5px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;touch-action:none}
+.buff-bar::-webkit-scrollbar{display:none}
+.buff-icon{position:relative;display:inline-flex;flex:0 0 32px;width:32px;height:32px;align-items:center;justify-content:center;cursor:help;touch-action:none;border-radius:50%;filter:drop-shadow(0 1px 2px #000b);outline-offset:2px}
+.buff-icon img{display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;pointer-events:none}
+.buff-icon.inactive{opacity:.45;filter:grayscale(.6)}
+.buff-icon:focus-visible{outline:2px solid #fff1aa}
+.buff-count{position:absolute;right:-1px;bottom:-3px;min-width:12px;padding:0 2px;border:1px solid #d7b46d;border-radius:3px;background:#291a14;color:#fff3b7;text-align:center;font:700 10px/12px sans-serif;pointer-events:none}
+.bench .buff-icon{flex-basis:24px;width:24px;height:24px}
+.buff-popover{position:fixed;z-index:2200;box-sizing:border-box;width:min(310px,calc(100vw - 16px));max-height:calc(100dvh - 16px);overflow:auto;padding:12px 14px;border:1px solid #d0ae69;border-radius:6px;background:#2e211af5;color:#f6e3bb;box-shadow:0 6px 24px #0008;font:12px/1.6 'Microsoft YaHei',sans-serif;text-align:left;pointer-events:none}
+.buff-popover .buff-name{display:block;color:#ffe398;font-size:15px;margin-bottom:6px}
+.buff-popover p{margin:4px 0;overflow-wrap:anywhere}
+@media(max-width:650px){.buff-icon{flex-basis:28px;width:28px;height:28px}.bench .buff-icon{flex-basis:22px;width:22px;height:22px}}
 .exchange-intent{display:block;color:#ffe29a;font-size:11px;background:#3b2d22;border:1px dashed #dab46f;border-radius:3px;padding:2px}

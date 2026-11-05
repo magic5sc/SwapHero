@@ -38,7 +38,8 @@ function attackPreparation(definition,values,u,position){
  return definition.rules?.some(r=>r.event==='turn_start'&&r.turn==='own'&&readyRule(r,u,position)&&readyConditions(r,u)&&r.effects.some(e=>
   (values?.[e.amount]||0)>0&&(e.op==='deal_damage'||e.op==='apply_buff'&&e.buff?.kind==='attack')));
 }
-const badgeIcon=(definition,values,u,position)=>safeIcon(definition.icon)||(attackPreparation(definition,values,u,position)?POWER_ATTACK_ICON:'');
+export const preparationIcon=(definition,values,u,position)=>safeIcon(definition.icon)||(attackPreparation(definition,values,u,position)?POWER_ATTACK_ICON:'');
+const badgeIcon=preparationIcon;
 export function preparationBadges(g,id,position){
  const u=g.units[id];if(!u||u.hp<=0)return [];
  const badges=[];

@@ -1,8 +1,7 @@
 import {describeSkill} from './skill-text.mjs';
-import {unitStatus} from './effects.mjs';
+import {createBuffBar,hideBuffInfo} from './buff-icons.mjs';
 import {mountLeather,isTableTransition} from './tabletop.mjs';
 import { victoryLabel, attackLabel,displayPositions,opposingPosition } from './match-rules.mjs';
-import {preparationBadges} from './enemy-plan.mjs';
 import { loadPublishedCatalog } from './release-loader.mjs';
 import { canAttack } from './content.mjs';
 import { artForUnit, makeSprite, makeAttackEffect, hydrateArt } from './art.mjs';
@@ -24,7 +23,7 @@ function renderDetail(detail,chosen){
  for(const b of chosen.skills||[])add(detail,'p','skill-description',b.definition.name+'：'+describeSkill(b.definition,b.level));
 }
 let press=null;
-function hideCardInfo(){document.getElementById('card-popover')?.remove();}
+function hideCardInfo(){document.getElementById('card-popover')?.remove();hideBuffInfo();}
 function showCardInfo(id,anchor){
  const unit=(visual||g).units[id];if(!unit||drag?.active)return;
  hideCardInfo();const popup=add(document.body,'aside','card-popover');popup.id='card-popover';popup.setAttribute('role','tooltip');renderDetail(popup,unit);
@@ -75,16 +74,12 @@ function card(side, p) {
   if(skillPulses.has(id)){const delta=skillPulses.get(id);b.classList.add('skill-pulse');add(b,'span','damage-float',delta>0?'+'+delta:String(delta));}
   if(effect?.stage==='impact' && effect.hit && effect.targetLane===p && effect.side!==side && effect.attackEffect)b.append(makeAttackEffect(effect.attackEffect));
   b.dataset.unitId=id; const sprite=makeSprite('unit-sprite',artForUnit(u));sprite.dataset.instance=id;b.append(sprite);
+  const buffBar=createBuffBar(view,u,p,{onInspect:hideCardInfo,isLocked:()=>playing||!!drag?.active});if(buffBar)b.append(buffBar);
   if(side==='ai'&&view.mode==='pve'&&view.turn==='player'&&view.phase==='action'&&!playing){
-   const badges=preparationBadges(view,id,p);if(badges.length){const list=add(b,'span','preparation-list');for(const badge of badges){
-    const label=badge.label+(badge.stacks>1?' ×'+badge.stacks:'');const mark=add(list,'span','preparation-badge'+(badge.icon?' has-icon':''));mark.title=label;mark.setAttribute('aria-label',label);
-    if(badge.icon){const icon=add(mark,'img','preparation-icon');icon.src=badge.icon;icon.alt='';add(mark,'span','preparation-caption',label);}else mark.textContent='⚠ '+label;
-   }}
    for(const op of view.enemyPlan?.operations||[])if(op.type==='exchange'&&(id===op.incoming||id===op.outgoing))add(b,'span','exchange-intent',id===op.incoming?'⇄ 待换入':'⇄ 待换出');
   }
   add(b,'div','card-name',u.name); add(b,'div','card-sub',(u.skills||[]).map(s=>s.definition.name).join(' · ')||'无技能');
   const stats=add(b,'div','stats');add(stats,'span','attack',`⚔ ${u.attack}`);add(stats,'span','health',`♥ ${u.hp} / ${u.maxHp}`);
-  const status=unitStatus(view,u);if(status)add(b,'div','card-sub',status);
   const track=add(b,'div','hp-track');const bar=add(track,'div','hp-fill');bar.style.width=`${Math.max(0,u.hp/u.maxHp*100)}%`;
   b.setAttribute('aria-label',`${isPlayer?'我方':'对手'} ${p<=3?p+'号战场格':(p-3)+'号战线后方备战格'} ${u.name} 攻击 ${u.attack} 生命 ${u.hp} / ${u.maxHp}${u.disabled&&!canAttack(u)?' 本回合无法攻击':''}`);return b;
 }

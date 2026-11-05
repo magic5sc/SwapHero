@@ -54,6 +54,10 @@ Keep live character references, animation rigs, cards and save data separate fro
 For each release run `node scripts/compile-pve.mjs` before tests/build or Sites packaging. Commit the source workbook and generated data together. The workbook and schema guide are linked in docs/PVE-WORKBOOK.md.
 
 ## Enemy plans and mirrored turns
+Buff presentation is icon-only on the board; use docs/BUFF-DISPLAY.md. Names and
+details appear on mouse hover, keyboard inspection or a 500ms touch/pen hold.
+Keep icon input isolated from card drag/inspection and preserve instance/source
+details, inactive zones, legacy states, safe icon paths and animation locks.
 See docs/TURN-PLAN.md. Exchanges resolve immediately in the owner's action phase;
 manual end starts the owner's automatic attacks. In PvE, prepare and persist the
 enemy plan after player turn-start effects settle, before player control. Execute
