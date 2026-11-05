@@ -7,6 +7,13 @@ immediately; manual End Turn starts that side's mandatory normal attacks, then
 turn-end effects and the opponent's turn. AI ends automatically. AP, entry attack
 restriction/agility, free reserve rearrangement and mandatory reinforcement remain.
 
+2026-11-05 owner update: after each unit attacks, a target reduced to 0 HP dies
+and disappears immediately. The renderer uses that attack's settled snapshot;
+it never restores dead cards until the attack phase or both turns finish.
+Damage already removes defeated units from the rule state immediately; later
+attacks still recheck live targets, and full triggered chains still settle before
+the existing victory/defeat verdict. This supersedes the former delayed-death display.
+
 Each side's own left-to-right is 1,2,3. Player screen rows are enemy 3,2,1 and
 player 1,2,3; rear rows follow the same mirror. Opposing slots are 1↔3,2↔2,3↔1.
 Attack declaration/preparation/damage use local 1→2→3. Elimination lookup uses

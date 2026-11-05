@@ -125,17 +125,17 @@ el('start').onclick=()=>run(()=>{selected=null;if(g.mode==='pve'&&!g.levelId){co
       const moves=[];playAI(sim,e=>frames.push(e),m=>moves.push(m));
       for(const m of moves){visual=m.before;show();el('phase').textContent='对手交换';await wait(250);visual=m.after;show();el('phase').textContent='对手交换';await wait(450);}
     }
-    const group=frames.filter(x=>x.side===side); let ghosts=[];
+    const group=frames.filter(x=>x.side===side);
     for(const f of group){
-      visual=structuredClone(f.before);for(const x of ghosts){visual.sides[x.side].slots[x.pos]=x.id;visual.units[x.id]=structuredClone(x.unit);}
+      visual=structuredClone(f.before);
       const sequenceAttack=f.before.units[f.before.sides[side].slots[f.lane-1]]?.art?.character?.renderer==='sequence_builtin';
       effect={side,lane:f.lane,targetLane:f.targetLane,hit:false,stage:'attack'};show();await wait(sequenceAttack?640:360);
-      const targetSide=side==='player'?'ai':'player', target=f.targetId, targetLane=f.targetLane;
-      visual=structuredClone(f.after);for(const x of ghosts){visual.sides[x.side].slots[x.pos]=x.id;visual.units[x.id]=structuredClone(x.unit);}
-      if(target && !f.after.sides[targetSide].slots[targetLane-1]){const unit=structuredClone(f.after.units[target]);visual.sides[targetSide].slots[targetLane-1]=target;ghosts.push({side:targetSide,pos:targetLane-1,id:target,unit});}
+      const target=f.targetId, targetLane=f.targetLane;
+      // This attack's settled state is displayed immediately: never restore a
+      // defeated unit as a visual ghost for subsequent attacks or turns.
+      visual=structuredClone(f.after);
       effect={side,lane:f.lane,targetLane,hit:!!target,stage:'impact',attackEffect:f.before.units[f.before.sides[side].slots[f.lane-1]]?.art?.attackEffect,damage:target?f.before.units[target].hp-f.after.units[target].hp:0};show();if(!target&&g.victoryCondition==='score_5'){document.body.classList.remove('score-shake');void document.body.offsetWidth;document.body.classList.add('score-shake');const fx=add(document.body,'div','score-burst','胜利点 +1');setTimeout(()=>fx.remove(),800);}await wait(sequenceAttack?600:500);
     }
-    if(group.length && ghosts.length){ effect=null; show(); document.querySelectorAll('.pending-defeat').forEach(n=>n.classList.add('perform-defeat')); await wait(400); }
   }
   g=sim;visual=null;effect=null;playing=false;feedback='';show();
 };el('reset').onclick=()=>{if(g.phase!=='deployment'&&!g.winner&&!confirm('确定重新开始？当前对局进度将丢失。'))return;document.querySelector('.result-overlay')?.remove();inspectedId=null;g=activeCatalog?createGame(activeCatalog,activeTeam,{victoryCondition:g.victoryCondition}):useSkillLab?createGame(labCatalog,labCatalog.team,{victoryCondition:g.victoryCondition}):createGame(null,null,{victoryCondition:g.victoryCondition});selected=null;feedback='';show();};el('cancel').onclick=()=>{selected=null;feedback='';show();};show();
