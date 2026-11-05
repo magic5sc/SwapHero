@@ -48,6 +48,10 @@ editor data, official cards, existing art and single-match duel route intact.
 
 ## Tabletop presentation 0.6.0
 
+The 2026-11-06 reference-led pastel UI supersedes the wood/leather/parchment
+surface styling; see docs/PASTEL-UI.md. Preserve the live art, transition/input
+logic and save boundaries from the tabletop implementation.
+
 Keep live character references, animation rigs, cards and save data separate from UI concept art. Preview cutouts are art-document references only; never substitute them for current game characters without explicit approval. See docs/TABLETOP-0.6.0.md.
 
 ## PvE Excel source

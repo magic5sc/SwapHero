@@ -1,5 +1,6 @@
 import {describeSkill} from './skill-text.mjs';
 import {createBuffBar,hideBuffInfo} from './buff-icons.mjs';
+import {positionPopover} from './popover-position.mjs';
 import {mountLeather,isTableTransition} from './tabletop.mjs';
 import { victoryLabel, attackLabel,displayPositions,opposingPosition } from './match-rules.mjs';
 import { loadPublishedCatalog } from './release-loader.mjs';
@@ -24,20 +25,19 @@ function renderDetail(detail,chosen){
 }
 let press=null;
 function hideCardInfo(){document.getElementById('card-popover')?.remove();hideBuffInfo();}
-function showCardInfo(id,anchor){
+function showCardInfo(id,anchor,point){
  const unit=(visual||g).units[id];if(!unit||drag?.active)return;
  hideCardInfo();const popup=add(document.body,'aside','card-popover');popup.id='card-popover';popup.setAttribute('role','tooltip');renderDetail(popup,unit);
- const rect=anchor.getBoundingClientRect(),box=popup.getBoundingClientRect();
- popup.style.left=Math.max(8,Math.min(rect.left,innerWidth-box.width-8))+'px';
- popup.style.top=Math.max(8,Math.min(rect.top-box.height-10>=8?rect.top-box.height-10:rect.bottom+10,innerHeight-box.height-8))+'px';
+ positionPopover(popup,point,anchor);
 }
 function beginInspect(e,id,anchor){
  if(e.pointerType==='mouse'||!id)return;
  clearTimeout(press?.timer);hideCardInfo();
  const pending={id:e.pointerId,x:e.clientX,y:e.clientY,timer:null};press=pending;
- pending.timer=setTimeout(()=>{if(press===pending){drag=null;showCardInfo(id,anchor);}},500);
+ pending.timer=setTimeout(()=>{if(press===pending){drag=null;showCardInfo(id,anchor,{clientX:pending.x,clientY:pending.y});}},500);
 }
 document.addEventListener('pointermove',e=>{if(press&&e.pointerId===press.id&&Math.hypot(e.clientX-press.x,e.clientY-press.y)>8){clearTimeout(press.timer);press=null;hideCardInfo();}});
+document.addEventListener('pointermove',e=>{const popup=document.getElementById('card-popover');if(popup&&e.pointerType==='mouse'&&!drag?.active)positionPopover(popup,e);});
 document.addEventListener('pointerdown',e=>{if(!e.target.closest('.card'))hideCardInfo();},true);
 for(const event of ['pointerup','pointercancel'])document.addEventListener(event,()=>{clearTimeout(press?.timer);press=null;});
 document.addEventListener('contextmenu',e=>{if(e.target.closest('.card'))e.preventDefault();});
@@ -67,7 +67,7 @@ function card(side, p) {
   if(effect?.stage==='attack' && effect.targetLane===p && effect.side!==side)b.classList.add('attack-target'); if(u && u.hp===0) b.classList.add('pending-defeat'); if(effect?.lane===p && effect.side===side && effect.stage==='attack') b.classList.add('perform-attack'); if(effect?.targetLane===p && effect.side!==side && effect.hit){b.classList.add('perform-hit');add(b,'span','damage-float',`−${effect.damage}`);} const pos=add(b,'div','card-top'); add(pos,'span','pos',p<=3?String(p):`${p-3}后`); if(u?.disabled&&!canAttack(u))add(pos,'span','disabled-label','无法攻击');
   if(!u){add(b,'div','empty-mark','＋');add(b,'div','empty-label','空位置');b.setAttribute('aria-label',`${side==='player'?'我方':'对手'} ${p<=3?p+'号战场格':(p-3)+'号战线后方备战格'}，空位`);return b;}
   if(!isPlayer){b.tabIndex=0;b.onpointerdown=e=>beginInspect(e,id,b);}
-  b.onpointerenter=e=>{if(e.pointerType==='mouse'&&!drag)showCardInfo(id,b);};
+  b.onpointerenter=e=>{if(e.pointerType==='mouse'&&!drag)showCardInfo(id,b,e);};
   b.onpointerleave=e=>{if(e.pointerType==='mouse')hideCardInfo();};
   b.onkeydown=e=>{if(e.key==='Escape')hideCardInfo();};
 

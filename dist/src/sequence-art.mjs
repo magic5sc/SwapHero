@@ -2,6 +2,8 @@ export const timings={idle:[400,300,300,400,300,300],attack:[180,100,140,220,60,
 export const sequences={temple_knight:{folder:'temple-knight',timings:{idle:[400,300,300,400,300,300],attack:[180,260,100,180,240,300]}},temple_swordsman:{folder:'temple-swordsman',timings},temple_archer:{folder:'temple-archer',timings:{idle:[400,300,300,400,300,300],attack:[150,140,180,260,80,130,180,200]}}};
 export function frameAt(motion,elapsed,rig='temple_swordsman'){const times=sequences[rig].timings[motion],total=times.reduce((a,b)=>a+b,0);let t=motion==='idle'?elapsed%total:Math.min(elapsed,total-1);for(let i=0;i<times.length;i++){if(t<times[i])return i;t-=times[i];}return times.length-1;}
 const states=new Map(),images={};let running=false;
+// Shared bounds across idle AND attack prevent frame-to-frame zoom or clipping.
+export const renderBounds={temple_swordsman:{x:27,y:31,width:152,height:147},temple_knight:{x:30,y:30,width:113,height:115},temple_archer:{x:39,y:16,width:119,height:157}};
 export function mountSequence(node,rig='temple_swordsman'){
  if(!sequences[rig])throw new Error('Unsupported character sequence');
  node.dataset.sequence=rig;node.style.backgroundImage='none';
@@ -15,7 +17,10 @@ function tick(now){requestAnimationFrame(tick);if(document.hidden)return;
   const active=!!node.closest('.perform-attack');if(active&&!s.attack){s.start=now;s.until=now+sequences[rig].timings.attack.reduce((a,b)=>a+b,0);}s.attack=active;
   const motion=now<s.until?'attack':'idle',im=images[rig]?.[motion];if(!im?.complete||!im.naturalWidth)continue;
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;const index=reduce?0:frameAt(motion,now-s.start,rig);
-  const c=node.querySelector('canvas'),ctx=c.getContext('2d');ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,192,192);ctx.drawImage(im,index*192,0,192,192,0,0,192,192);node.dataset.animation=motion;
+  const c=node.querySelector('canvas'),ctx=c.getContext('2d');ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,192,192);
+  const b=node.classList.contains('unit-sprite')&&document.body.classList.contains('pastel-ui')?renderBounds[rig]:{x:0,y:0,width:192,height:192};
+  const scale=192/Math.max(b.width,b.height),w=b.width*scale,h=b.height*scale;
+  ctx.drawImage(im,index*192+b.x,b.y,b.width,b.height,(192-w)/2,(192-h)/2,w,h);node.dataset.animation=motion;
  }
  for(const [key,s] of states)if(now-s.seen>10000)states.delete(key);
 }
