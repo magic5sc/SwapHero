@@ -58,6 +58,8 @@ body:has(#battle-screen:not([hidden]))::before{background-image:url('assets/sky-
 
 /* Real Spine weighted-mesh rendering; CSS still owns the single forward lunge. */
 .atlas-sprite{position:relative}.atlas-sprite canvas{display:none;width:100%;height:100%;image-rendering:pixelated;pointer-events:none}.atlas-sprite.spine-ready{background-image:none;clip-path:none}.atlas-sprite.spine-ready canvas{display:block}
+/* Built-in frame sequences render to canvas without the Spine-ready class. */
+.atlas-sprite[data-sequence] canvas{display:block}
 
 .asset-fx{position:absolute;z-index:9;pointer-events:none;left:15%;top:10%;width:70%;height:70%;color:var(--fx-color);animation:asset-strike var(--fx-duration) steps(5) both}.asset-fx-slash{border-top:8px solid currentColor;border-bottom:4px solid currentColor;transform:rotate(-35deg)}.asset-fx-burst{border:8px solid currentColor;box-shadow:0 0 0 4px currentColor;transform:rotate(45deg)}@keyframes asset-strike{0%{opacity:0;scale:.3}30%{opacity:1;scale:1}100%{opacity:0;scale:1.3}}
 

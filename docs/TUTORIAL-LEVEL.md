@@ -1,5 +1,11 @@
 # Teaching level: table-driven configuration
 
+2026-11-05 display repair: the mercenary already references `temple_knight` and
+the soldier `temple_swordsman` in Tutorial.xlsx. Their sequence canvases were
+hidden by the shared Spine fallback CSS; `sky-theme.css` now explicitly displays
+`[data-sequence] canvas`. Existing approved art, workbook references, stats and
+skills are retained, rather than assigning replacement art or changing content.
+
 2026-11-05: mirrored local attack order and frozen enemy plans are shared with
 the main game; see [turn rules](TURN-PLAN.md). The standard seven-round path is
 retained. `scenario=enemy-plan` is a separate disposable interface fixture, not
