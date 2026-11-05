@@ -76,7 +76,10 @@ function card(side, p) {
   if(effect?.stage==='impact' && effect.hit && effect.targetLane===p && effect.side!==side && effect.attackEffect)b.append(makeAttackEffect(effect.attackEffect));
   b.dataset.unitId=id; const sprite=makeSprite('unit-sprite',artForUnit(u));sprite.dataset.instance=id;b.append(sprite);
   if(side==='ai'&&view.mode==='pve'&&view.turn==='player'&&view.phase==='action'&&!playing){
-   for(const badge of preparationBadges(view,id,p)){const mark=add(b,'span','preparation-badge','⚠ '+badge.label+(badge.stacks>1?' ×'+badge.stacks:''));mark.title=badge.label;}
+   const badges=preparationBadges(view,id,p);if(badges.length){const list=add(b,'span','preparation-list');for(const badge of badges){
+    const label=badge.label+(badge.stacks>1?' ×'+badge.stacks:'');const mark=add(list,'span','preparation-badge'+(badge.icon?' has-icon':''));mark.title=label;mark.setAttribute('aria-label',label);
+    if(badge.icon){const icon=add(mark,'img','preparation-icon');icon.src=badge.icon;icon.alt='';add(mark,'span','preparation-caption',label);}else mark.textContent='⚠ '+label;
+   }}
    for(const op of view.enemyPlan?.operations||[])if(op.type==='exchange'&&(id===op.incoming||id===op.outgoing))add(b,'span','exchange-intent',id===op.incoming?'⇄ 待换入':'⇄ 待换出');
   }
   add(b,'div','card-name',u.name); add(b,'div','card-sub',(u.skills||[]).map(s=>s.definition.name).join(' · ')||'无技能');

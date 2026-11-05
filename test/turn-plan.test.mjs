@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createGame,start,move,endTurn,playAI,upgradeBattle} from '../dist/src/battle.mjs';
 import {combatTarget,displayPositions} from '../dist/src/match-rules.mjs';
-import {createEnemyPlan,preparationBadges,validEnemyPlan} from '../dist/src/enemy-plan.mjs';
+import {createEnemyPlan,preparationBadges,validEnemyPlan,POWER_ATTACK_ICON} from '../dist/src/enemy-plan.mjs';
 import {grantBuff} from '../dist/src/buffs.mjs';
 import {collectEvent,drainStack,refreshPositions} from '../dist/src/effects.mjs';
 import fs from 'node:fs';
@@ -56,4 +56,12 @@ test('dedicated disposable fixture leaves published pack unchanged and advertise
 });
 test('adventure roundtrip keeps the announced plan and rejects malformed saved plans',()=>{
  const p=JSON.parse(fs.readFileSync('dist/data/pve-test.json'));const r=newRun(p,'plan-save');enterNode(r,availableNodes(r)[0]);start(r.battle);const plan=structuredClone(r.battle.enemyPlan);assert.deepEqual(decodeRun(encodeRun(r)).battle.enemyPlan,plan);r.battle.enemyPlan.operations=[{type:'exchange',from:1}];assert.throws(()=>encodeRun(r),/计划存档无效/);
+});
+test('teaching charge keeps text while actual ready state uses the powerful attack icon',()=>{
+ const pack=JSON.parse(fs.readFileSync('dist/data/tutorial.json')),g=createTurnPlanFixture(pack,'tutorial_01');start(g);
+ const u=g.units['ai-2'];grantBuff(u,pack.buffs.tutorial_retaliation_charge,{source:u.id,skillId:'test',value:0,definitions:pack.buffs});assert.equal(preparationBadges(g,u.id,2).find(b=>b.label==='蓄力').icon,'');
+ grantBuff(u,pack.buffs.tutorial_retaliation_ready,{source:u.id,skillId:'test',value:0,definitions:pack.buffs});assert.equal(preparationBadges(g,u.id,2).find(b=>b.label==='反击准备').icon,POWER_ATTACK_ICON);
+ const ready=u.buffs.find(b=>b.id==='tutorial_retaliation_ready');ready.definition.icon='assets/status/custom.png';assert.equal(preparationBadges(g,u.id,2).find(b=>b.label==='反击准备').icon,ready.definition.icon);
+ ready.definition.icon='https://external.example/tracker.png';assert.equal(preparationBadges(g,u.id,2).find(b=>b.label==='反击准备').icon,POWER_ATTACK_ICON);
+ ready.definition.rules[0].conditions[0].layers=2;assert.equal(preparationBadges(g,u.id,2).find(b=>b.label==='反击准备').icon,'');
 });

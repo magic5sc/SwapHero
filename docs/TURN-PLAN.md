@@ -41,6 +41,15 @@ overhead preparation badges; conditional own-turn-start skills can also supply
 them. The teaching level's existing charge/ready Buffs therefore show their state
 without role-name or level-specific logic. No damage forecasts are added.
 
+The approved gold-rimmed, dark-red powerful-attack icon is stored at
+`dist/assets/status/powerful-attack-warning.png`. Ready effects that cause positive
+damage or grant positive attack at the next own turn start use this fallback icon
+when their conditions and listening zone match. The teaching level's retaliation
+ready state uses it; ordinary charge counters retain text. Existing valid `assets/`
+Skill/Buff icon paths take precedence. The renderer keeps a caption and accessible
+label, at 36px desktop / 32px narrow layout. Source Excel, skill values and battle
+rules are unchanged. The imported generated original is retained without resizing.
+
 `ruleVersion:2` is assigned to new battles. `upgradeBattle` reverses old enemy
 field and reserve triples once to preserve visible positions and updates unit
 positions; current player-turn saves missing a plan get one from their settled

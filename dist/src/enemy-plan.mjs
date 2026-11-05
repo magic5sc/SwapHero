@@ -30,12 +30,21 @@ export function validEnemyPlan(plan){
 }
 // Generic preparation badges: active marker Buffs and conditional own-turn-start
 // skills. No role names, level IDs or hardcoded retaliation counters.
+export const POWER_ATTACK_ICON='assets/status/powerful-attack-warning.png';
+const safeIcon=path=>/^assets\/(?:[\w-]+\/)*[\w-]+\.(png|webp|jpg|svg)$/.test(path||'')?path:'';
+const readyRule=(r,u,position)=>(r.active_zone||'battlefield')==='any'||((r.active_zone||'battlefield')==='battlefield'?position<=3:position>3);
+const readyConditions=(r,u)=>(r.conditions||[]).every(c=>{const n=buffLayers(u,c.buff);return c.compare==='gte'?n>=c.layers:c.compare==='eq'?n===c.layers:n<c.layers;});
+function attackPreparation(definition,values,u,position){
+ return definition.rules?.some(r=>r.event==='turn_start'&&r.turn==='own'&&readyRule(r,u,position)&&readyConditions(r,u)&&r.effects.some(e=>
+  (values?.[e.amount]||0)>0&&(e.op==='deal_damage'||e.op==='apply_buff'&&e.buff?.kind==='attack')));
+}
+const badgeIcon=(definition,values,u,position)=>safeIcon(definition.icon)||(attackPreparation(definition,values,u,position)?POWER_ATTACK_ICON:'');
 export function preparationBadges(g,id,position){
  const u=g.units[id];if(!u||u.hp<=0)return [];
  const badges=[];
- for(const b of u.buffs||[])if(b.stacks>0&&b.definition.kind==='marker'&&buffActive(b,position))badges.push({label:b.definition.name,icon:b.definition.icon||'',stacks:b.stacks});
+ for(const b of u.buffs||[])if(b.stacks>0&&b.definition.kind==='marker'&&buffActive(b,position))badges.push({label:b.definition.name,icon:badgeIcon(b.definition,b.definition.values||b.definition.levels?.[b.level||1],u,position),stacks:b.stacks});
  for(const s of u.skills||[])if(s.definition.rules?.some(r=>r.event==='turn_start'&&r.turn==='own'&&r.conditions?.length&&
   ((r.active_zone||'battlefield')==='any'||((r.active_zone||'battlefield')==='battlefield'?position<=3:position>3))&&
-  r.conditions.every(c=>{const n=buffLayers(u,c.buff);return c.compare==='gte'?n>=c.layers:c.compare==='eq'?n===c.layers:n<c.layers;})))badges.push({label:s.definition.name,icon:s.definition.icon||'',stacks:1});
+  r.conditions.every(c=>{const n=buffLayers(u,c.buff);return c.compare==='gte'?n>=c.layers:c.compare==='eq'?n===c.layers:n<c.layers;})))badges.push({label:s.definition.name,icon:badgeIcon(s.definition,s.definition.levels?.[s.level],u,position),stacks:1});
  return badges.filter((b,i)=>badges.findIndex(x=>x.label===b.label)===i);
 }
