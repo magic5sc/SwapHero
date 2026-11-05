@@ -1,8 +1,9 @@
 # Tabletop presentation 0.6.0 — 2026-10-31
 
-Visual surfaces were superseded by the owner's 2026-11-06 reference-led pastel
-UI; see [PASTEL-UI.md](PASTEL-UI.md). The historical description below remains
-implementation context for live art, input and transition behavior.
+The owner's 2026-11-06 reference applies to UI panels and controls only; see
+[PASTEL-UI.md](PASTEL-UI.md). Keep the original desk, battlefield/level textures,
+parchment and scrolls. The prior interpretation replacing these backgrounds
+was corrected at the owner's request.
 
 The approved scroll preview is integrated into the real PvE and single-battle UI.
 The game renders the existing character assets and card data. No preview character

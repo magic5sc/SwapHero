@@ -6,6 +6,11 @@ primary buttons. These now style adventure, duel, teaching and developer battle
 entries through `dist/pastel-ui.css`; existing character art is retained.
 The configuration and dialogue authoring pages keep their independent layouts.
 
+Owner clarification: this reference changes UI style only. Preserve the existing
+desk background, per-level battlefield texture, parchment/map texture and scroll
+rods. The first iteration's full-background replacement was an overreach and has
+been removed; pale panels, buttons, tooltips and enlarged character boxes remain.
+
 Battle character display boxes occupy 70% of the smaller slot dimension, retain
 square proportions and scale with the viewport. Sequence art uses one shared
 idle/attack union crop per character to reduce transparent padding without frame
