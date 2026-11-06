@@ -5,6 +5,7 @@ import {mountParchment,mountLeather,switchTable,isTableTransition} from './table
 import {newRun,rewardRecipient,availableNodes,enterNode,continueChapter,claimReward,buy,service,eventRecruit,leaveRoom,abandonRun,upgradePreview,candidates,QUALITY,encodeRun,decodeRun} from './pve.mjs';
 import {openAdventureBattle} from './app.mjs';
 import {makeSprite,artForUnit} from './art.mjs';
+import {mountChestFx} from './chest-fx.mjs';
 const root=document.getElementById('adventure'),KEY='swaphero.adventure.v1';
 let outcomeBusy=false,flowBusy=false;
 let run=null,pack=null,notice='',storageError='',savedText=null;
@@ -98,6 +99,7 @@ function presentChest(){
  el('small','loot-label','战利品',panel);
  el('h2','','战斗胜利',panel).id='loot-title';
  const chest=el('button','loot-chest '+(rare?'silver':'copper'),undefined,panel);
+ chest.type='button';
  chest.setAttribute('aria-label','打开'+(rare?'稀有银宝箱':'普通铜宝箱'));
  for(const state of ['closed','open']){
   const icon=el('img','chest-icon '+state,undefined,chest);
@@ -105,6 +107,12 @@ function presentChest(){
   icon.alt='';icon.draggable=false;
  }
  const hint=el('p','loot-hint',rare?'稀有银宝箱 · 点击开启':'普通铜宝箱 · 点击开启',panel);
+ hint.setAttribute('role','status');
+ const motion=matchMedia('(prefers-reduced-motion: reduce)');
+ let playChest=null;
+ if(!run.room.chestOpened&&!motion.matches){
+  try{playChest=mountChestFx(chest,rare);}catch{/* The chest images also work without Canvas. */}
+ }
  const error=el('p','loot-error',storageError,panel);
  error.setAttribute('role','alert');
  const returnToMap=async(index,options)=>{
@@ -119,7 +127,7 @@ function presentChest(){
   chest.disabled=true;chest.classList.add('opened');
   hint.textContent='选择一项奖励';
   const grid=el('div','loot-cards',undefined,panel);grid.inert=true;
-  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const reduced=motion.matches;
   const animations=[];
   run.room.choices.forEach((item,i)=>{
    rewardCard(grid,item,options=>returnToMap(i,options));
@@ -138,7 +146,19 @@ function presentChest(){
   button(panel,'放弃奖励，继续选路',()=>returnToMap(null),'loot-skip');
   grid.querySelector('button')?.focus({preventScroll:true});
  };
- chest.onclick=()=>{if(chest.disabled)return;run.room.chestOpened=true;save();reveal(true);};
+ chest.onclick=async()=>{
+  if(chest.disabled)return;
+  chest.disabled=true;
+  run.room.chestOpened=true;
+  save();
+  error.textContent=storageError;
+  if(playChest&&!motion.matches){
+   hint.textContent='正在开启宝箱…';
+   try{await playChest();chest.remove();}catch{chest.classList.remove('has-chest-fx');}
+   if(!dialog.isConnected)return;
+  }else chest.classList.remove('has-chest-fx');
+  await reveal(true);
+ };
  dialog.showModal();
  if(run.room.chestOpened)reveal(false);
 }

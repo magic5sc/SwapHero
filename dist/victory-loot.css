@@ -9,6 +9,9 @@ button.loot-chest{display:grid;place-items:center;background:transparent;border:
 .chest-icon.open,.opened .chest-icon.closed{visibility:hidden}
 .opened .chest-icon.open{visibility:visible}
 .loot-chest.opened{opacity:1}
+.loot-chest.has-chest-fx{width:min(100%,528px);opacity:1}
+.loot-chest.has-chest-fx .chest-icon,.loot-chest-fx{display:none}
+.loot-chest.has-chest-fx .loot-chest-fx{display:block;width:100%;height:auto;image-rendering:pixelated;pointer-events:none}
 @keyframes chest-beckon{0%,69%,89%,100%{transform:rotate(0)}73%,81%{transform:rotate(-6deg)}77%,85%{transform:rotate(5deg)}}
 .loot-hint{margin:6px}.loot-error:empty{display:none}.loot-error{color:#ffd6a5}
 .loot-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(155px,100%),1fr));gap:10px;margin:14px 0}

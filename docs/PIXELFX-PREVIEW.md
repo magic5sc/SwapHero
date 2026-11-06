@@ -8,7 +8,7 @@
 
 ## 来源
 
-PixelFX https://github.com/patch-gg/pixelfx ，固定提交 a84159688af3ca37a4be05a0d422b94451b2e24e。`dist/vendor/pixelfx`仅包含六个效果及其递归依赖，保留原文件、MIT LICENSE、NOTICE.md和文件内来源说明；不引入gallery字体。部分算法来自Hugo Duprez / Sprite Fusion及Hollow Crown，详见NOTICE.md。未安装上游AI技能或插件。
+PixelFX https://github.com/patch-gg/pixelfx ，固定提交 a84159688af3ca37a4be05a0d422b94451b2e24e。`dist/vendor/pixelfx` 收录项目使用的效果及其递归依赖，保留 MIT LICENSE、NOTICE.md 和文件内来源说明。部分算法来自 Hugo Duprez / Sprite Fusion 及 Hollow Crown，详见 NOTICE.md。
 
 ## 验收
 
@@ -40,4 +40,10 @@ PixelFX https://github.com/patch-gg/pixelfx ，固定提交 a84159688af3ca37a4be
 刀光以主刃尖局部坐标补偿（中心6,-26、半径38.4、角度.95、倾斜-.38），命中点跟随受击回退；火球与爆炸中心共享目标身体点；冰环与治疗对准脚底；护盾局部CY=-22补偿到身体点，贴身遮罩相对同一原点生成。
 光矛增加distance参数，按双方身体锚点计算距离和角度；命中爆炸不再固定100像素飞行。修复1/120步进浮点尾差导致准确命中时刻仍显示飞行帧。
 验证：202项Node回归通过；Chrome六效果×三角色、旧链接跳转、刀光刃尖/光矛终点/脚底/护盾中心坐标误差<0.01px、镜像后同刻回拖一致、390px无横向溢出通过。手机实机及负责人视觉验收待完成。
+
+## 冒险开箱
+
+普通和精英战斗胜利后的宝箱使用 [PixelFX Chest Open](https://github.com/patch-gg/pixelfx/blob/a84159688af3ca37a4be/src/fx/pickups/chest-open.js)。`chest-fx.mjs` 以 1.5 倍速播放原版完整动效，精英宝箱使用银色光效。点击时先保存 `chestOpened`，随后播放开箱和原有奖励翻牌。已开箱的存档直接展示奖励。减少动态效果模式使用静态宝箱并直接展示奖励，Canvas 不可用时使用原有宝箱图。
+
+game-only 构建保留 PixelFX 核心、许可、开箱特效与其 `_lib.js`，其余预览专用效果仍只进入开发版和统一站点。
 
