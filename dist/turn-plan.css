@@ -2,7 +2,14 @@
 .enemy-plan-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:8;overflow:visible}
 .enemy-plan-lines path{fill:none;stroke:#ffe29a;stroke-width:3;stroke-dasharray:8 6;filter:drop-shadow(0 1px 2px #261606)}
 .attack-preview-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:7;overflow:visible}
-.attack-preview-arrow{filter:drop-shadow(0 2px 2px #380c13)}
+.attack-preview-arrow{filter:drop-shadow(0 1px 1.5px #17284e)}
+.attack-preview-arrow line{stroke:#83c4ff;stroke-linecap:round}
+.attack-preview-arrow polygon{fill:#83c4ff}
+.attack-preview-arrow rect{fill:#25477a;stroke:#a9d7ff;stroke-width:1}
+.attack-preview-arrow text{fill:#f5fbff;font-family:system-ui,sans-serif;font-weight:800}
+.hp-preview-loss{position:absolute;top:0;bottom:0;background:#fff8ff;border-radius:3px;pointer-events:none;animation:hp-preview-breathe 1.35s ease-in-out infinite}
+@keyframes hp-preview-breathe{0%,100%{opacity:.48}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.hp-preview-loss{animation:none;opacity:.9}}
 .buff-bar{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:9;display:flex;gap:3px;max-width:calc(100% - 8px);padding:2px 3px 5px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;touch-action:none}
 .buff-bar::-webkit-scrollbar{display:none}
 .buff-icon{position:relative;display:inline-flex;flex:0 0 32px;width:32px;height:32px;align-items:center;justify-content:center;cursor:help;touch-action:none;border-radius:50%;filter:drop-shadow(0 1px 2px #000b);outline-offset:2px}

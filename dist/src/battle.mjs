@@ -41,7 +41,7 @@ export function move(g, side, from, to) {
   for(const event of r.events){collectEvent(g,{type:event.type==='enter'?'unit_enter':'unit_leave',unit:event.unit,side,position:event.position,exchange:r.events.some(e=>e.type==='exit')});if(event.type==='exit'){expireModifiers(g,'on_field',event.unit);onLeave(g,event.unit);}}
   drainStack(g);
 }
-export function resolveLane(g, side, lane, attackerId) {
+export function resolveLane(g, side, lane, attackerId, outcome = null) {
   const attacker = g.units[attackerId], own = g.sides[side];
   if (g.winner||g.error||!attacker || !canAttack(attacker) || own.slots[lane - 1] !== attackerId) return false;
   const targetId = combatTarget(g,side,lane)?.id;
@@ -51,20 +51,34 @@ export function resolveLane(g, side, lane, attackerId) {
     if (g.victoryCondition === 'score_5' && own.score >= 5) {g.winner = side;g.phase='finished';}
   } else {
     const damage=applyDamage(g,attackerId,targetId,Math.max(0,attacker.attack),'combat');
+    if(outcome)outcome.damage=damage;
     g.log.push(`${attacker.name} 对 ${g.units[targetId].name} 造成 ${damage} 点伤害`);
   }
   return true;
 }
 function signalAttackers(g,side,attacks,type){const events=[];for(const {lane,id} of attacks){if(g.sides[side].slots[lane-1]===id&&canAttack(g.units[id]))events.push({type,unit:id,side,position:lane});}collectEvents(g,events);drainStack(g);}
-export function endTurn(g, side, onAttack = null) {
+export function endTurn(g, side, onAttack = null, onAttackSettled = null) {
   requireTurn(g, side);
   if (mustReinforce(g.sides[side].slots, g.actionPoints)) throw Error('请先完成强制补位');
   g.actionPoints = 0; g.phase = 'attack';
   const attacks = ATTACK_ORDER.map(lane => ({lane, id:g.sides[side].slots[lane - 1]})).filter(x => x.id && canAttack(g.units[x.id]));
   g.attackStep='declare';signalAttackers(g,side,attacks,'attack_declared');
   if(!g.winner&&!g.error){g.attackStep='prepare';const events=[];for(const {lane,id} of attacks){if(g.sides[side].slots[lane-1]!==id||!canAttack(g.units[id]))continue;const target=combatTarget(g,side,lane);if(target)events.push({type:'before_damage',unit:target.id,side:otherSide(side),position:target.position,source:id});}collectEvents(g,events);drainStack(g);}
-  if(!g.winner&&!g.error){g.attackStep='damage';for (const {lane,id} of attacks) { const before = onAttack ? structuredClone(g) : null;const target=combatTarget(g,side,lane);const attacked=resolveLane(g, side, lane, id);if(g.mode==='pve')drainStack(g);if (attacked&&onAttack) onAttack({side, lane, targetId:target?.id??null, targetLane:target?.position??null, before, after: structuredClone(g)}); if (g.winner||g.error) break; }drainStack(g);}
+  if(!g.winner&&!g.error){
+   g.attackStep='damage';
+   for(const {lane,id} of attacks){
+    const before=onAttack?structuredClone(g):null;
+    const outcome=onAttack?{}:null;
+    const target=combatTarget(g,side,lane);
+    const attacked=resolveLane(g,side,lane,id,outcome);
+    if(g.mode==='pve')drainStack(g);
+    if(attacked&&onAttack)onAttack({side,lane,attackerId:id,targetId:target?.id??null,targetLane:target?.position??null,damage:outcome.damage??0,before,after:structuredClone(g)});
+    if(g.winner||g.error)break;
+   }
+   drainStack(g);
+  }
   if(!g.winner&&!g.error){g.attackStep='end';collectPhase(g,'attack_end');drainStack(g);}
+  onAttackSettled?.(g);
   if(!g.winner&&!g.error){collectPhase(g,'turn_end');drainStack(g);}
   expireModifiers(g,'turn');finishBuffTurn(g);finishOwnerTurn(g,side);drainStack(g);
   for (const id of g.sides[side].slots.filter(Boolean)) g.units[id].disabled = false;

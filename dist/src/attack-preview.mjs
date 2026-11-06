@@ -1,13 +1,30 @@
-import {canAttack} from './content.mjs';
-import {ATTACK_ORDER,combatTarget} from './match-rules.mjs';
+import {endTurn} from './battle.mjs';
+import {mustReinforce} from './formation.mjs';
 
-export function attackPreviewLinks(view){
- if(view.phase!=='action'||view.turn!=='player'||view.winner||view.error)return [];
- return ATTACK_ORDER.flatMap(from=>{
-  const unit=view.units[view.sides.player.slots[from-1]];
-  const target=unit&&canAttack(unit)&&combatTarget(view,'player',from);
-  return target?[{from,to:target.position,attacker:unit.name,target:view.units[target.id].name}]:[];
+export function forecastPlayerAttack(view){
+ const empty={links:[],losses:[]};
+ const player=view.sides.player;
+ if(view.phase!=='action'||view.turn!=='player'||view.winner||view.error||view.stack?.length||
+    mustReinforce(player.slots,view.actionPoints))return empty;
+
+ const links=[],losses=[];
+ const simulation=structuredClone(view);
+ endTurn(simulation,'player',({attackerId,targetId,damage})=>{
+  if(!targetId)return;
+  const from=player.slots.indexOf(attackerId)+1;
+  const to=view.sides.ai.slots.indexOf(targetId)+1;
+  if(from>0&&from<=3&&to>0&&to<=3)links.push({from,to,damage});
+ },settled=>{
+  for(const side of ['player','ai']){
+   view.sides[side].slots.forEach((id,index)=>{
+    const unit=view.units[id];
+    if(!unit||unit.hp<=0)return;
+    const remaining=Math.max(0,settled.units[id]?.hp??unit.hp);
+    if(remaining<unit.hp)losses.push({side,slot:index+1,hp:unit.hp,remaining,maxHp:unit.maxHp});
+   });
+  }
  });
+ return simulation.error?empty:{links,losses};
 }
 
 function element(tag,attrs,parent){
@@ -17,76 +34,61 @@ function element(tag,attrs,parent){
  return node;
 }
 
-function drawArrow(svg,x,y,tx,ty,across,scale){
- const dx=tx-x,dy=ty-y;
- const d=across
-  ? `M ${x},${y} C ${x+dx*.08},${y+dy*.73} ${tx-dx*.30},${ty-dy*.54} ${tx},${ty}`
-  : `M ${x},${y} Q ${x-14*scale},${(y+ty)/2} ${tx},${ty}`;
- const guide=element('path',{d,fill:'none',stroke:'none'},svg);
- const length=guide.getTotalLength();
- const point=(distance,lateral=0)=>{
-  const at=Math.max(0,Math.min(length,distance));
-  const p=guide.getPointAtLength(at);
-  const a=guide.getPointAtLength(Math.max(0,at-.6));
-  const b=guide.getPointAtLength(Math.min(length,at+.6));
-  const tangent=Math.hypot(b.x-a.x,b.y-a.y)||1;
-  return `${p.x-(b.y-a.y)/tangent*lateral},${p.y+(b.x-a.x)/tangent*lateral}`;
- };
- const group=element('g',{class:'attack-preview-arrow'},svg);
- const facet=(points,fill,stroke='#67151f',width=.7)=>
-  element('polygon',{points:points.join(' '),fill,stroke,'stroke-width':width,'stroke-linejoin':'round'},group);
- const head=Math.min((across?26:17)*scale,length*.48);
- const shaft=length-head*.68;
- const count=Math.max(2,Math.round(shaft/((across?19:11)*scale)));
- const step=shaft/count;
- for(let i=0;i<count;i++){
-  const at=i*step,stop=at+step*.79;
-  const w=((across?2.3:1.8)+(across?3.5:1.7)*(i+1)/count)*scale;
-  const a=point(at,w*.72),b=point(at,-w*.72);
-  const c=point(stop,-w),tip=point(stop+Math.min(1.8*scale,step*.2)),e=point(stop,w);
-  facet([a,b,c,tip,e],'#ad2538');
-  facet([b,c,tip,point(at)],'#df4654','none',0);
- }
- const tip=guide.getPointAtLength(length),neck=guide.getPointAtLength(Math.max(0,length-2));
- const tangent=Math.hypot(tip.x-neck.x,tip.y-neck.y)||1;
- const ux=(tip.x-neck.x)/tangent,uy=(tip.y-neck.y)/tangent;
- const vertex=(back,side)=>`${tip.x-ux*back-uy*side},${tip.y-uy*back+ux*side}`;
- const wing=(across?11:7.5)*scale;
- const nose=vertex(0,0),left=vertex(head,-wing),right=vertex(head,wing),crease=vertex(head*.59,0);
- facet([nose,left,crease,right],'#9d1b2a','#681823',1);
- facet([nose,left,crease],'#ed4a55','none',0);
- facet([nose,crease,right],'#b42637','none',0);
- element('path',{d:`M ${vertex(2,0)} L ${vertex(head*.54,0)}`,stroke:'#fb7278','stroke-width':.8,opacity:.65},group);
- guide.remove();
- return group;
+function drawArrow(svg,{x,y,tx,ty},link,index,scale){
+ const group=element('g',{class:'attack-preview-arrow','data-from':link.from,'data-to':link.to},svg);
+ const length=Math.hypot(tx-x,ty-y)||1;
+ const head=Math.min(10*scale,length*.3);
+ const ux=(tx-x)/length,uy=(ty-y)/length;
+ const bx=tx-ux*head,by=ty-uy*head;
+ element('line',{x1:x,y1:y,x2:bx,y2:by,'stroke-width':3*scale},group);
+ const wing=head*.55;
+ element('polygon',{points:[[tx,ty],[bx-uy*wing,by+ux*wing],[bx+uy*wing,by-ux*wing]].map(p=>p.join(',')).join(' ')},group);
+ const mid=.5+(index%2?.08:-.04);
+ const lx=x+(tx-x)*mid,ly=y+(ty-y)*mid;
+ const label=String(link.damage),width=Math.max(22,11+label.length*7)*scale,height=18*scale;
+ element('rect',{x:lx-width/2,y:ly-height/2,width,height,rx:5*scale},group);
+ element('text',{x:lx,y:ly,'font-size':12*scale,'text-anchor':'middle','dominant-baseline':'central'},group).textContent=label;
 }
 
 export function drawAttackPreview(board,view){
  board.querySelector('.attack-preview-lines')?.remove();
+ board.querySelectorAll('.hp-preview-loss').forEach(node=>node.remove());
  if(!view)return;
- const links=attackPreviewLinks(view);
+ const {links,losses}=forecastPlayerAttack(view);
+ const card=(side,slot)=>board.querySelector('[data-side="'+side+'"][data-slot="'+slot+'"]');
+ for(const {side,slot,hp,remaining,maxHp} of losses){
+  const track=card(side,slot)?.querySelector('.hp-track');
+  if(!track||!maxHp)continue;
+  const ghost=document.createElement('span');
+  ghost.className='hp-preview-loss';
+  ghost.style.left=(remaining/maxHp*100)+'%';
+  ghost.style.width=((hp-remaining)/maxHp*100)+'%';
+  ghost.setAttribute('role','img');
+  ghost.setAttribute('aria-label','预计扣除 '+(hp-remaining)+' 点生命');
+  track.append(ghost);
+ }
  const bounds=board.getBoundingClientRect();
  if(!links.length||!bounds.width||!bounds.height)return;
- const scale=Math.min(1,Math.max(.55,bounds.width/650));
- const rect=(side,slot,part)=>board.querySelector(`[data-side="${side}"][data-slot="${slot}"] ${part}`)?.getBoundingClientRect();
- const svg=element('svg',{class:'attack-preview-lines',viewBox:`0 0 ${bounds.width} ${bounds.height}`,role:'img'},board);
+ const scale=Math.min(1,Math.max(.72,bounds.width/650));
+ const rect=(side,slot,part)=>card(side,slot)?.querySelector(part)?.getBoundingClientRect();
+ const svg=element('svg',{class:'attack-preview-lines',viewBox:[0,0,bounds.width,bounds.height].join(' '),role:'img'},board);
  const labels=[];
- for(const {from,to,attacker,target} of links){
-  const source=rect('player',from,'.unit-sprite');
-  const enemy=rect('ai',to,'.unit-sprite');
-  const stats=rect('ai',to,'.stats');
-  if(!source?.width||!enemy?.width||!stats?.width)continue;
+ links.forEach((link,index)=>{
+  const {from,to,damage}=link;
+  const source=rect('player',from,'.unit-sprite'),enemy=rect('ai',to,'.unit-sprite'),stats=rect('ai',to,'.stats');
+  if(!source?.width||!enemy?.width||!stats?.width)return;
   const a=source.left+source.width/2,t=enemy.left+enemy.width/2;
   const side=Math.abs(t-a)<1?0:Math.sign(t-a);
-  const x=a+side*source.width*.42-bounds.left;
-  const y=source.top+Math.min((side?26:13)*scale,source.height*.36)-bounds.top;
-  const tx=(side?(side<0?stats.right+12*scale:stats.left-12*scale):t)-bounds.left;
-  const ty=(side?stats.top-9*scale:stats.bottom+5*scale)-bounds.top;
-  const arrow=drawArrow(svg,x,y,tx,ty,side!==0,scale);
-  arrow.dataset.from=from;
-  arrow.dataset.to=to;
-  labels.push(`${from}号位${attacker}预计攻击对手${to}号位${target}`);
- }
+  drawArrow(svg,{
+   x:a+side*source.width*.42-bounds.left,
+   y:source.top+Math.min((side?26:13)*scale,source.height*.36)-bounds.top,
+   tx:(side?(side<0?stats.right+12*scale:stats.left-12*scale):t)-bounds.left,
+   ty:(side?stats.top-9*scale:stats.bottom+5*scale)-bounds.top,
+  },link,index,scale);
+  const attacker=view.units[view.sides.player.slots[from-1]];
+  const target=view.units[view.sides.ai.slots[to-1]];
+  labels.push(from+'号位'+attacker.name+'预计对'+to+'号位'+target.name+'造成 '+damage+' 点伤害');
+ });
  if(labels.length)svg.setAttribute('aria-label','普攻预览：'+labels.join('；'));
  else svg.remove();
 }
