@@ -1,0 +1,1 @@
+.vertical-preview .stage{aspect-ratio:4/3}.vertical-preview header{flex-wrap:wrap}.vertical-preview header>div{flex:1;min-width:220px}.vertical-preview .stage-label{font-size:11px}@media(max-width:520px){.vertical-preview header{gap:10px}.vertical-preview .stage-label{font-size:9px}}
