@@ -41,6 +41,12 @@ overhead preparation badges; conditional own-turn-start skills can also supply
 them. The teaching level's existing charge/ready Buffs therefore show their state
 without role-name or level-specific logic. No damage forecasts are added.
 
+During player actions the red segmented arrows preview normal attack targets
+from the current board, using the combat target lookup and attack eligibility.
+Unavailable attackers, empty scoring lanes and reserves have no arrow. The
+preview hides during dragging and turn resolution and refreshes after a move.
+Later attacks still recheck live targets after earlier damage and effects settle.
+
 The approved gold-rimmed, dark-red powerful-attack icon is stored at
 `dist/assets/status/powerful-attack-warning.png`. Ready effects that cause positive
 damage or grant positive attack at the next own turn start use this fallback icon

@@ -1,6 +1,8 @@
 .plan-board{position:relative;isolation:isolate}
 .enemy-plan-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:8;overflow:visible}
 .enemy-plan-lines path{fill:none;stroke:#ffe29a;stroke-width:3;stroke-dasharray:8 6;filter:drop-shadow(0 1px 2px #261606)}
+.attack-preview-lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:7;overflow:visible}
+.attack-preview-arrow{filter:drop-shadow(0 2px 2px #380c13)}
 .buff-bar{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:9;display:flex;gap:3px;max-width:calc(100% - 8px);padding:2px 3px 5px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;touch-action:none}
 .buff-bar::-webkit-scrollbar{display:none}
 .buff-icon{position:relative;display:inline-flex;flex:0 0 32px;width:32px;height:32px;align-items:center;justify-content:center;cursor:help;touch-action:none;border-radius:50%;filter:drop-shadow(0 1px 2px #000b);outline-offset:2px}

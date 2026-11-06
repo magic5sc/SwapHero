@@ -8,6 +8,7 @@ import { canAttack } from './content.mjs';
 import { artForUnit, makeSprite, makeAttackEffect, hydrateArt } from './art.mjs';
 import { createGame, deploy, start, rearrange, move, endTurn, playAI,upgradeBattle } from './battle.mjs';
 import { mustReinforce } from './formation.mjs';
+import {drawAttackPreview} from './attack-preview.mjs';
 let adventureHooks=null;mountLeather(document.getElementById('battle-screen'));
 const selectedGoal=()=>document.getElementById('victory-condition')?.value||'score_5';
 let activeCatalog=null,activeTeam=null,rosterLabel=null;
@@ -46,9 +47,16 @@ document.addEventListener('pointerdown',e=>{if(!e.target.closest('.card'))hideCa
 for(const event of ['pointerup','pointercancel'])document.addEventListener(event,()=>{clearTimeout(press?.timer);press=null;});
 document.addEventListener('contextmenu',e=>{if(e.target.closest('.card'))e.preventDefault();});
 window.addEventListener('resize',hideCardInfo);window.addEventListener('scroll',hideCardInfo,true);
-window.addEventListener('resize',()=>requestAnimationFrame(drawEnemyPlan));
+window.addEventListener('resize',schedulePlans);
 const planStyle=document.createElement('link');planStyle.rel='stylesheet';planStyle.href='turn-plan.css';document.head.append(planStyle);
 let planDraw=0;
+function schedulePlans(){
+ cancelAnimationFrame(planDraw);
+ planDraw=requestAnimationFrame(()=>{
+  drawEnemyPlan();
+  drawAttackPreview(el('lanes').closest('.arena-scene'),playing||drag?.active?null:(visual||g));
+ });
+}
 function drawEnemyPlan(){
  const board=el('lanes')?.closest('.arena-scene');if(!board)return;
  board.querySelector('.enemy-plan-lines')?.remove();
@@ -141,7 +149,7 @@ function show() {
   el('hint').textContent=g.winner?'本场对战结束，可重新开始。':g.phase==='deployment'?'拖拽我方卡牌调整位置，完成后点击完成布阵。':required?'场上无人，请拖拽1名后备到前排空位。':'可保留后备，或拖拽到前排补位/替换；后备之间也可拖拽互换。悬停或长按查看详情。';
   el('feedback').textContent=g.error||feedback;
   renderBoard(view);
-  cancelAnimationFrame(planDraw);planDraw=requestAnimationFrame(drawEnemyPlan);
+  schedulePlans();
   el('start').hidden=g.phase!=='deployment'||playing;el('end').hidden=g.phase!=='action';el('end').disabled=playing||g.turn!=='player'||required;el('cancel').hidden=selected===null||playing;el('reset').disabled=playing;el('reset').hidden=!!adventureHooks;
   document.querySelector('.notice').textContent=rosterLabel?rosterLabel+' · 外观仅为占位，卡牌效果按配置执行。':useSkillLab?'技能试验队 · 顽石、冥守与4张机制测试卡；外观仅为占位。':'测试版本 · 使用无技能占位卡；角色外观不代表正式卡牌能力。';
   if(g.winner&&!playing&&!visual&&!document.querySelector('.result-overlay')&&!adventureHooks?.onVictory?.(g)){const overlay=add(document.body,'div','result-overlay');overlay.dataset.winner=g.winner;add(overlay,'strong','',g.winner==='player'?'胜 利':'败 北');const close=add(overlay,'button','primary','返回战场');close.textContent=adventureHooks?.exitLabel||(adventureHooks?(g.winner==='player'?'领取战斗结果':'冒险结算'):'返回战场');close.onclick=()=>{overlay.hidden=true;if(adventureHooks)adventureHooks.onExit(structuredClone(g));};}
@@ -183,7 +191,7 @@ function beginDrag(e,p,button){
 document.addEventListener('pointermove',e=>{
   if(!drag||e.pointerId!==drag.id)return;
   if(!drag.active && Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)>8){
-    clearTimeout(press?.timer);press=null;hideCardInfo();drag.active=true; drag.ghost=drag.button.cloneNode(true); drag.ghost.className='card player drag-ghost'; drag.ghost.removeAttribute('id'); document.body.append(drag.ghost); drag.button.classList.add('drag-source');
+    clearTimeout(press?.timer);press=null;hideCardInfo();drag.active=true; schedulePlans(); drag.ghost=drag.button.cloneNode(true); drag.ghost.className='card player drag-ghost'; drag.ghost.removeAttribute('id'); document.body.append(drag.ghost); drag.button.classList.add('drag-source');
   }
   if(!drag.active)return;
   e.preventDefault();drag.ghost.style.left=e.clientX+'px';drag.ghost.style.top=e.clientY+'px';
