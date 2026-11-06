@@ -105,7 +105,7 @@ function show() {
   const lanes=el('lanes');lanes.replaceChildren();lanes.closest('.arena-scene').classList.add('plan-board');for(const [side,label] of [['ai','对手战场'],['player','我方战场']]){const field=add(lanes,'div','field');add(field,'div','field-title',label+(side==='ai'?' · ← 攻击顺序':' · 攻击顺序 →'));const row=add(field,'div','field-row');for(const p of displayPositions(side))row.append(card(side,p));}
   for(const side of ['ai','player']){const container=el(side==='ai'?'enemy-bench':'player-bench');container.replaceChildren();for(const p of displayPositions(side))container.append(card(side,p+3));el(side==='ai'?'enemy-count':'reserve-count').textContent=`${g.sides[side].slots.slice(3).filter(Boolean).length} / 3`;}
   cancelAnimationFrame(planDraw);planDraw=requestAnimationFrame(drawEnemyPlan);
-  el('start').hidden=g.phase!=='deployment'||playing;el('end').hidden=playing||g.phase!=='action'||g.turn!=='player';el('end').disabled=required;el('cancel').hidden=selected===null||playing;el('reset').disabled=playing;el('reset').hidden=!!adventureHooks;
+  el('start').hidden=g.phase!=='deployment'||playing;el('end').hidden=g.phase!=='action';el('end').disabled=playing||g.turn!=='player'||required;el('cancel').hidden=selected===null||playing;el('reset').disabled=playing;el('reset').hidden=!!adventureHooks;
   document.querySelector('.notice').textContent=rosterLabel?rosterLabel+' · 外观仅为占位，卡牌效果按配置执行。':useSkillLab?'技能试验队 · 顽石、冥守与4张机制测试卡；外观仅为占位。':'测试版本 · 使用无技能占位卡；角色外观不代表正式卡牌能力。';
   if(g.winner&&!playing&&!visual&&!document.querySelector('.result-overlay')&&!adventureHooks?.onVictory?.(g)){const overlay=add(document.body,'div','result-overlay');overlay.dataset.winner=g.winner;add(overlay,'strong','',g.winner==='player'?'胜 利':'败 北');const close=add(overlay,'button','primary','返回战场');close.textContent=adventureHooks?.exitLabel||(adventureHooks?(g.winner==='player'?'领取战斗结果':'冒险结算'):'返回战场');close.onclick=()=>{overlay.hidden=true;if(adventureHooks)adventureHooks.onExit(structuredClone(g));};}
   el('log').replaceChildren(...g.log.slice(-30).reverse().map(t=>{const li=document.createElement('li');li.textContent=t;return li;}));
@@ -132,7 +132,7 @@ el('start').onclick=()=>run(()=>{selected=null;if(g.mode==='pve'&&!g.levelId){co
       // This attack's settled state is displayed immediately: never restore a
       // defeated unit as a visual ghost for subsequent attacks or turns.
       visual=structuredClone(f.after);
-      effect={side,lane:f.lane,targetLane,hit:!!target,stage:'impact',attackEffect:f.before.units[f.before.sides[side].slots[f.lane-1]]?.art?.attackEffect,damage:target?f.before.units[target].hp-f.after.units[target].hp:0};show();if(!target&&g.victoryCondition==='score_5'){document.body.classList.remove('score-shake');void document.body.offsetWidth;document.body.classList.add('score-shake');const fx=add(document.body,'div','score-burst','胜利点 +1');setTimeout(()=>fx.remove(),800);}await wait(sequenceAttack?600:500);
+      effect={side,lane:f.lane,targetLane,hit:!!target,stage:'impact',attackEffect:f.before.units[f.before.sides[side].slots[f.lane-1]]?.art?.attackEffect,damage:target?f.before.units[target].hp-f.after.units[target].hp:0};show();if(!target&&g.victoryCondition==='score_5'){const fx=add(document.body,'div','score-burst','胜利点 +1');setTimeout(()=>fx.remove(),800);}await wait(sequenceAttack?600:500);
     }
   }
   g=sim;visual=null;effect=null;playing=false;feedback='';show();

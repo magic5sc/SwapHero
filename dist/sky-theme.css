@@ -24,7 +24,7 @@ body{background:linear-gradient(#b9edfc,#e5f9fb);color:var(--ink)}
 @media(max-width:650px){.bench .stats{padding-left:2px;padding-right:2px;font-size:8px}.bench .hp-track{width:59px}.field-row .hp-track{width:95px}}
 
 /* Score and result feedback; preserve sky artwork. */
-.score-shake{animation:score-shake .35s steps(5)}@keyframes score-shake{20%,60%{transform:translate(5px,-4px)}40%,80%{transform:translate(-5px,4px)}}.score-burst{position:fixed;z-index:1500;left:50%;top:30%;transform:translateX(-50%);font:bold 40px monospace;color:#ffe17c;text-shadow:4px 4px #422540;pointer-events:none;animation:float-damage .8s steps(6) forwards}.result-overlay{position:fixed;inset:0;z-index:2000;background:#111827dd;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:35px}.result-overlay strong{font:bold clamp(65px,16vw,160px) monospace;color:#ffe093;text-shadow:7px 7px #7d3549;animation:swap-in .5s steps(4)}
+.score-burst{position:fixed;z-index:1500;left:50%;top:30%;transform:translateX(-50%);font:bold 40px monospace;color:#ffe17c;text-shadow:4px 4px #422540;pointer-events:none;animation:float-damage .8s steps(6) forwards}.result-overlay{position:fixed;inset:0;z-index:2000;background:#111827dd;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:35px}.result-overlay strong{font:bold clamp(65px,16vw,160px) monospace;color:#ffe093;text-shadow:7px 7px #7d3549;animation:swap-in .5s steps(4)}
 
 /* Full-viewport illustrated surfaces, 2026-10-28. Keep art 0.3 assets. */
 :root{background:url('assets/sky-islands/sky-camp.png') center/cover fixed}

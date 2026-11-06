@@ -32,3 +32,9 @@ desktop teaching entry and action phase, card/Buff popup location and computed
 opacity, sprite-to-slot geometry, 390×844 responsive layout, adventure start.
 Physical touch devices and a complete played-through match were not tested for
 this cosmetic delivery. Cursor placement/edge clamping have dedicated unit tests.
+
+Live battle controls reserve space for two phase lines, one action-point line,
+and the guidance and feedback text at each breakpoint. Longer guidance or
+feedback can scroll within its own area. End Turn stays visible and disabled
+during resolution, and the combat log opens over the board. A score still shows
+its floating notice while the page stays fixed.

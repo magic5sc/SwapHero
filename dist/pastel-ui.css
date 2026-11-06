@@ -85,3 +85,55 @@ body.pastel-ui .card-popover{width:min(330px,calc(100vw - 16px))}body.pastel-ui 
 #battle-screen .battle-goal,#battle-screen .guidance{background:#fffffff0;border-radius:10px;padding:5px 10px}
 #battle-screen .history summary{background:#fffffff0;border-radius:8px;padding:3px 8px}
 .pastel-ui #adventure .adventure-start h2,.pastel-ui #adventure .adventure-start p,.pastel-ui #adventure .adventure-start label,.pastel-ui #adventure .adventure-start details{background:#ffffffe0;border-radius:12px;padding:7px 12px;width:fit-content;color:#403551}
+
+/* Live battle text wraps inside reserved space. The preview boards have no turn controls. */
+#battle-screen:has(#end){
+ --battle-action-width:144px;
+ --battle-action-height:46px;
+ --battle-hint-lines:3;
+}
+#battle-screen:has(#end) .scoreboard{
+ display:grid;
+ grid-template-columns:minmax(0,1fr) minmax(0,2fr) minmax(0,1fr);
+}
+#battle-screen:has(#end) .round{min-width:0;line-height:1.2}
+#battle-screen:has(#end) #phase{
+ display:grid;
+ place-items:center;
+ block-size:2lh;
+ overflow-wrap:anywhere;
+}
+#battle-screen:has(#end) .round-caption{line-height:1.2;block-size:1lh}
+#battle-screen:has(#end) .side-score{font-variant-numeric:tabular-nums;white-space:nowrap;min-width:0}
+#battle-screen:has(#end) .command-panel{align-items:stretch;min-height:0;gap:6px}
+#battle-screen:has(#end) .actionbar{
+ display:grid;
+ grid-template-columns:minmax(0,1fr) var(--battle-action-width);
+ margin:0;
+}
+#battle-screen:has(#end) .guidance{min-width:0}
+#battle-screen:has(#end) .guidance :is(#hint,#feedback){
+ margin:0;
+ overflow:auto;
+ overflow-wrap:anywhere;
+}
+#battle-screen:has(#end) #hint{block-size:calc(var(--battle-hint-lines)*1lh)}
+#battle-screen:has(#end) #feedback{block-size:2lh}
+#battle-screen:has(#end) .actionbar > .buttons{
+ position:relative;
+ display:grid;
+ grid-template:var(--battle-action-height) / minmax(0,1fr);
+ align-items:stretch;
+ min-width:0;
+ width:100%;
+}
+#battle-screen:has(#end) .actionbar .primary{grid-area:1/1;transform:none}
+#battle-screen:has(#end) #cancel{position:absolute;right:0;bottom:calc(100% + 6px)}
+#battle-screen:has(#end) .history{align-self:flex-end}
+@media(max-width:650px){
+ #battle-screen:has(#end){
+  --battle-action-width:108px;
+  --battle-action-height:44px;
+  --battle-hint-lines:4;
+ }
+}
