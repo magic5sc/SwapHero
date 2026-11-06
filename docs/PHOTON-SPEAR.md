@@ -14,3 +14,5 @@ node tools/check.mjs holy/spiral-photon-spear
 已执行创建、三轮以上渲染/视觉修订和最终check（1通过，0失败，0警告）。未导出图集，页面实时绘制代码。
 Chrome检查：入口、飞行/命中/消散、倒拖同刻像素一致、逐帧、换色、换角色、390px无溢出、无资源错误通过。202项Node回归通过。手机实机与负责人美术验收待完成。
 
+
+当前入口已合并到 pixelfx-vertical.html?effect=spear，原独立链接自动跳转。飞行距离与命中中心依据实际角色轮廓和格位测量，不再使用固定舞台坐标。详见 PIXELFX-PREVIEW.md 的锚点修正记录。

@@ -5,6 +5,7 @@ import * as blast from '../vendor/pixelfx/src/fx/explosions/small-explosion.js';
 import * as frost from '../vendor/pixelfx/src/fx/ice/frost-nova.js';
 import * as heal from '../vendor/pixelfx/src/fx/holy/heal.js';
 import * as shield from '../vendor/pixelfx/src/fx/holy/divine-shield.js';
+import * as spear from '../vendor/pixelfx/src/fx/holy/spiral-photon-spear.js';
 import { displayPositions } from './match-rules.mjs';
 import { sequences, frameAt, renderBounds } from './sequence-art.mjs';
 
@@ -15,6 +16,7 @@ const context = canvas.getContext('2d');
 const effectsCanvas = document.createElement('canvas');
 const effectsContext = effectsCanvas.getContext('2d');
 const presets = [
+  ...(vertical ? [{id:'spear',name:'螺旋光矛 · 光子爆炸',icon:'✧',sub:'向上飞行 · 光子爆炸',duration:spear.timing.end,hit:spear.timing.hit,desc:'原地聚光，螺旋光矛飞向上方目标身体中心，命中后产生光子爆炸。'}] : []),
   {id:'slash', name:'剑刃斩击', icon:'⚔', sub:'刀光与受击', duration:2.5, hit:.66,
     desc: vertical ? '原地挥击，刀光在对手身上出现，对手向上后退再归位。' : '沿中央战线向右出击，对手受击后退，双方随后归位。'},
   {id:'fireball', name:'火球冲击', icon:'✹', sub:'飞行 · 命中与烟尘', duration:6.8, hit:1.2,
@@ -35,7 +37,7 @@ const source = { attack:1, hp:6, maxHp:6 };
 const target = { rig:'temple_swordsman', attack:0, hp:7, maxHp:7 };
 const reserve = { rig:'temple_knight', attack:0, hp:10, maxHp:10 };
 const images = {};
-let selected = presets[0], rig = get('character').value;
+let selected = presets.find(p => p.id === new URLSearchParams(location.search).get('effect')) || presets.find(p => p.id === 'slash'), rig = get('character').value;
 let time = 0, playing = false, last = 0, ready = false;
 let anchors, frame, rgba, pixelsPerUnit, instances = [];
 const clamp = (value, max = 1) => Math.min(max, Math.max(0, value));
@@ -100,6 +102,31 @@ function sprite(ctx, key, motion, t, x, y, size, flip = false) {
   ctx.restore();
 }
 
+
+// Sample the actual idle silhouette, not the animation-wide crop (which includes weapon reach and empty space).
+const slashContact={x:6+38.4*Math.cos(.95)*Math.cos(-.38)-38.4*.6*Math.sin(.95)*Math.sin(-.38),y:-26+38.4*Math.cos(.95)*Math.sin(-.38)+38.4*.6*Math.sin(.95)*Math.cos(-.38)};
+const geometry = {};
+function readGeometry(key) {
+  const c=document.createElement('canvas');c.width=c.height=192;
+  const ctx=c.getContext('2d');ctx.drawImage(images[key].idle,0,0);
+  const data=ctx.getImageData(0,0,192,192).data;
+  let top=192,bottom=0;
+  for(let y=0;y<192;y++)for(let x=0;x<192;x++)if(data[(y*192+x)*4+3]>80){top=Math.min(top,y);bottom=Math.max(bottom,y+1);}
+  let sum=0,count=0;
+  // Head/upper torso identifies the body axis without the extended sword or shield.
+  for(let y=top;y<top+(bottom-top)*.25;y++)for(let x=0;x<192;x++)if(data[(y*192+x)*4+3]>80){sum+=x+.5;count++;}
+  geometry[key]={x:sum/count,top,bottom};
+}
+function points(unit,key,flip=false) {
+  const b=renderBounds[key],g=geometry[key],scale=unit.size/Math.max(b.width,b.height);
+  const x=unit.x+(g.x-b.x-b.width/2)*scale*(flip?-1:1);
+  return {body:{x,y:unit.y+(g.top+(g.bottom-g.top)*.46-b.y-b.height/2)*scale},
+    feet:{x,y:unit.y+(g.bottom-b.y-b.height/2)*scale}};
+}
+function positions() {
+  return {from:points(anchors[0],rig,get('mirror').checked),to:points(anchors[1],target.rig,!get('mirror').checked)};
+}
+
 // Anchor to the same centered sprite boxes as the battle UI, even after a resize.
 function measure() {
   const board = canvas.getBoundingClientRect();
@@ -123,7 +150,7 @@ function measure() {
   draw();
 }
 
-function actorMask() {
+function actorMask(origin) {
   const maskCanvas = document.createElement('canvas');
   const size = Math.round(anchors[0].size / pixelsPerUnit);
   const span = size + 4;
@@ -138,50 +165,57 @@ function actorMask() {
     mask[i] = 1;
     pixels[i] = (255 << 24) | (data[p + 2] << 16) | (data[p + 1] << 8) | data[p];
   }
-  return {mask:{w:span,h:span,data:mask}, pixels, x:-span/2, y:-span/2-size/2, w:span, h:span,
+  return {mask:{w:span,h:span,data:mask}, pixels, x:(anchors[0].x-origin.x)/pixelsPerUnit-span/2, y:(anchors[0].y-origin.y)/pixelsPerUnit-span/2, w:span, h:span,
     head:{x:0,y:-size*.9}, chest:{x:0,y:-size*.55}};
 }
 
 function resetEffects() {
   if (!ready || !anchors) return;
-  const [from, to] = anchors;
+  const {from, to} = positions();
   const palette = palettes[get('palette').value];
   const add = (mod, start, x, y, options = {}, end = start + mod.meta.duration) => ({
     fx: createFx(mod, {seed:12, x:x/pixelsPerUnit, y:y/pixelsPerUnit, ...(palette && {palette}), ...options}),
     mod, start, end
   });
   switch (selected.id) {
+    case 'spear': {
+      const dx=to.body.x-from.body.x,dy=to.body.y-from.body.y;
+      instances=[add(spear,0,from.body.x,from.body.y,{distance:Math.hypot(dx,dy)/pixelsPerUnit,angle:Math.atan2(dy,dx)+Math.PI/2})];
+      break;
+    }
     case 'slash':
-      instances = [add(slash, .6, to.x, to.y)];
+      instances = [add(slash, .6, to.body.x-slashContact.x*pixelsPerUnit, to.body.y-slashContact.y*pixelsPerUnit)];
       break;
     case 'fireball':
       instances = [
-        add(fireball, .55, from.x, from.y, {angle:vertical ? -Math.PI/2 : 0}, selected.hit),
-        add(blast, selected.hit, to.x, to.y, {size:.55})
+        add(fireball, .55, from.body.x, from.body.y, {angle:Math.atan2(to.body.y-from.body.y,to.body.x-from.body.x)}, selected.hit),
+        add(blast, selected.hit, to.body.x, to.body.y+18*.55*.3*pixelsPerUnit, {size:.55})
       ];
       break;
     case 'frost':
-      instances = [add(frost, .5, to.x, to.y + to.size/2, {reach:72})];
+      instances = [add(frost, .5, to.feet.x, to.feet.y, {reach:72})];
       break;
     case 'heal':
-      instances = [add(heal, .5, from.x, from.y + from.size/2, {actor:actorMask()})];
+      instances = [add(heal, .5, from.feet.x, from.feet.y, {actor:actorMask(from.feet)})];
       break;
     case 'shield':
-      instances = [add(shield, .5, from.x, from.y + from.size/2, {actor:actorMask()}, 3.5)];
+      {const origin={x:from.body.x,y:from.body.y+22*pixelsPerUnit};instances=[add(shield,.5,origin.x,origin.y,{actor:actorMask(origin)},3.5)];}
       break;
   }
 }
 
 function syncEffects() {
-  const [from, to] = anchors;
+  const {from, to} = positions();
   for (const instance of instances) {
     const {fx, mod, start, end} = instance;
     const elapsed = clamp(time - start, end - start);
     while (elapsed - fx.t > 1e-7) fx.update(Math.min(1/120, elapsed - fx.t));
+    if(elapsed>fx.t)fx.update(elapsed-fx.t);
+    if(mod===slash){const recoil=14*Math.sin(clamp((time-selected.hit)/.4)*Math.PI);fx.options.x=(to.body.x+(vertical?0:recoil))/pixelsPerUnit-slashContact.x;fx.options.y=(to.body.y-(vertical?recoil:0))/pixelsPerUnit-slashContact.y;}
     if (mod === fireball) {
       const progress = elapsed / (end - start);
-      fx.options.x = (from.x + (to.x - from.x) * progress) / pixelsPerUnit;
-      fx.options.y = (from.y + (to.y - from.y) * progress) / pixelsPerUnit;
+      fx.options.x = (from.body.x + (to.body.x - from.body.x) * progress) / pixelsPerUnit;
+      fx.options.y = (from.body.y + (to.body.y - from.body.y) * progress) / pixelsPerUnit;
     }
   }
 }
@@ -226,7 +260,7 @@ function draw() {
   drawLayer('front');
   get('timeline').value = time;
   get('clock').textContent = time.toFixed(2) + ' s';
-  get('phase').textContent = time >= selected.duration ? '播放结束' : time < .5 ? '准备'
+  get('phase').textContent = time >= selected.duration ? '播放结束' : time < (selected.id==='spear'?spear.timing.release:.5) ? '准备'
     : time < selected.hit ? '释放' : hit < .22 ? (support ? '生效' : '命中') : '收尾';
 }
 
@@ -299,6 +333,7 @@ async function init() {
         images[key][motion] = image;
       }));
     }));
+    for(const key of Object.keys(sequences)) readGeometry(key);
     ready = true;
     for (const id of ['replay','pause','step','timeline']) get(id).disabled = false;
     restart();

@@ -5,7 +5,7 @@ export const meta = {
  name:'Spiral photon spear', desc:'Double helix light spear and photon starburst.',
  tags:['holy','spear','spiral','photon','one-shot'], size:[192,256], origin:[96,185],
  duration:timing.end, loop:false, fps:30, bg:'dark',
- options:{palette:['#12324d','#186e91','#28b8cd','#75eaff','#d2fcff','#ffffff'],seed:17}
+ options:{palette:['#12324d','#186e91','#28b8cd','#75eaff','#d2fcff','#ffffff'],seed:17,distance:100}
 };
 const sat=x=>Math.max(0,Math.min(1,x));
 export function draw(p,t,o){
@@ -18,7 +18,7 @@ export function draw(p,t,o){
   sparkle(p,0,0,5*q,C[5],C[3],q);
  }
  if(t>=release&&t<hit){
-  const u=(t-release)/(hit-release),y=-100*u,L=48,fade=sat((t-release)/.06);
+  const u=(t-release)/(hit-release),y=-o.distance*u,L=48,fade=sat((t-release)/.06);
   // Receding spiral halves are behind the shaft; near halves cross its white core.
   for(let pass=0;pass<2;pass++){
    if(pass===1){
@@ -37,7 +37,7 @@ export function draw(p,t,o){
  }
  const e=t-hit;
  if(e>=0){
-  const k=sat(1-e/1.45),fast=1-Math.exp(-e*8),y=-100;
+  const k=sat(1-e/1.45),fast=1-Math.exp(-e*8),y=-o.distance;
   p.glow(0,y,42,C[2],.75*k*k);
   if(e<.09){sparkle(p,0,y,27*(1-e/.12),C[5],C[3],1);p.circle(0,y,5,C[5]);}
   if(e<.26){for(let i=0;i<8;i++){const a=i*TAU/8+.17, r=8+36*(1-Math.exp(-e*22));p.beam(Math.cos(a)*r*.25,y+Math.sin(a)*r*.25,Math.cos(a)*r,y+Math.sin(a)*r,2,C[4],1-e/.26);}}
