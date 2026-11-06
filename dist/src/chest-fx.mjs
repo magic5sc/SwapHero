@@ -2,7 +2,8 @@ import {clearFrame, composite, createFrame, createFx} from '../vendor/pixelfx/sr
 import * as chestOpen from '../vendor/pixelfx/src/fx/pickups/chest-open.js';
 
 const silverPalette=['#141722','#2d3448','#47536a','#687991','#92a4bb','#bacbe0','#e0eeff','#ffffff'];
-const step=1/120, speed=1.5;
+const {duration,fps}=chestOpen.meta;
+const frameStep=1/fps, lastFrame=Math.round(duration*fps);
 
 export function mountChestFx(button, rare) {
  const canvas=document.createElement('canvas');
@@ -25,21 +26,22 @@ export function mountChestFx(button, rare) {
  button.append(canvas);
  button.classList.add('has-chest-fx');
 
- return async function play(){
-  await new Promise((resolve,reject)=>{
+ return function play(){
+  return new Promise((resolve,reject)=>{
    const start=performance.now();
-   let steps=0;
+   let renderedFrame=0;
    function tick(now){
     if(!button.isConnected){resolve();return;}
-    const time=Math.min(chestOpen.meta.duration,Math.max(0,now-start)*speed/1000);
-    const next=Math.floor(time/step);
+    const elapsed=Math.max(0,now-start)/1000;
+    const nextFrame=Math.min(lastFrame,Math.floor(elapsed*fps));
     try{
-     if(next>steps){
-      while(steps<next){fx.update(step);steps++;}
+     if(nextFrame>renderedFrame){
+      // Match the gallery's sampling cadence. PixelFX substeps the simulation internally.
+      while(renderedFrame<nextFrame){fx.update(frameStep);renderedFrame++;}
       draw();
      }
     }catch(error){reject(error);return;}
-    if(time>=chestOpen.meta.duration)resolve();
+    if(renderedFrame===lastFrame)resolve();
     else requestAnimationFrame(tick);
    }
    requestAnimationFrame(tick);

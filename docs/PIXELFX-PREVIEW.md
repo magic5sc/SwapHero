@@ -43,7 +43,7 @@ PixelFX https://github.com/patch-gg/pixelfx ，固定提交 a84159688af3ca37a4be
 
 ## 冒险开箱
 
-普通和精英战斗胜利后的宝箱使用 [PixelFX Chest Open](https://github.com/patch-gg/pixelfx/blob/a84159688af3ca37a4be/src/fx/pickups/chest-open.js)。`chest-fx.mjs` 以 1.5 倍速播放原版完整动效，精英宝箱使用银色光效。点击时先保存 `chestOpened`，随后播放开箱和原有奖励翻牌。已开箱的存档直接展示奖励。减少动态效果模式使用静态宝箱并直接展示奖励，Canvas 不可用时使用原有宝箱图。
+普通和精英战斗胜利后的宝箱使用 [PixelFX Chest Open](https://github.com/patch-gg/pixelfx/blob/a84159688af3ca37a4be05a0d422b94451b2e24e/src/fx/pickups/chest-open.js)。`chest-fx.mjs` 按官方预览的 1 倍速和效果声明的 30 帧每秒播放完整的 4.6 秒时间轴，由 PixelFX 内部推进模拟。精英宝箱使用银色光效。点击时先保存 `chestOpened`，随后播放开箱和原有奖励翻牌。已开箱的存档直接展示奖励。减少动态效果模式使用静态宝箱并直接展示奖励，Canvas 不可用时使用原有宝箱图。
 
 game-only 构建保留 PixelFX 核心、许可、开箱特效与其 `_lib.js`，其余预览专用效果仍只进入开发版和统一站点。
 
