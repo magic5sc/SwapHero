@@ -1,2 +1,64 @@
 :root{font-family:system-ui,'Microsoft YaHei',sans-serif;color:#403747;background:#38291f;font-synthesis:none}*{box-sizing:border-box}body{margin:0;background:linear-gradient(#251c1640,#251c1640),url('assets/tabletop/desk.png') center/cover fixed}main{max-width:1280px;margin:auto;padding:32px}header{display:flex;justify-content:space-between;align-items:center;gap:20px;background:#fff9f0ed;padding:24px 28px;border-radius:20px;margin-bottom:20px}h1{font-size:clamp(24px,3vw,34px);margin:6px 0}h2{font-size:23px;margin:3px 0}p{line-height:1.7;margin:6px 0}header p{color:#786b76}.eyebrow{font-size:11px;font-weight:750;letter-spacing:.14em;color:#917557}a{color:#476b59;text-underline-offset:4px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:20px}.preview,aside{background:#fffaf2f2;border:1px solid #ffffff80;border-radius:20px;padding:22px;min-width:0}.stage-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px}#phase{font-size:12px;background:#e7e4f1;border-radius:20px;padding:7px 12px;white-space:nowrap}.stage{position:relative;overflow:hidden;border-radius:14px;border:4px solid #9b7951;background:url('assets/tabletop/leather.png') center/cover;aspect-ratio:16/9}.stage[data-background=island]{background-image:url('assets/sky-islands/sky-arena.png')}.stage[data-background=dark]{background:#171c29;border-color:#394052}canvas{display:block;width:100%;height:100%;image-rendering:pixelated}.stage-label{position:absolute;inset:auto 14px 10px;display:flex;justify-content:space-between;pointer-events:none;color:#fff1d3;font-size:11px;text-shadow:0 1px 3px #000}.transport{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin:18px 0}button,select{font:inherit;border:1px solid #d4c9d4;border-radius:10px;background:#fffdf9;color:#493b51;padding:10px 12px;cursor:pointer}button:hover{background:#f2eaf2}button:disabled{opacity:.45;cursor:default}.primary{background:#587d66;color:white;border-color:#587d66}.primary:hover{background:#456a54}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #bd8954;outline-offset:3px}.transport label{font-size:13px}.check{display:flex;align-items:center;gap:7px}.check input{accent-color:#55765f;width:17px;height:17px}.timeline-label{display:flex;justify-content:space-between;font-size:12px;color:#6e6274}.timeline-label span{color:#918596}#timeline{width:100%;accent-color:#597d67;margin:14px 0}.beats{display:flex;justify-content:space-between;color:#8c7a63;font-size:11px}.description{padding:15px 0 0;margin-top:17px;border-top:1px solid #ded5ca;color:#6c5b65;font-size:13px}.effects{display:grid;gap:8px;margin:13px 0 24px}.effects button{text-align:left;display:grid;grid-template-columns:30px 1fr;gap:1px 8px;padding:13px}.effects b{font-size:14px}.effects small{grid-column:2;font-size:11px;color:#8a7986}.effects .icon{grid-row:span 2;align-self:center;font-size:22px}.effects button[aria-pressed=true]{background:#e5eddf;border-color:#6e8969;box-shadow:inset 3px 0 #63835c}.settings{display:grid;gap:10px;border-top:1px solid #ded5ca;padding-top:20px}.settings>label:not(.check){font-size:12px;margin-bottom:-6px}.settings select{width:100%}footer{margin-top:20px;padding:15px 20px;border-radius:14px;background:#fff9f0e8;font-size:12px;line-height:1.8;color:#776675}#error{background:#ffe0dc;color:#8e302a;padding:12px;border-radius:8px}[hidden]{display:none!important}@media(max-width:900px){main{padding:18px}.layout{grid-template-columns:1fr}aside{display:grid;grid-template-columns:1fr 1fr;gap:14px}.effects{grid-column:1;margin:0}.settings{grid-column:2;grid-row:1 / span 2;border:0;padding:0}.preview{padding:16px}}@media(max-width:520px){main{padding:10px}header{padding:18px;align-items:start;flex-direction:column;gap:9px}header p{font-size:13px}.preview,aside{border-radius:14px}.stage{border-width:2px}.stage-label{font-size:9px}.transport{gap:7px}.transport button,.transport select{padding:9px;font-size:12px}aside{grid-template-columns:1fr}.settings{grid-column:1;grid-row:auto;border-top:1px solid #ded5ca;padding-top:18px}.effects{grid-template-columns:1fr 1fr}.effects button{padding:10px;grid-template-columns:22px 1fr}.effects b{font-size:12px}.effects .icon{font-size:17px}.stage-head h2{font-size:20px}}
 
+
+/* Reuse the game battle skin inside the lab without inheriting viewport sizing. */
+.fx-lab header { flex-wrap: wrap; }
+.fx-lab header > div { flex: 1 1 260px; }
+.fx-lab #battle-screen {
+  width: 100%;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+}
+.fx-lab #battle-screen .leather-surface {
+  height: auto;
+  padding: clamp(8px, 2vw, 18px);
+}
+.fx-lab #battle-screen .topbar { min-height: 46px; }
+.fx-lab #clock { font-size: 12px; font-variant-numeric: tabular-nums; }
+.fx-lab #fx-board {
+  flex: none;
+  height: clamp(360px, 43vw, 540px);
+}
+.fx-lab .fx-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.fx-lab #battle-screen .field-title,
+.fx-lab #battle-screen .section-head { color: #f6d5db; }
+.fx-lab #battle-screen .reserve .section-head,
+.fx-lab #battle-screen .field:last-child .field-title { color: #ece0ff; }
+.fx-lab #battle-screen .card-top { top: 19px; }
+.fx-lab #battle-screen .card { pointer-events: none; }
+.fx-lab #battle-screen .leather-surface[data-background=island] {
+  --level-texture: url('assets/sky-islands/sky-arena.png');
+}
+.fx-lab #battle-screen .leather-surface[data-background=dark] {
+  background: #171c29;
+}
+.fx-lab[data-orientation=horizontal] #fx-board { flex-direction: row; }
+.fx-lab[data-orientation=horizontal] #fx-board > .reserve { order: -1; }
+.fx-lab[data-orientation=horizontal] #fx-board > .enemy-reserve { order: 1; }
+.fx-lab[data-orientation=horizontal] #battle-screen .lanes { flex-direction: row-reverse; }
+.fx-lab[data-orientation=horizontal] #battle-screen .field:first-child { border-bottom: 0; }
+.fx-lab[data-orientation=horizontal] #battle-screen .field-row,
+.fx-lab[data-orientation=horizontal] #battle-screen .bench {
+  grid-template: repeat(3, minmax(0, 1fr)) / minmax(0, 1fr);
+}
+.fx-lab[data-orientation=horizontal] #battle-screen .field:last-child::after {
+  position: absolute;
+  content: '';
+  inset: 0 -4px 0 auto;
+  width: 1px;
+  background: #f4e8c480;
+}
+@media (max-width: 650px) {
+  .fx-lab .preview { padding: 8px; }
+  .fx-lab #battle-screen .section-head,
+  .fx-lab #battle-screen .field-title { max-width: calc(100% - 10px); }
+  .fx-lab #battle-screen .stats { width: max-content; }
+  .fx-lab[data-orientation=horizontal] #battle-screen .field:last-child::after { right: -3px; }
+}
+

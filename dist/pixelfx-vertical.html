@@ -1,13 +1,27 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SwapHero · PixelFX 纵向 · 原地攻击</title><link rel="stylesheet" href="pixelfx-preview.css"><link rel="stylesheet" href="pixelfx-vertical.css"></head>
-<body class="vertical-preview"><main>
-<header><div><span class="eyebrow">SWAPHERO / MOTION LAB</span><h1>PixelFX 纵向 · 原地攻击</h1><p>上方为目标，下方为出演角色。原地攻击，保留受击位移。</p></div><a href="tests.html">← 返回测试台</a><a href="pixelfx-preview.html">横向原版 ↗</a></header>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SwapHero · PixelFX 纵向 · 原地攻击</title><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="sky-theme.css"><link rel="stylesheet" href="tabletop.css"><link rel="stylesheet" href="pastel-ui.css"><link rel="stylesheet" href="pixelfx-preview.css"></head>
+<body class="pastel-ui fx-lab" data-orientation="vertical"><main>
+<header><div><span class="eyebrow">SWAPHERO / MOTION LAB</span><h1>PixelFX 纵向 · 原地攻击</h1><p>对手在上、我方在下。出演角色原地攻击，命中后对手后退。</p></div><a href="tests.html">← 返回测试台</a><a href="pixelfx-preview.html">横版 · 左右对阵 ↗</a></header>
 <div class="layout"><section class="preview" aria-label="表演舞台"><div class="stage-head"><div><span class="eyebrow">正在预览</span><h2 id="effect-title">剑刃斩击</h2></div><span id="phase" role="status">正在载入…</span></div>
-<div class="stage"><canvas id="stage" width="640" height="480" aria-label="项目角色与PixelFX特效组合动画"></canvas><div class="stage-label"><span>纵向站位 · 原地攻击</span><span id="clock">0.00 s</span></div></div>
+<section id="battle-screen" class="shell" aria-label="SwapHero 战斗界面">
+  <div class="leather-surface">
+    <div class="topbar"><div><div class="eyebrow">SWAPHERO</div><h1>特效试演</h1></div><span id="clock">0.00 s</span></div>
+    <div class="scoreboard"><div class="side-score player">我方 <strong>2</strong> 存活</div><div class="round">攻击表演<div class="round-caption">中央战线 · 预览</div></div><div class="side-score enemy">对手 <strong>1</strong> 存活</div></div>
+    <div class="combat-layout"><div class="arena-scene plan-board" id="fx-board">
+      <section class="enemy-reserve"><div class="section-head"><h2>对手备战区</h2></div><div class="bench" id="enemy-bench"></div></section>
+      <section class="battle"><div class="lanes">
+        <div class="field"><h2 class="field-title">对手战场</h2><div class="field-row" id="enemy-field"></div></div>
+        <div class="field"><h2 class="field-title">我方战场</h2><div class="field-row" id="player-field"></div></div>
+      </div></section>
+      <section class="reserve"><div class="section-head"><h2>我方备战区</h2></div><div class="bench" id="player-bench"></div></section>
+      <canvas id="stage" class="fx-canvas" aria-label="项目角色与 PixelFX 特效表演"></canvas>
+    </div></div>
+  </div>
+</section>
 <div class="transport"><button id="replay" class="primary" disabled>↺ 重播表演</button><button id="pause" disabled>暂停</button><button id="step" disabled>下一帧</button><label>速度 <select id="speed"><option value="0.25">¼ 倍</option><option value="0.5">½ 倍</option><option value="1" selected>正常</option><option value="1.5">1.5 倍</option></select></label><label class="check"><input type="checkbox" id="loop">循环</label></div>
 <label class="timeline-label" for="timeline">表演进度 <span>拖动查看任意时刻</span></label><input id="timeline" type="range" min="0" max="3" step="0.001" value="0" disabled>
 <div class="beats"><span>准备</span><span>释放 / 命中</span><span>收尾</span></div><p id="description" class="description"></p><p id="error" role="alert" hidden></p></section>
-<aside><span class="eyebrow">01 / 选择表演</span><div id="effects" class="effects"></div><div class="settings"><span class="eyebrow">02 / 舞台设置</span><label for="character">出演角色</label><select id="character"><option value="temple_swordsman">教会剑士</option><option value="temple_knight">教会骑士</option><option value="temple_archer">教会弓手</option></select><label for="palette">特效配色</label><select id="palette"><option value="original">原始配色</option><option value="ice">冰蓝</option><option value="gold">暖金</option><option value="green">翠绿</option></select><label for="background">场景</label><select id="background"><option value="leather">当前战场 · 皮革</option><option value="island">浮岛战场</option><option value="dark">暗底 · 检查光效</option></select><label class="check"><input type="checkbox" id="mirror">左右镜像</label><label class="check"><input type="checkbox" id="show-fx" checked>显示特效</label></div></aside></div>
+<aside><span class="eyebrow">01 / 选择表演</span><div id="effects" class="effects"></div><div class="settings"><span class="eyebrow">02 / 舞台设置</span><label for="character">出演角色</label><select id="character"><option value="temple_swordsman">教会剑士</option><option value="temple_knight">教会骑士</option><option value="temple_archer">教会弓手</option></select><label for="palette">特效配色</label><select id="palette"><option value="original">原始配色</option><option value="ice">冰蓝</option><option value="gold">暖金</option><option value="green">翠绿</option></select><label for="background">场景</label><select id="background"><option value="leather">当前战场 · 皮革</option><option value="island">浮岛战场</option><option value="dark">暗底 · 检查光效</option></select><label class="check"><input type="checkbox" id="mirror">镜像角色朝向</label><label class="check"><input type="checkbox" id="show-fx" checked>显示特效</label></div></aside></div>
 <footer>试演复用现有角色图集，动作与特效节奏为预览编排；不代表正式技能。<a href="https://github.com/patch-gg/pixelfx" target="_blank" rel="noreferrer">PixelFX</a> · <a href="vendor/pixelfx/LICENSE">MIT 许可</a></footer>
-</main><script type="module" src="src/pixelfx-vertical.mjs"></script></body></html>
+</main><script type="module" src="src/pixelfx-preview.mjs"></script></body></html>
 
