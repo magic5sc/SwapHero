@@ -177,7 +177,7 @@ el('start').onclick=()=>run(()=>{selected=null;if(g.mode==='pve'&&!g.levelId){co
       // This attack's settled state is displayed immediately: never restore a
       // defeated unit as a visual ghost for subsequent attacks or turns.
       visual=structuredClone(f.after);
-      effect={side,lane:f.lane,targetLane,hit:!!target,stage:'impact',attackEffect:f.before.units[f.before.sides[side].slots[f.lane-1]]?.art?.attackEffect,damage:target?f.before.units[target].hp-f.after.units[target].hp:0};show();if(!target&&g.victoryCondition==='score_5'){const fx=add(document.body,'div','score-burst','胜利点 +1');setTimeout(()=>fx.remove(),800);}await wait(sequenceAttack?600:500);
+      effect={side,lane:f.lane,targetLane,hit:!!target,stage:'impact',attackEffect:f.before.units[f.before.sides[side].slots[f.lane-1]]?.art?.attackEffect,damage:f.damage};show();if(!target&&g.victoryCondition==='score_5'){const fx=add(document.body,'div','score-burst','胜利点 +1');setTimeout(()=>fx.remove(),800);}await wait(sequenceAttack?600:500);
     }
   }
   g=sim;visual=null;effect=null;playing=false;feedback='';show();

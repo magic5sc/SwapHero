@@ -41,7 +41,7 @@ export function move(g, side, from, to) {
   for(const event of r.events){collectEvent(g,{type:event.type==='enter'?'unit_enter':'unit_leave',unit:event.unit,side,position:event.position,exchange:r.events.some(e=>e.type==='exit')});if(event.type==='exit'){expireModifiers(g,'on_field',event.unit);onLeave(g,event.unit);}}
   drainStack(g);
 }
-export function resolveLane(g, side, lane, attackerId, outcome = null) {
+export function resolveLane(g, side, lane, attackerId) {
   const attacker = g.units[attackerId], own = g.sides[side];
   if (g.winner||g.error||!attacker || !canAttack(attacker) || own.slots[lane - 1] !== attackerId) return false;
   const targetId = combatTarget(g,side,lane)?.id;
@@ -51,7 +51,6 @@ export function resolveLane(g, side, lane, attackerId, outcome = null) {
     if (g.victoryCondition === 'score_5' && own.score >= 5) {g.winner = side;g.phase='finished';}
   } else {
     const damage=applyDamage(g,attackerId,targetId,Math.max(0,attacker.attack),'combat');
-    if(outcome)outcome.damage=damage;
     g.log.push(`${attacker.name} 对 ${g.units[targetId].name} 造成 ${damage} 点伤害`);
   }
   return true;
@@ -68,11 +67,14 @@ export function endTurn(g, side, onAttack = null, onAttackSettled = null) {
    g.attackStep='damage';
    for(const {lane,id} of attacks){
     const before=onAttack?structuredClone(g):null;
-    const outcome=onAttack?{}:null;
     const target=combatTarget(g,side,lane);
-    const attacked=resolveLane(g,side,lane,id,outcome);
+    const attacked=resolveLane(g,side,lane,id);
     if(g.mode==='pve')drainStack(g);
-    if(attacked&&onAttack)onAttack({side,lane,attackerId:id,targetId:target?.id??null,targetLane:target?.position??null,damage:outcome.damage??0,before,after:structuredClone(g)});
+    if(attacked&&onAttack){
+     const targetId=target?.id??null;
+     const damage=targetId?Math.max(0,before.units[targetId].hp-g.units[targetId].hp):0;
+     onAttack({side,lane,attackerId:id,targetId,targetLane:target?.position??null,damage,before,after:structuredClone(g)});
+    }
     if(g.winner||g.error)break;
    }
    drainStack(g);

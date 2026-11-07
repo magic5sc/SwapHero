@@ -41,13 +41,15 @@ overhead preparation badges; conditional own-turn-start skills can also supply
 them. The teaching level's existing charge/ready Buffs therefore show their state
 without role-name or level-specific logic. No damage forecasts are added.
 
-During player actions blue straight arrows show the projected HP damage of each
-normal hit, including shields, defenses and retargeting after a defeat. The
-forecast runs the player's real attack sequence on a copy of the state. A pale
-pulsing segment shows the projected net HP loss through the attack phase, before
-turn-end and opponent actions. Reduced motion keeps the segment static.
-Unavailable attackers and empty scoring lanes have no arrow. The preview hides
-during dragging and turn resolution and refreshes after a move.
+During player actions blue arrows show each normal hit's projected HP loss using
+the same settled attack result as the in-battle damage number. Orange arrows
+estimate incoming normal hits from the enemy lineup and attack values visible
+now, independently of the player's forecast. An enemy projected to die still
+appears in this threat estimate. This estimate applies current defenses and
+shields without predicting AI moves or future skill triggers. A pale pulsing
+segment shows the estimated HP loss on each side. Reduced motion keeps it static.
+Opposing arrows are offset and orange shafts break at crossings with blue arrows.
+The preview hides during dragging and resolution and refreshes after a move.
 
 The approved gold-rimmed, dark-red powerful-attack icon is stored at
 `dist/assets/status/powerful-attack-warning.png`. Ready effects that cause positive

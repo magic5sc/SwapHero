@@ -7,6 +7,9 @@
 .attack-preview-arrow polygon{fill:#83c4ff}
 .attack-preview-arrow rect{fill:#25477a;stroke:#a9d7ff;stroke-width:1}
 .attack-preview-arrow text{fill:#f5fbff;font-family:system-ui,sans-serif;font-weight:800}
+.attack-preview-arrow[data-side="ai"] line{stroke:#ffb575}
+.attack-preview-arrow[data-side="ai"] polygon{fill:#ffb575}
+.attack-preview-arrow[data-side="ai"] rect{fill:#763e27;stroke:#ffc18e}
 .hp-preview-loss{position:absolute;top:0;bottom:0;background:#fff8ff;border-radius:3px;pointer-events:none;animation:hp-preview-breathe 1.35s ease-in-out infinite}
 @keyframes hp-preview-breathe{0%,100%{opacity:.48}50%{opacity:1}}
 @media(prefers-reduced-motion:reduce){.hp-preview-loss{animation:none;opacity:.9}}
