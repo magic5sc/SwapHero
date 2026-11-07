@@ -41,12 +41,12 @@ overhead preparation badges; conditional own-turn-start skills can also supply
 them. The teaching level's existing charge/ready Buffs therefore show their state
 without role-name or level-specific logic. No damage forecasts are added.
 
-During player actions blue arrows show each normal hit's projected HP loss using
-the same settled attack result as the in-battle damage number. Orange arrows
-estimate incoming normal hits from the enemy lineup and attack values visible
-now, independently of the player's forecast. An enemy projected to die still
-appears in this threat estimate. This estimate applies current defenses and
-shields without predicting AI moves or future skill triggers. A pale pulsing
+During player actions blue arrows show outgoing normal attacks and orange arrows
+show incoming normal attacks. Arrow numbers show current attack power, including
+when the target has less HP. Both sides start from the visible board independently,
+so a projected enemy defeat does not remove its incoming preview. HP forecasts
+apply current defenses, shields and remaining HP limits to normal hits in order,
+without predicting skill triggers, including sweep, or AI moves. A pale pulsing
 segment shows the estimated HP loss on each side. The same forecast adds the
 remaining HP to the health number, for example `32(27)/32`, with a minimum of zero.
 Units with no forecast loss keep the plain health number. Reduced motion keeps

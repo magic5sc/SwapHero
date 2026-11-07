@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {createGame,start,endTurn} from '../dist/src/battle.mjs';
 import {forecastPlayerAttack,forecastEnemyAttack} from '../dist/src/attack-preview.mjs';
 
@@ -39,13 +40,13 @@ test('forecast uses shield absorption, capped HP damage and live retargeting wit
  state.units[state.sides.player.slots[1]].attack=3;
  const snapshot=structuredClone(state);
  assert.deepEqual(forecastPlayerAttack(state),{
-  links:[{from:1,to:3,damage:1},{from:2,to:2,damage:1},{from:3,to:2,damage:1}],
+  links:[{from:1,to:3,attack:5,damage:1},{from:2,to:2,attack:3,damage:1},{from:3,to:2,attack:1,damage:1}],
   losses:[{side:'ai',slot:2,hp:second.hp,remaining:second.hp-2,maxHp:second.maxHp},{side:'ai',slot:3,hp:1,remaining:0,maxHp:first.maxHp}],
  });
  assert.deepEqual(state,snapshot);
 });
 
-test('player preview and live hit report the same HP loss when a hit triggers healing',()=>{
+test('normal attack preview excludes triggered healing',()=>{
  const state=createGame();
  state.mode='pve';
  state.units['player-1'].attack=4;
@@ -56,9 +57,31 @@ test('player preview and live hit report the same HP loss when a hit triggers he
  const prediction=forecastPlayerAttack(state).links[0];
  const actual=[];
  endTurn(state,'player',frame=>actual.push(frame));
- assert.equal(prediction.damage,3);
- assert.equal(prediction.damage,actual[0].damage);
- assert.equal(prediction.damage,actual[0].before.units['ai-3'].hp-actual[0].after.units['ai-3'].hp);
+ assert.equal(prediction.damage,4);
+ assert.equal(actual[0].damage,3);
+});
+
+test('sweep stays out of the HP forecast and overkill retains the attacker’s full attack value',()=>{
+ const pack=JSON.parse(readFileSync(new URL('../dist/data/pve-test.json',import.meta.url),'utf8'));
+ const sweep=pack.skills.find(skill=>skill.skill_id==='test_hero_strike');
+ const state=createGame(null,null,{victoryCondition:'elimination'});
+ state.mode='pve';
+ state.sides.ai.slots[2]=null;
+ Object.assign(state.units['player-1'],{attack:2});
+ Object.assign(state.units['player-2'],{attack:6,skills:[{level:1,definition:sweep}]});
+ Object.assign(state.units['player-3'],{attack:2});
+ Object.assign(state.units['ai-1'],{hp:12,maxHp:12});
+ Object.assign(state.units['ai-2'],{hp:6,maxHp:6});
+ start(state);
+
+ const preview=forecastPlayerAttack(state);
+ assert.deepEqual(preview.links,[{from:1,to:2,attack:2,damage:2},{from:2,to:2,attack:6,damage:4},{from:3,to:1,attack:2,damage:2}]);
+ assert.deepEqual(preview.losses.map(({slot,remaining})=>[slot,remaining]),[[1,10],[2,0]]);
+
+ const live=[];
+ endTurn(state,'player',frame=>live.push(frame));
+ assert.equal(live[1].damage,3);
+ assert.equal(state.units['ai-1'].hp,9);
 });
 
 test('incoming forecast uses current enemy attack even when the player forecast defeats that enemy',()=>{
@@ -70,7 +93,7 @@ test('incoming forecast uses current enemy attack even when the player forecast 
  const snapshot=structuredClone(state);
  assert.equal(forecastPlayerAttack(state).losses.find(loss=>loss.slot===3).remaining,0);
  const incoming=forecastEnemyAttack(state);
- assert.deepEqual(incoming.links.find(link=>link.from===3),{from:3,to:1,damage:4});
+ assert.deepEqual(incoming.links.find(link=>link.from===3),{from:3,to:1,attack:6,damage:4});
  assert.equal(incoming.losses.find(loss=>loss.slot===1).remaining,state.units['player-1'].hp-4);
  assert.deepEqual(state,snapshot);
 });

@@ -1,4 +1,3 @@
-import {endTurn} from './battle.mjs';
 import {mustReinforce} from './formation.mjs';
 import {canAttack} from './content.mjs';
 import {applyDamage} from './effects.mjs';
@@ -16,37 +15,31 @@ function healthLosses(before,after,side){
  });
 }
 
-export function forecastPlayerAttack(view){
- const empty={links:[],losses:[]};
- const player=view.sides.player;
- if(!playerPlanning(view)||mustReinforce(player.slots,view.actionPoints))return empty;
-
- const links=[],losses=[];
- const simulation=structuredClone(view);
- endTurn(simulation,'player',({attackerId,targetId,damage})=>{
-  if(!targetId)return;
-  const from=player.slots.indexOf(attackerId)+1;
-  const to=view.sides.ai.slots.indexOf(targetId)+1;
-  if(from>0&&from<=3&&to>0&&to<=3)links.push({from,to,damage});
- },settled=>losses.push(...healthLosses(view,settled,'ai')));
- return simulation.error?empty:{links,losses};
-}
-
-export function forecastEnemyAttack(view){
+function forecastNormalAttacks(view,side,targetSide){
  if(!playerPlanning(view))return {links:[],losses:[]};
- // Start from the current board independently of the player's forecast.
+ const own=view.sides[side];
+ if(side==='player'&&mustReinforce(own.slots,view.actionPoints))return {links:[],losses:[]};
+ // Forecast each side from the current board independently.
  const simulation=structuredClone(view);
  const links=[];
+ let score=own.score;
  for(const from of ATTACK_ORDER){
-  const unit=view.units[view.sides.ai.slots[from-1]];
+  const unit=view.units[own.slots[from-1]];
   if(!unit||!canAttack(unit))continue;
-  const target=combatTarget(simulation,'ai',from);
-  if(!target)continue;
-  const damage=applyDamage(simulation,unit.id,target.id,Math.max(0,unit.attack),'combat');
-  links.push({from,to:target.position,damage});
+  const target=combatTarget(simulation,side,from);
+  if(!target){
+   if(view.victoryCondition==='score_5'&&++score>=5)break;
+   continue;
+  }
+  const attack=Math.max(0,unit.attack);
+  const damage=applyDamage(simulation,unit.id,target.id,attack,'combat',{preview:true});
+  links.push({from,to:target.position,attack,damage});
  }
- return {links,losses:healthLosses(view,simulation,'player')};
+ return {links,losses:healthLosses(view,simulation,targetSide)};
 }
+
+export const forecastPlayerAttack=view=>forecastNormalAttacks(view,'player','ai');
+export const forecastEnemyAttack=view=>forecastNormalAttacks(view,'ai','player');
 
 function element(tag,attrs,parent){
  const node=document.createElementNS('http://www.w3.org/2000/svg',tag);
@@ -82,7 +75,7 @@ function drawArrow(svg,route,others,index,scale){
  element('polygon',{points:[[tx,ty],[bx-uy*wing,by+ux*wing],[bx+uy*wing,by-ux*wing]].map(p=>p.join(',')).join(' ')},group);
  const mid=link.side==='ai'?.33+index*.07:.48+index*.07;
  const lx=x+(tx-x)*mid,ly=y+(ty-y)*mid;
- const label=String(link.damage),width=Math.max(22,11+label.length*7)*scale,height=18*scale;
+ const label=String(link.attack),width=Math.max(22,11+label.length*7)*scale,height=18*scale;
  element('rect',{x:lx-width/2,y:ly-height/2,width,height,rx:5*scale},group);
  element('text',{x:lx,y:ly,'font-size':12*scale,'text-anchor':'middle','dominant-baseline':'central'},group).textContent=label;
 }
@@ -117,7 +110,7 @@ export function drawAttackPreview(board,view){
  const svg=element('svg',{class:'attack-preview-lines',viewBox:[0,0,bounds.width,bounds.height].join(' '),role:'img'},board);
  const labels=[];
  const routes=links.flatMap(link=>{
-  const {from,to,damage,side}=link;
+  const {from,to,attack,damage,side}=link;
   const outgoing=side==='player';
   const topSlot=outgoing?to:from,bottomSlot=outgoing?from:to;
   const top=rect('ai',topSlot,'.unit-sprite'),bottom=rect('player',bottomSlot,'.unit-sprite'),stats=rect('ai',topSlot,'.stats');
@@ -134,7 +127,7 @@ export function drawAttackPreview(board,view){
   const ox=(py-ey)/length*offset,oy=(ex-px)/length*offset;
   const attacker=view.units[view.sides[side].slots[from-1]];
   const target=view.units[view.sides[outgoing?'ai':'player'].slots[to-1]];
-  labels.push((outgoing?'我方':'对手')+attacker.name+'预计使'+target.name+'扣除 '+damage+' 点生命');
+  labels.push((outgoing?'我方':'对手')+attacker.name+'攻击力 '+attack+'，预计使'+target.name+'扣除 '+damage+' 点生命');
   return [outgoing?{x:px+ox,y:py+oy,tx:ex+ox,ty:ey+oy,link}:{x:ex+ox,y:ey+oy,tx:px+ox,ty:py+oy,link}];
  });
  for(const route of [...routes].reverse())drawArrow(svg,route,routes,route.link.from-1,scale);
