@@ -100,7 +100,9 @@ function card(view, side, p, previous) {
    for(const op of view.enemyPlan?.operations||[])if(op.type==='exchange'&&(id===op.incoming||id===op.outgoing))add(b,'span','exchange-intent',id===op.incoming?'⇄ 待换入':'⇄ 待换出');
   }
   add(b,'div','card-name',u.name); add(b,'div','card-sub',(u.skills||[]).map(s=>s.definition.name).join(' · ')||'无技能');
-  const stats=add(b,'div','stats');add(stats,'span','attack',`⚔ ${u.attack}`);add(stats,'span','health',`♥ ${u.hp} / ${u.maxHp}`);
+  const stats=add(b,'div','stats');add(stats,'span','attack',`⚔ ${u.attack}`);
+  const health=add(stats,'span','health',`♥ ${u.hp}`);
+  add(health,'span','hp-preview-value');health.append(`/${u.maxHp}`);
   const track=add(b,'div','hp-track');const bar=add(track,'div','hp-fill');bar.style.width=`${Math.max(0,u.hp/u.maxHp*100)}%`;
   b.setAttribute('aria-label',`${isPlayer?'我方':'对手'} ${p<=3?p+'号战场格':(p-3)+'号战线后方备战格'} ${u.name} 攻击 ${u.attack} 生命 ${u.hp} / ${u.maxHp}${u.disabled&&!canAttack(u)?' 本回合无法攻击':''}`);return b;
 }

@@ -12,7 +12,7 @@ function healthLosses(before,after,side){
  return before.sides[side].slots.flatMap((id,index)=>{
   const unit=before.units[id];
   const remaining=after.units[id]?.hp;
-  return unit&&remaining<unit.hp?[{side,slot:index+1,hp:unit.hp,remaining,maxHp:unit.maxHp}]:[];
+  return unit&&remaining<unit.hp?[{side,slot:index+1,hp:unit.hp,remaining:Math.max(0,remaining),maxHp:unit.maxHp}]:[];
  });
 }
 
@@ -90,13 +90,17 @@ function drawArrow(svg,route,others,index,scale){
 export function drawAttackPreview(board,view){
  board.querySelector('.attack-preview-lines')?.remove();
  board.querySelectorAll('.hp-preview-loss').forEach(node=>node.remove());
+ board.querySelectorAll('.hp-preview-value:not(:empty)').forEach(node=>{node.textContent='';});
  if(!view)return;
  const player=forecastPlayerAttack(view),enemyForecast=forecastEnemyAttack(view);
  const links=[...player.links.map(link=>({...link,side:'player'})),...enemyForecast.links.map(link=>({...link,side:'ai'}))];
  const losses=[...player.losses,...enemyForecast.losses];
  const card=(side,slot)=>board.querySelector('[data-side="'+side+'"][data-slot="'+slot+'"]');
  for(const {side,slot,hp,remaining,maxHp} of losses){
-  const track=card(side,slot)?.querySelector('.hp-track');
+  const targetCard=card(side,slot);
+  const value=targetCard?.querySelector('.hp-preview-value');
+  if(value)value.textContent=`(${remaining})`;
+  const track=targetCard?.querySelector('.hp-track');
   if(!track||!maxHp)continue;
   const ghost=document.createElement('span');
   ghost.className='hp-preview-loss';
