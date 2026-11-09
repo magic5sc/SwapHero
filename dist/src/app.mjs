@@ -1,3 +1,4 @@
+import {prepareNormalAttack,usesDirectionalSlash} from './normal-attack-presentation.mjs';
 import {describeSkill} from './skill-text.mjs';
 import {createBuffBar,hideBuffInfo} from './buff-icons.mjs';
 import {positionPopover} from './popover-position.mjs';
@@ -91,7 +92,7 @@ function card(view, side, p, previous) {
   b.onkeydown=e=>{if(e.key==='Escape')hideCardInfo();};
 
   if(skillPulses.has(id)){const delta=skillPulses.get(id);b.classList.add('skill-pulse');add(foreground,'span','damage-float',delta>0?'+'+delta:String(delta));}
-  if(effect?.stage==='impact' && effect.hit && effect.targetLane===p && effect.side!==side && effect.attackEffect)foreground.append(makeAttackEffect(effect.attackEffect));
+  if(effect?.stage==='impact' && effect.hit && effect.targetLane===p && effect.side!==side && effect.attackEffect&&!usesDirectionalSlash(effect.attackEffect))foreground.append(makeAttackEffect(effect.attackEffect));
   b.insertBefore(foreground,sprite);
   b.dataset.unitId=id;
   if(!sprite){const node=makeSprite('unit-sprite',art);node.dataset.instance=id;b.append(node);}
@@ -174,12 +175,16 @@ el('start').onclick=()=>run(()=>{selected=null;if(g.mode==='pve'&&!g.levelId){co
     for(const f of group){
       visual=structuredClone(f.before);
       const sequenceAttack=f.before.units[f.before.sides[side].slots[f.lane-1]]?.art?.character?.renderer==='sequence_builtin';
-      effect={side,lane:f.lane,targetLane:f.targetLane,hit:false,stage:'attack'};show();await wait(sequenceAttack?640:360);
+      const attackEffect=f.before.units[f.before.sides[side].slots[f.lane-1]]?.art?.attackEffect;
+      const attackMs=sequenceAttack?640:360,impactMs=sequenceAttack?600:500;
+      effect={side,lane:f.lane,targetLane:f.targetLane,hit:false,stage:'attack'};show();
+      const presentation=prepareNormalAttack(document.getElementById('battle-screen'),{side,lane:f.lane,targetLane:f.targetLane,attackMs,impactMs,attackEffect});
+      await wait(attackMs);
       const target=f.targetId, targetLane=f.targetLane;
       // This attack's settled state is displayed immediately: never restore a
       // defeated unit as a visual ghost for subsequent attacks or turns.
       visual=structuredClone(f.after);
-      effect={side,lane:f.lane,targetLane,hit:!!target,stage:'impact',attackEffect:f.before.units[f.before.sides[side].slots[f.lane-1]]?.art?.attackEffect,damage:f.damage};show();if(!target&&g.victoryCondition==='score_5'){const fx=add(document.body,'div','score-burst','胜利点 +1');setTimeout(()=>fx.remove(),800);}await wait(sequenceAttack?600:500);
+      effect={side,lane:f.lane,targetLane,hit:!!target,stage:'impact',attackEffect,damage:f.damage};show();presentation.impact(!!target);if(!target&&g.victoryCondition==='score_5'){const fx=add(document.body,'div','score-burst','胜利点 +1');setTimeout(()=>fx.remove(),800);}await wait(impactMs);presentation.dispose();
     }
   }
   g=sim;visual=null;effect=null;playing=false;feedback='';show();
