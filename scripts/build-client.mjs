@@ -9,7 +9,7 @@ excluded.add('src/turn-plan-lab.mjs');
 for(const p of ['attack-motion.html','attack-motion.css','src/attack-motion.mjs','src/attack-motion-model.mjs'])excluded.add(p);
 for(const p of ['photon-spear.html','src/photon-spear.mjs','pixelfx-vertical.html','pixelfx-vertical.css','pixelfx-preview.html','pixelfx-preview.css','src/pixelfx-preview.mjs'])excluded.add(p);
 const fxDir='vendor/pixelfx/src/fx/';
-const gameEffects=new Set(['pickups','pickups/chest-open.js','pickups/_lib.js','melee','melee/sword-slash.js']);
+const gameEffects=new Set(['pickups','pickups/chest-open.js','pickups/_lib.js','melee','melee/sword-slash.js','projectiles','projectiles/arrow-rain.js']);
 fs.cpSync('dist',out,{recursive:true,filter:src=>{
  if(mode==='developer')return true;
  const rel=path.relative('dist',src).split(path.sep).join('/');

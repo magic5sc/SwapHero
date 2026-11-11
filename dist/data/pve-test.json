@@ -381,6 +381,37 @@
       "skills": [],
       "learnable": [],
       "dialoguePortrait": ""
+    },
+    {
+      "card_id": "cult_archer",
+      "name": "教团弓手",
+      "role": "ally",
+      "category": "test",
+      "attack": 1,
+      "health": 6,
+      "art_id": "temple_archer",
+      "quality": "common",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "slots": [
+        {
+          "slot_id": "turn_end",
+          "type": "skill",
+          "capacity": 1
+        }
+      ],
+      "skills": [
+        {
+          "slot_id": "turn_end",
+          "skill_id": "cult_archer_rain",
+          "level": 1
+        }
+      ],
+      "learnable": [
+        "cult_archer_rain"
+      ],
+      "dialoguePortrait": ""
     }
   ],
   "skills": [
@@ -2321,6 +2352,50 @@
           "rules": []
         }
       }
+    },
+    {
+      "skill_id": "cult_archer_rain",
+      "name": "箭雨",
+      "description": "在备战区时，己方回合结束对敌方战场对称格的角色造成1点伤害。空格仍播放箭雨。",
+      "icon": "",
+      "slot": "turn_end",
+      "quality": "common",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "cult_archer_rain_trigger_0": 1
+        }
+      },
+      "rules": [
+        {
+          "id": "cult_archer_rain_trigger",
+          "event": "turn_end",
+          "subject": "self",
+          "active_zone": "bench",
+          "turn": "own",
+          "entry": "any",
+          "damageType": "any",
+          "conditions": [],
+          "effects": [
+            {
+              "op": "deal_damage",
+              "target": "opposing_unit",
+              "zone": "battlefield",
+              "amount": "cult_archer_rain_trigger_0",
+              "duration": null,
+              "grid": true,
+              "damage_type": "skill"
+            }
+          ]
+        }
+      ],
+      "buffs": {}
     }
   ],
   "buffs": {
@@ -2485,7 +2560,8 @@
     "test_ally_4",
     "test_ally_5",
     "test_ally_6",
-    "test_ally_7"
+    "test_ally_7",
+    "cult_archer"
   ],
   "chapters": [
     {

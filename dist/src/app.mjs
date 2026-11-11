@@ -1,3 +1,5 @@
+import {withEffectObserver} from './effects.mjs';
+import {playArrowRain} from './skill-presentation.mjs';
 import {prepareNormalAttack,usesDirectionalSlash} from './normal-attack-presentation.mjs';
 import {describeSkill} from './skill-text.mjs';
 import {createBuffBar,hideBuffInfo} from './buff-icons.mjs';
@@ -162,17 +164,26 @@ function run(fn){try{fn();feedback='';}catch(e){feedback=e.message;}show();}
 function performMove(a,p){const before=structuredClone(g);run(()=>{if(g.phase==='deployment')deploy(g,a,p);else if(a>=4&&p>=4)rearrange(g,'player',a,p);else move(g,'player',a,p);inspectedId=before.sides.player.slots[a-1];selected=null;animationPositions=[a,p];});skillPulses=new Map(Object.values(g.units).filter(u=>before.units[u.id]&&u.hp!==before.units[u.id].hp).map(u=>[u.id,u.hp-before.units[u.id].hp]));show();setTimeout(()=>{skillPulses.clear();if(!playing)show();},700);if(animationPositions.length)setTimeout(()=>{animationPositions=[];},500);}
 el('start').onclick=()=>run(()=>{selected=null;if(g.mode==='pve'&&!g.levelId){const enemies=g.sides.ai.slots.filter(Boolean),positions=[0,1,2].sort((a,b)=>Number(!!g.sides.player.slots[b])-Number(!!g.sides.player.slots[a]));g.sides.ai.slots=Array(6).fill(null);enemies.forEach((id,i)=>g.sides.ai.slots[i<3?opposingPosition(positions[i]+1)-1:i]=id);}start(g);});el('end').onclick=async()=>{
   if(playing)return; selected=null;const frames=[];let sim=structuredClone(g);
-  try { endTurn(sim,'player',e=>frames.push(e));  }
+  try { withEffectObserver(sim,e=>frames.push(e),()=>endTurn(sim,'player',e=>frames.push(e)));  }
   catch(e){feedback=e.message;show();return;}
   playing=true; const wait=ms=>new Promise(r=>setTimeout(r,ms));
   for(const side of ['player','ai']) {
     if(side==='ai' && sim.phase==='action' && sim.turn==='ai'){
       visual=structuredClone(sim);effect=null;show();el('phase').textContent='对手回合 · 执行预告计划';await wait(400);
-      const moves=[];playAI(sim,e=>frames.push(e),m=>moves.push(m));
+      const moves=[];withEffectObserver(sim,e=>frames.push(e),()=>playAI(sim,e=>frames.push(e),m=>moves.push(m)));
       for(const m of moves){visual=m.before;show();el('phase').textContent='对手交换';await wait(250);visual=m.after;show();el('phase').textContent='对手交换';await wait(450);}
     }
     const group=frames.filter(x=>x.side===side);
     for(const f of group){
+      if(f.kind==='skill'){
+        visual=structuredClone(f.before);effect={side:f.sourceSide,lane:f.sourcePosition,targetLane:f.targetPosition,hit:false,stage:'attack'};show();
+        el('phase').textContent='回合结束 · 箭雨';
+        await playArrowRain(document.getElementById('battle-screen'),f,()=>{
+          visual=structuredClone(f.after);effect={side:f.sourceSide,lane:f.sourcePosition,targetLane:f.targetPosition,hit:!!f.targetId,stage:'skill-impact',damage:f.damage};show();
+          el('phase').textContent='回合结束 · 箭雨';
+        });
+        effect=null;continue;
+      }
       visual=structuredClone(f.before);
       const sequenceAttack=f.before.units[f.before.sides[side].slots[f.lane-1]]?.art?.character?.renderer==='sequence_builtin';
       const attackEffect=f.before.units[f.before.sides[side].slots[f.lane-1]]?.art?.attackEffect;

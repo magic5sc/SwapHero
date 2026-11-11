@@ -2,6 +2,9 @@ import {BUFF_EVENTS,buffActive,buffLayers,grantBuff,removeBuff,consumeShield,syn
 import {reserveBehind,SLOT_COUNT} from './formation.mjs';
 import {opposingPosition} from './match-rules.mjs';
 import {damageAmount} from './content.mjs';
+// Ephemeral presentation observers never enter saves or influence rule settlement.
+const effectObservers=new WeakMap();
+export function withEffectObserver(g,callback,run){const previous=effectObservers.get(g);effectObservers.set(g,callback);try{return run();}finally{if(previous)effectObservers.set(g,previous);else effectObservers.delete(g);}}
 export const otherSide=side=>side==='player'?'ai':'player';
 export function locate(g,id){for(const side of ['player','ai']){const index=g.sides[side].slots.indexOf(id);if(index>=0)return {side,position:index+1};}return null;}
 const alive=(g,id)=>!!g.units[id]&&g.units[id].hp>0;
@@ -31,6 +34,8 @@ function targets(g,ownerId,event,effect){
  if(effect.target==='all_enemies')return (g.sides[otherSide(owner?.side||event.side)]?.slots||[]).filter((id,i)=>id&&(effect.zone==='any'||(effect.zone==='bench'?i>=3:i<3)));
  if(effect.target==='self')return [ownerId];
  if(effect.target==='other_allies')return (g.sides[owner?.side||event.side]?.slots||[]).filter((id,i)=>id&&id!==ownerId&&(effect.zone==='any'||(effect.zone==='bench'?i>=3:i<3)));
+ // A reserve unit targets the opposing battlefield square in its current lane.
+ if(effect.target==='opposing_unit'&&owner)return [g.sides[otherSide(owner.side)].slots[opposingPosition((owner.position-1)%3+1)-1]].filter(Boolean);
  if(!anchor||anchor.position>3)return [];
  if(['rear_ally','rear_enemy'].includes(effect.target)) {
   const fieldPosition=effect.field_position??(effect.target==='rear_enemy'?opposingPosition(anchor.position):anchor.position);
@@ -105,18 +110,23 @@ export function applyDamage(g,sourceId,targetId,amount,type='skill',{preview=fal
 }
 function execute(g,job,e){
  refreshPositions(g);
+ const observer=job.skillId==='cult_archer_rain'&&e.op==='deal_damage'?effectObservers.get(g):null;
+ const sourceWhere=observer?locate(g,job.source):null;
+ const presentation=sourceWhere?{kind:'skill',skillId:job.skillId,side:g.turn,source:job.source,sourceSide:sourceWhere.side,sourcePosition:sourceWhere.position,targetSide:otherSide(sourceWhere.side),targetPosition:opposingPosition((sourceWhere.position-1)%3+1),before:structuredClone(g)}:null;
+ let presentationDamage=0,presentationTarget=null;
  const chosen=e.grid?targets(g,job.source,job.event||{unit:job.source,side:job.side,position:job.position},e):e.targets;
  for(const id of chosen){if(g.winner||g.error)break;const where=locate(g,id);if(!where||!alive(g,id)||(e.zone==='battlefield'&&where.position>3)||(e.zone==='bench'&&where.position<=3))continue;
   const u=g.units[id];
   if(e.op==='apply_buff'){const definition=job.buffs?.[e.buff.id]||e.buff;const applied=mutateBuff(g,u,notify=>grantBuff(u,definition,{source:job.instigator||job.source,skillId:job.skillId,value:e.value,stacks:e.stacks,definitions:job.buffs||{},notify}));g.log.push(applied?`${u.name} 获得 ${definition.name} ${e.stacks}层`:`${u.name} 的 ${definition.name} 已满层，本次施加被拒绝`);}
   else if(e.op==='remove_buff'){mutateBuff(g,u,notify=>removeBuff(u,e.buff.id,e.value,{notify}));g.log.push(`${u.name} 移除 ${e.buff.name} ${e.value}层`);}
   else if(e.op==='heal'){const actual=Math.min(e.value,u.maxHp-u.hp);u.hp+=actual;g.log.push(`${job.name}：${u.name} 恢复 ${actual} 生命`);if(actual>0)collectEvent(g,{type:'healed',unit:id,side:where.side,position:where.position,source:job.instigator||job.source,amount:actual});}
-  else if(e.op==='deal_damage'){const actual=applyDamage(g,job.instigator||job.source,id,e.value,'skill');g.log.push(`${job.name}：${u.name} 受到 ${actual} 技能伤害`);}
+  else if(e.op==='deal_damage'){const actual=applyDamage(g,job.instigator||job.source,id,e.value,'skill');presentationDamage=actual;presentationTarget=id;g.log.push(`${job.name}：${u.name} 受到 ${actual} 技能伤害`);}
   else if(e.op==='modify_attack'){u.baseAttack??=u.attack;u.modifiers??=[];if(e.refresh)u.modifiers=u.modifiers.filter(m=>m.source!==job.source||m.skillId!==job.skillId);u.modifiers.push({source:job.source,skillId:job.skillId,amount:e.value,duration:e.duration,...(e.duration==='owner_turns'?{remaining:e.turns}: {})});updateAttack(u);g.log.push(`${job.name}：${u.name} 攻击 ${e.value>=0?'+':''}${e.value}`);}
   else if(e.op==='set_shield'){u.shield=e.value;g.log.push(`${job.name}：${u.name} 护盾刷新至 ${e.value}`);}
   else if(e.op==='swap_positions'){const source=locate(g,job.source);if(!source||source.side!==where.side||source.position>3||where.position>3||!alive(g,job.source))continue;const slots=g.sides[source.side].slots;[slots[source.position-1],slots[where.position-1]]=[slots[where.position-1],slots[source.position-1]];g.log.push(`${job.name}：${source.position} 与 ${where.position} 号位交换`);}
   refreshPositions(g);updateState(g);
  }
+ if(presentation)observer({...presentation,targetId:presentationTarget,damage:presentationDamage,after:structuredClone(g)});
 }
 export function settleOutcome(g){
  if(g.mode!=='pve'||g.error||g.stack?.length)return;
