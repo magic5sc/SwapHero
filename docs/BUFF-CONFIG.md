@@ -162,7 +162,7 @@ Buff每行定义一种状态；BuffEffect每行定义这个状态的一项触发
 
 回合末先执行turn_end触发链，再批量清理到期状态，再执行到期产生的触发链，然后交接回合。到期效果新施加的Buff不会被当前已完成的清理批次立即再次扣时长。战斗已经结束时不再继续回合推进。
 
-## 8. EffectResult表：11列逐项说明
+## 8. EffectResult表：12列逐项说明
 
 | 列 | 怎么填 | 作用、约束与例子 |
 | --- | --- | --- |
@@ -177,6 +177,8 @@ Buff每行定义一种状态；BuffEffect每行定义这个状态的一项触发
 | 等级2 | 被最大等级≥2的技能使用时，必填 | 技能2级操作数值，否则可空。 |
 | 等级3 | 被最大等级=3的技能使用时，必填 | 技能3级操作数值，否则可空。 |
 | 数值 | 结果组被BuffEffect使用时，必填 | 固定操作数值，不随来源技能等级变化；只被SkillEffect使用时留空。 |
+
+| 数值来源 | 可留空或fixed；技能常驻护甲可选other_allies_count | 默认为固定值；动态来源仅适用于SkillEffect常驻护甲，BuffEffect必须fixed。 |
 
 同一组同时被技能和Buff引用时，技能等级列和固定数值列分别填写；两类效果各读自己的列。不要用重复填写三列来表示“Buff等级”。
 
@@ -232,9 +234,9 @@ demo_poison_expire,demo_poison,2,battlefield,buff_expired,self,any,any,any,,,,de
 EffectResult：
 
 ```csv
-ResultGroupID,顺序,操作,目标,目标区域,BuffID,层数,等级1,等级2,等级3,数值
-demo_poison_tick,1,deal_damage,self,any,,,,,,1
-demo_poison_burst,1,deal_damage,opposing_unit,battlefield,,,,,,2
+ResultGroupID,顺序,操作,目标,目标区域,BuffID,层数,等级1,等级2,等级3,数值,数值来源
+demo_poison_tick,1,deal_damage,self,any,,,,,,1,fixed
+demo_poison_burst,1,deal_damage,opposing_unit,battlefield,,,,,,2,fixed
 ```
 
 施加技能的结果组新增一行：操作apply_buff；目标opposing_unit；目标区域battlefield；BuffID=demo_poison；层数=1；等级1／2／3均填0；数值留空。已有SkillEffect引用此组，并按需要配置触发事件。

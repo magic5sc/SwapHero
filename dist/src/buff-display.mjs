@@ -1,3 +1,4 @@
+import {passiveEffectAmount} from './content.mjs';
 import {buffActive} from './buffs.mjs';
 import {preparationIcon,preparationBadges} from './enemy-plan.mjs';
 import {describeSkill} from './skill-text.mjs';
@@ -17,7 +18,7 @@ export function unitBuffBadges(g,u,position){
  const states=(u.buffs||[]).filter(b=>b.stacks>0).map(b=>({...b,key:'buff:'+b.instanceId+':'+b.id}));
  for(const [si,s] of (u.skills||[]).entries()){
   if(s.definition.passive)states.push({key:'passive:'+si,source:u.id,passive:true,stacks:1,value:s.definition.levels?.[s.level]?.amount??1,definition:{id:'legacy-passive-'+si,name:s.definition.name,kind:s.definition.passive,active_zone:'battlefield',icon:s.definition.icon}});
-  for(const [ri,r] of (s.definition.rules||[]).entries())if(r.event==='passive')for(const [ei,e] of r.effects.entries())if(e.op==='apply_buff')states.push({key:`passive:${si}:${ri}:${ei}`,source:u.id,passive:true,stacks:e.stacks,value:s.definition.levels?.[s.level]?.[e.amount]||0,definition:{...e.buff,active_zone:r.active_zone||e.buff.active_zone,icon:e.buff.icon||s.definition.icon},definitions:s.definition.buffs});
+  for(const [ri,r] of (s.definition.rules||[]).entries())if(r.event==='passive')for(const [ei,e] of r.effects.entries())if(e.op==='apply_buff')states.push({key:`passive:${si}:${ri}:${ei}`,source:u.id,passive:true,stacks:e.stacks,value:passiveEffectAmount(u,e,s.definition.levels?.[s.level]?.[e.amount]||0,g),definition:{...e.buff,active_zone:r.active_zone||e.buff.active_zone,icon:e.buff.icon||s.definition.icon},definitions:s.definition.buffs});
  }
  for(const [i,m] of (u.modifiers||[]).entries())states.push({key:'modifier:'+i,source:m.source,stacks:1,value:m.amount,remaining:m.remaining,definition:{id:'modifier-'+i,name:'攻击变化',kind:'attack',duration:m.duration,active_zone:'any'}});
  if(u.shield>0)states.push({key:'shield',stacks:1,value:u.shield,remainingShield:u.shield,definition:{id:'legacy-shield',name:'护盾',kind:'shield',active_zone:'any'}});

@@ -99,13 +99,16 @@ export function collectPhase(g,type){
 }
 export function applyDamage(g,sourceId,targetId,amount,type='skill',{preview=false}={}){
  const where=locate(g,targetId);if(!where||!alive(g,targetId))return 0;
- const u=g.units[targetId];let damage=damageAmount(u,amount,type);
+ const u=g.units[targetId];let damage=damageAmount(u,amount,type,g);
  const absorbed=type==='health_loss'?0:preview?consumeShield(u,damage):mutateBuff(g,u,notify=>consumeShield(u,damage,{notify}));
  damage-=absorbed;
  const actual=Math.min(u.hp,damage);u.hp-=actual;
  if(preview)return actual;
  if(absorbed)g.log.push(`${u.name} 护盾吸收 ${absorbed} 伤害`);
  if(actual>0)collectEvent(g,{type:'damage_taken',unit:targetId,side:where.side,position:where.position,source:sourceId,amount:actual,damageType:type});
+ // Credit only the lethal damage source, once. A removed/dead source cannot
+ // gain a kill listener; damage from a Buff keeps its original instigator.
+ if(actual>0&&u.hp===0){const killer=locate(g,sourceId);if(killer&&killer.side!==where.side&&alive(g,sourceId))collectEvent(g,{type:'enemy_defeated',unit:sourceId,...killer,target:targetId,targetSide:where.side,targetPosition:where.position,source:sourceId,damageType:type});}
  updateState(g);return actual;
 }
 function execute(g,job,e){

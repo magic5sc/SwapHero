@@ -134,3 +134,9 @@ BuffEffect通过BuffID归属，不需要在Buff表维护效果ID列表。复用E
 ## 上一版验收记录
 
 151项自动测试通过；两份工作簿编译一致性检查及game-only构建通过。配置表新增区域已渲染检查，未改角色、关卡、节点、章节和对白数据。战斗详情、奖励及升级预览使用多效果说明，不再读取单一amount字段。桌面验证工具启动失败（CreateProcessSecurityEnvironment 0x80070002），真实拖拽、文件选择器导入、手机体验未验收。设计Wiki：https://app.notion.com/p/40ee7ee349ad817a92f8d34fee96fc3b；开发Wiki：https://app.notion.com/p/40ee7ee349ad8152b1eae1e8aa3d5ffe。
+
+## 圣教冠军支持｜2026-11-11
+
+- `enemy_defeated`：由实际致死伤害归因到击杀者的事件，不是自身被击溃。支持 self/other_ally 及区域筛选；普通攻击、技能、持续Buff原施加者沿同一伤害入口，不计友军、非致死或已移除目标。
+- EffectResult 新增可选“数值来源”：`fixed`（兼容旧表默认值）或 `other_allies_count`。后者仅用于技能 passive 的护甲/减伤 apply_buff，等级数值乘以己方六格其他存活单位数量，再乘层数。动态计算，不发放或缓存会过期的护甲。
+- 角色 `holy_champion`、配置与独立验收入口见 [圣教冠军](HOLY-CHAMPION.md)。既有护甲语义不变：战场生效，仅减普通攻击伤害，不减技能伤害/生命流失。

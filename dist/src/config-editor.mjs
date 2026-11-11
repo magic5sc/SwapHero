@@ -8,7 +8,7 @@ help.Dialogue='每段一个唯一入口。预览不会修改远征存档。';hel
 let sheet='Level',index=1,tables,workbook,config,dirty=false;
 help.Buff='叠层、数值合并、时长刷新、满层处理、护盾补充分开配置。旧配置默认行为保持。';
 help.BuffEffect='Buff没有等级。自身效果使用结果表的数值列；生命周期只监听当前实例，移除原因仅用于buff_removed。';
-help.EffectResult='技能效果读取等级1—3；Buff效果只读取数值列。无关列可留空，同组结果按顺序执行。';
+help.EffectResult='技能效果读取等级1—3；Buff效果只读取数值列。无关列可留空，同组结果按顺序执行。数值来源 other_allies_count 用于常驻护甲，等级数值乘以其他存活友军数量。';
 const message=text=>{$('status').textContent=text;};
 function load(bytes){
  const next=XLSX.read(bytes,{type:'array'});
@@ -21,12 +21,12 @@ function load(bytes){
 function ids(name){return [...new Set(tables[name].slice(1).map(row=>row[tables[name][0].indexOf(columns[name].split(' ')[0])]).filter(Boolean))];}
 function options(key){
  if(key==='移除原因')return ['any','expired','dispelled','leave'];
- if(key==='触发时机'&&sheet==='BuffEffect')return ['unit_enter','unit_leave','turn_start','turn_end','attack_declared','before_damage','damage_taken','healed','unit_defeated','attack_end',...BUFF_EVENTS];
+ if(key==='触发时机'&&sheet==='BuffEffect')return ['unit_enter','unit_leave','turn_start','turn_end','attack_declared','before_damage','damage_taken','healed','unit_defeated','enemy_defeated','attack_end',...BUFF_EVENTS];
  if(key==='SkillID'&&sheet==='SkillEffect')return ids('Skill');
  if(key==='BuffID'&&sheet!=='Buff'||key==='条件BuffID')return ids('Buff');
  if(key==='ResultGroupID'&&['SkillEffect','BuffEffect'].includes(sheet))return ids('EffectResult');
  const buffChoices={数值合并:['replace','keep','max','min'],时长刷新:['refresh','keep'],满层处理:['apply','reject'],护盾补充:['reset','add','keep']};if(buffChoices[key])return buffChoices[key];
- const choices={监听区域:['battlefield','bench','any'],生效区域:['battlefield','bench','any'],触发时机:['passive','unit_enter','unit_leave','turn_start','turn_end','attack_declared','before_damage','damage_taken','healed','unit_defeated','attack_end'],触发主体:['self','other_ally'],回合归属:['own','opponent','any'],入场原因:['any','exchange','reinforce'],伤害类型:['any','combat','skill','health_loss'],比较:['gte','eq','lt'],操作:['apply_buff','remove_buff','heal','deal_damage','swap_positions'],目标:['self','opposing_unit','front_sides','lower_ally','rear_ally','rear_enemy','all_enemies','all_allies','other_allies'],目标区域:['battlefield','bench','any'],叠加方式:['add','refresh','max','independent'],合并范围:['buff','source_skill'],持续时间:['battle','turn','owner_turns'],离场处理:['keep','remove','pause']};
+ const choices={数值来源:['fixed','other_allies_count'],监听区域:['battlefield','bench','any'],生效区域:['battlefield','bench','any'],触发时机:['passive','unit_enter','unit_leave','turn_start','turn_end','attack_declared','before_damage','damage_taken','healed','unit_defeated','enemy_defeated','attack_end'],触发主体:['self','other_ally'],回合归属:['own','opponent','any'],入场原因:['any','exchange','reinforce'],伤害类型:['any','combat','skill','health_loss'],比较:['gte','eq','lt'],操作:['apply_buff','remove_buff','heal','deal_damage','swap_positions'],目标:['self','opposing_unit','front_sides','lower_ally','rear_ally','rear_enemy','all_enemies','all_allies','other_allies'],目标区域:['battlefield','bench','any'],叠加方式:['add','refresh','max','independent'],合并范围:['buff','source_skill'],持续时间:['battle','turn','owner_turns'],离场处理:['keep','remove','pause']};
  if(choices[key])return choices[key];if(sheet==='Buff'&&key==='类型')return ['marker','attack','shield','armor','damage_armor','agile','combat_damage_immunity'];
  if(key.endsWith('对话ID')||key==='DialogueID'&&sheet==='DialogueLine')return ids('Dialogue');
  if(key==='说话角色ID')return ids('Character');

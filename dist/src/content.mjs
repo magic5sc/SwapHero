@@ -2,7 +2,7 @@ import {BUFF_EVENTS,buffValue} from './buffs.mjs';
 import {artIssues,resolveArt} from './art-assets.mjs';
 // Content definitions are data; no executable expressions or card-name branches.
 const PASSIVES = new Set(['agile','armor','combat_damage_immunity','damage_armor']);
-const EVENTS = new Set(['passive','turn_start','unit_enter','unit_leave','attack_declared','before_damage','damage_taken','unit_defeated','healed','attack_end','turn_end',...BUFF_EVENTS]);
+const EVENTS = new Set(['passive','turn_start','unit_enter','unit_leave','attack_declared','before_damage','damage_taken','unit_defeated','enemy_defeated','healed','attack_end','turn_end',...BUFF_EVENTS]);
 const OPS = new Set(['heal','deal_damage','modify_attack','swap_positions','set_shield','apply_buff','remove_buff']);
 const TARGETS = new Set(['self','opposing_unit','all_enemies','other_allies','lower_ally','rear_ally','rear_enemy','front_sides','all_allies']);
 const fail = message => { throw Error(message); };
@@ -50,7 +50,7 @@ export function validateCatalog(data) {
       if(rule.conditions!==undefined)check(Array.isArray(rule.conditions)&&rule.conditions.every(c=>object(c)&&s.buffs?.[c.buff]&&['gte','eq','lt'].includes(c.compare)&&integer(c.layers,0)),`${s.skill_id}条件非法`);
       check(Array.isArray(rule.effects)&&rule.effects.length>0,`${s.skill_id}缺效果`);
       for(const e of Array.isArray(rule.effects)?rule.effects:[]) {
-        if(!object(e)){errors.push('效果必须是对象');continue;}check(Object.keys(e).every(k=>['op','target','amount','duration','zone','damage_type','field_position','turns','refresh','grid','buff','stacks'].includes(k)),`${s.skill_id}含未支持的效果字段`);
+        if(!object(e)){errors.push('效果必须是对象');continue;}check(Object.keys(e).every(k=>['op','target','amount','duration','zone','damage_type','field_position','turns','refresh','grid','buff','stacks','amount_source'].includes(k)),`${s.skill_id}含未支持的效果字段`);
         if(['apply_buff','remove_buff'].includes(e.op)){check(validBuff(e.buff),`${s.skill_id}Buff定义非法`);if(e.op==='apply_buff')check(integer(e.stacks,1),`${s.skill_id}Buff层数非法`);}
         check(OPS.has(e.op),`${s.skill_id}未知效果`);check(e.target===null||TARGETS.has(e.target),`${s.skill_id}未知目标`);
         check(e.duration===null||['battle','turn','on_field','owner_turns'].includes(e.duration),`${s.skill_id}未知持续时间`);check(e.zone===null||['battlefield','any','bench'].includes(e.zone),`${s.skill_id}未知区域`);
@@ -62,6 +62,7 @@ export function validateCatalog(data) {
         } else check(e.field_position===undefined||e.field_position===null,`${s.skill_id}仅后方目标支持指定战线`);
         if(s.status==='specified'){check(e.target!==null&&e.zone!==null,`${s.skill_id}目标未闭合`);if(e.op==='modify_attack')check(e.duration!==null,`${s.skill_id}持续时间未闭合`);}
         if(e.op!=='swap_positions')for(const p of Object.values(s.levels||{})){check(typeof e.amount==='string'&&Number.isFinite(p[e.amount]),`${s.skill_id}缺效果参数`);if(e.op!=='modify_attack'&&!(e.op==='apply_buff'&&e.buff?.kind==='attack'))check(integer(p[e.amount],0),`${s.skill_id}效果量必须为非负整数`);}
+        if(e.amount_source!==undefined)check(['fixed','other_allies_count'].includes(e.amount_source)&&(e.amount_source==='fixed'||!s.isBuff&&rule.event==='passive'&&e.op==='apply_buff'&&['armor','damage_armor'].includes(e.buff?.kind)),`${s.skill_id}数值来源非法`);
         if(e.op==='deal_damage')check(e.damage_type==='skill',`${s.skill_id}伤害类型不支持`);
       }
     }
@@ -87,21 +88,27 @@ export function createUnit(data,cardId,instanceId) {
   const c=data.cards.find(c=>c.card_id===cardId);
   return {id:instanceId,cardId,art:resolveArt(data,c),name:c.name,attack:c.attack,baseAttack:c.attack,modifiers:[],hp:c.health,maxHp:c.health,disabled:false,contentVersion:data.version,slots:structuredClone(c.slots),skills:c.skills.map(r=>({slotId:r.slot_id,level:r.level,definition:structuredClone(data.skills.find(s=>s.skill_id===r.skill_id))}))};
 }
+// Dynamic amounts read live occupied slots, never cached totals or dead units.
+export function passiveEffectAmount(unit,e,value,g){
+ if(e.amount_source!=='other_allies_count')return value;
+ const side=g&&['player','ai'].find(side=>g.sides[side].slots.includes(unit.id));
+ return side?value*g.sides[side].slots.filter(id=>id&&id!==unit.id&&g.units[id]?.hp>0).length:0;
+}
 // Derived passives leave no cached bonuses behind when a skill is removed.
-export function passiveValue(unit,keyword){
+export function passiveValue(unit,keyword,g=null){
  const pos=unit.position??1;
  return buffValue(unit,keyword,pos)+(unit.skills||[]).reduce((n,s)=>{
   if(s.definition.passive===keyword)n+=['armor','damage_armor'].includes(keyword)?s.definition.levels[s.level].amount:1;
-  for(const r of s.definition.rules||[])if(r.event==='passive'&&(r.active_zone==='any'||(r.active_zone==='bench'?pos>3:pos<=3)))for(const e of r.effects)if(e.buff?.kind===keyword)n+=['armor','damage_armor'].includes(keyword)?s.definition.levels[s.level][e.amount]*e.stacks:1;
+  for(const r of s.definition.rules||[])if(r.event==='passive'&&(r.active_zone==='any'||(r.active_zone==='bench'?pos>3:pos<=3)))for(const e of r.effects)if(e.buff?.kind===keyword)n+=['armor','damage_armor'].includes(keyword)?passiveEffectAmount(unit,e,s.definition.levels[s.level][e.amount],g)*e.stacks:1;
   return n;
  },0);
 }
 export function canAttack(unit){return unit.hp>0&&(!unit.disabled||passiveValue(unit,'agile')>0);}
-export function damageAmount(target,amount,type='combat'){
+export function damageAmount(target,amount,type='combat',g=null){
   if(!Number.isFinite(amount)||amount<0||!['combat','skill','health_loss'].includes(type))fail('非法伤害');
   if(type==='health_loss')return amount;
-  if(type==='combat'&&passiveValue(target,'combat_damage_immunity'))return 0;
-  return Math.max(0,amount-passiveValue(target,'damage_armor')-(type==='combat'?passiveValue(target,'armor'):0));
+  if(type==='combat'&&passiveValue(target,'combat_damage_immunity',g))return 0;
+  return Math.max(0,amount-passiveValue(target,'damage_armor',g)-(type==='combat'?passiveValue(target,'armor',g):0));
 }
 export function replaceSkill(unit,slotId,definition,level,{phase,stackEmpty}={}){
   if(!['outside_battle','deployment'].includes(phase)||stackEmpty!==true)fail('当前不能替换技能');

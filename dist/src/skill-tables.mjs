@@ -3,7 +3,7 @@ export const skillColumns={
  Skill:'SkillID 名称 说明 图标 技能栏 品质 精英限定 最大等级',
  SkillEffect:'EffectID SkillID 顺序 监听区域 触发时机 触发主体 回合归属 入场原因 伤害类型 条件BuffID 比较 条件层数 ResultGroupID',
  BuffEffect:'EffectID BuffID 顺序 监听区域 触发时机 触发主体 回合归属 入场原因 伤害类型 条件BuffID 比较 条件层数 ResultGroupID 移除原因',
- EffectResult:'ResultGroupID 顺序 操作 目标 目标区域 BuffID 层数 等级1 等级2 等级3 数值',
+ EffectResult:'ResultGroupID 顺序 操作 目标 目标区域 BuffID 层数 等级1 等级2 等级3 数值 数值来源',
  Buff:'BuffID 名称 类型 生效区域 叠加方式 合并范围 最大层数 持续时间 持续回合 离场处理 图标 数值合并 时长刷新 满层处理 护盾补充'
 };
 // Missing policy columns mean the original behavior; explicit blank cells are errors.
@@ -14,6 +14,7 @@ export function normalizeBuffTables(input){
  }
  if(!out.BuffEffect[0].includes('移除原因')){const c=out.BuffEffect[0].length;out.BuffEffect[0].push('移除原因');for(const r of out.BuffEffect.slice(1))if(r.some(v=>v!==''&&v!=null))r[c]='any';}
  const results=out.EffectResult;
+ if(results&&!results[0].includes('数值来源')){const col=results[0].length;results[0].push('数值来源');for(const r of results.slice(1))if(r.some(v=>v!==''&&v!=null))r[col]='fixed';}
  if(results&&!results[0].includes('数值')){
   const col=results[0].length;results[0].push('数值');const groups=new Set(objects(out.BuffEffect).map(r=>r.ResultGroupID));
   for(const r of results.slice(1))if(groups.has(r[results[0].indexOf('ResultGroupID')])){
@@ -84,7 +85,10 @@ export function compileSkillTables({rows,num,bool,tables}){
     if(isBuff)s.values[key]=num(x,'数值',min);else for(let lv=1;lv<=max;lv++)s.levels[lv][key]=num(x,'等级'+lv,min);
     const result={op:x.操作,target:x.目标,zone:x.目标区域,amount:key,duration:null,grid:true};
     if(['apply_buff','remove_buff'].includes(x.操作)){x.check(buffs[x.BuffID],'BuffID','未知Buff');result.buff=structuredClone(baseBuffs[x.BuffID]);if(x.操作==='apply_buff')result.stacks=num(x,'层数',1);else x.check(x.层数==='','层数','移除层数填写在结果数值列，本列留空');}else x.check(!x.BuffID&&x.层数==='','BuffID','该操作不接受Buff或层数字段');
-    if(x.操作==='deal_damage')result.damage_type='skill';rule.effects.push(result);
+    if(x.操作==='deal_damage')result.damage_type='skill';
+    const amountSource=x.数值来源||'fixed';x.check(['fixed','other_allies_count'].includes(amountSource),'数值来源','请选择 fixed / other_allies_count');
+    if(amountSource!=='fixed'){x.check(!isBuff&&rule.event==='passive'&&result.op==='apply_buff'&&['armor','damage_armor'].includes(result.buff?.kind),'数值来源','其他友军数量仅支持技能常驻护甲/减伤');result.amount_source=amountSource;}
+    rule.effects.push(result);
    }
    if(rule.event==='passive'){e.check(rule.subject==='self'&&rule.turn==='any'&&rule.entry==='any'&&rule.damageType==='any'&&rule.conditions.length===0&&rule.effects.every(x=>x.op==='apply_buff'&&['armor','damage_armor','agile','combat_damage_immunity'].includes(x.buff.kind)&&x.target==='self'&&x.buff.duration==='battle'&&x.buff.active_zone===rule.active_zone),'触发时机','常驻仅支持护甲、减伤、敏捷、战斗免疫');}
    s.rules.push(rule);

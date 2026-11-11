@@ -412,6 +412,45 @@
         "cult_archer_rain"
       ],
       "dialoguePortrait": ""
+    },
+    {
+      "card_id": "holy_champion",
+      "name": "圣教冠军",
+      "role": "enemy",
+      "category": "test",
+      "attack": 3,
+      "health": 20,
+      "art_id": "temple_knight",
+      "quality": "epic",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "slots": [
+        {
+          "slot_id": "passive",
+          "type": "skill",
+          "capacity": 1
+        },
+        {
+          "slot_id": "enemy_defeated",
+          "type": "skill",
+          "capacity": 1
+        }
+      ],
+      "skills": [
+        {
+          "slot_id": "passive",
+          "skill_id": "holy_champion_domain",
+          "level": 1
+        },
+        {
+          "slot_id": "enemy_defeated",
+          "skill_id": "holy_champion_creed",
+          "level": 1
+        }
+      ],
+      "learnable": [],
+      "dialoguePortrait": ""
     }
   ],
   "skills": [
@@ -2396,6 +2435,169 @@
         }
       ],
       "buffs": {}
+    },
+    {
+      "skill_id": "holy_champion_domain",
+      "name": "虔诚领域",
+      "description": "护甲等于己方战场和备战区中其他存活单位的数量。",
+      "icon": "",
+      "slot": "passive",
+      "quality": "epic",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "holy_champion_domain_passive_0": 1
+        }
+      },
+      "rules": [
+        {
+          "id": "holy_champion_domain_passive",
+          "event": "passive",
+          "subject": "self",
+          "active_zone": "battlefield",
+          "turn": "any",
+          "entry": "any",
+          "damageType": "any",
+          "conditions": [],
+          "effects": [
+            {
+              "op": "apply_buff",
+              "target": "self",
+              "zone": "any",
+              "amount": "holy_champion_domain_passive_0",
+              "duration": null,
+              "grid": true,
+              "buff": {
+                "id": "holy_champion_armor",
+                "name": "虔诚领域",
+                "kind": "armor",
+                "active_zone": "battlefield",
+                "stacking": "refresh",
+                "scope": "source_skill",
+                "max_stacks": 1,
+                "duration": "battle",
+                "turns": null,
+                "leave": "keep",
+                "icon": "",
+                "value_policy": "replace",
+                "duration_refresh": "refresh",
+                "overflow": "apply",
+                "shield_refresh": "reset"
+              },
+              "stacks": 1,
+              "amount_source": "other_allies_count"
+            }
+          ]
+        }
+      ],
+      "buffs": {
+        "holy_champion_armor": {
+          "id": "holy_champion_armor",
+          "name": "虔诚领域",
+          "kind": "armor",
+          "active_zone": "battlefield",
+          "stacking": "refresh",
+          "scope": "source_skill",
+          "max_stacks": 1,
+          "duration": "battle",
+          "turns": null,
+          "leave": "keep",
+          "icon": "",
+          "value_policy": "replace",
+          "duration_refresh": "refresh",
+          "overflow": "apply",
+          "shield_refresh": "reset",
+          "values": {},
+          "rules": []
+        }
+      }
+    },
+    {
+      "skill_id": "holy_champion_creed",
+      "name": "炽诚信条",
+      "description": "本单位每次击杀敌人，自身攻击力+1，持续至本场战斗结束。",
+      "icon": "",
+      "slot": "enemy_defeated",
+      "quality": "epic",
+      "gold_only": false,
+      "status": "specified",
+      "blockers": [],
+      "active_zone": "battlefield",
+      "stacking": "single_instance",
+      "unload_policy": "remove_passive_and_listeners",
+      "passive": null,
+      "levels": {
+        "1": {
+          "holy_champion_creed_trigger_0": 1
+        }
+      },
+      "rules": [
+        {
+          "id": "holy_champion_creed_trigger",
+          "event": "enemy_defeated",
+          "subject": "self",
+          "active_zone": "any",
+          "turn": "any",
+          "entry": "any",
+          "damageType": "any",
+          "conditions": [],
+          "effects": [
+            {
+              "op": "apply_buff",
+              "target": "self",
+              "zone": "any",
+              "amount": "holy_champion_creed_trigger_0",
+              "duration": null,
+              "grid": true,
+              "buff": {
+                "id": "holy_champion_attack",
+                "name": "炽诚信条",
+                "kind": "attack",
+                "active_zone": "any",
+                "stacking": "independent",
+                "scope": "source_skill",
+                "max_stacks": 1,
+                "duration": "battle",
+                "turns": null,
+                "leave": "keep",
+                "icon": "",
+                "value_policy": "replace",
+                "duration_refresh": "refresh",
+                "overflow": "apply",
+                "shield_refresh": "reset"
+              },
+              "stacks": 1
+            }
+          ]
+        }
+      ],
+      "buffs": {
+        "holy_champion_attack": {
+          "id": "holy_champion_attack",
+          "name": "炽诚信条",
+          "kind": "attack",
+          "active_zone": "any",
+          "stacking": "independent",
+          "scope": "source_skill",
+          "max_stacks": 1,
+          "duration": "battle",
+          "turns": null,
+          "leave": "keep",
+          "icon": "",
+          "value_policy": "replace",
+          "duration_refresh": "refresh",
+          "overflow": "apply",
+          "shield_refresh": "reset",
+          "values": {},
+          "rules": []
+        }
+      }
     }
   ],
   "buffs": {
@@ -2538,6 +2740,44 @@
       "kind": "agile",
       "active_zone": "battlefield",
       "stacking": "refresh",
+      "scope": "source_skill",
+      "max_stacks": 1,
+      "duration": "battle",
+      "turns": null,
+      "leave": "keep",
+      "icon": "",
+      "value_policy": "replace",
+      "duration_refresh": "refresh",
+      "overflow": "apply",
+      "shield_refresh": "reset",
+      "values": {},
+      "rules": []
+    },
+    "holy_champion_armor": {
+      "id": "holy_champion_armor",
+      "name": "虔诚领域",
+      "kind": "armor",
+      "active_zone": "battlefield",
+      "stacking": "refresh",
+      "scope": "source_skill",
+      "max_stacks": 1,
+      "duration": "battle",
+      "turns": null,
+      "leave": "keep",
+      "icon": "",
+      "value_policy": "replace",
+      "duration_refresh": "refresh",
+      "overflow": "apply",
+      "shield_refresh": "reset",
+      "values": {},
+      "rules": []
+    },
+    "holy_champion_attack": {
+      "id": "holy_champion_attack",
+      "name": "炽诚信条",
+      "kind": "attack",
+      "active_zone": "any",
+      "stacking": "independent",
       "scope": "source_skill",
       "max_stacks": 1,
       "duration": "battle",
@@ -2715,6 +2955,32 @@
       "beforeDialogue": "dlg_test_before",
       "victoryDialogue": "dlg_test_victory",
       "defeatDialogue": "dlg_test_defeat"
+    },
+    {
+      "id": "holy_champion_test",
+      "name": "圣教冠军测试",
+      "slots": [
+        "test_scout",
+        "holy_champion",
+        null,
+        null,
+        "cult_archer",
+        null
+      ],
+      "playerSlots": [
+        "cult_archer",
+        "test_hero",
+        "test_guard",
+        null,
+        null,
+        null
+      ],
+      "victoryCondition": "elimination",
+      "background": "assets/tabletop/leather.png",
+      "title": "圣教冠军 · 技能测试",
+      "beforeDialogue": "",
+      "victoryDialogue": "",
+      "defeatDialogue": ""
     }
   ],
   "nodes": [
